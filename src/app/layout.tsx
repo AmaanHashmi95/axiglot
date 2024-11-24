@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Axiglot",
     default: "Axiglot",
   },
-  description: "The social media app for powernerds",
+  description: "The only language learning app you need",
 };
 
 export default function RootLayout({
