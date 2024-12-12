@@ -6,6 +6,7 @@ import { Bookmark, Home } from "lucide-react";
 import Link from "next/link";
 import MessagesButton from "./MessagesButton";
 import NotificationsButton from "./NotificationsButton";
+import Image from "next/image";
 
 interface MenuBarProps {
   className?: string;
