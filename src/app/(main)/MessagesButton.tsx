@@ -6,6 +6,8 @@ import { MessageCountInfo } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import messages from "@/assets/messages.png";
 
 interface MessagesButtonProps {
   initialState: MessageCountInfo;
@@ -29,7 +31,12 @@ export default function MessagesButton({ initialState }: MessagesButtonProps) {
     >
       <Link href="/messages">
         <div className="relative">
-          <Mail />
+        <Image
+            src={messages} // Add your image in the public/icons directory
+            alt="Home"
+            width={30}
+            height={30}
+          />
           {!!data.unreadCount && (
             <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
               {data.unreadCount}

@@ -7,6 +7,9 @@ import Link from "next/link";
 import MessagesButton from "./MessagesButton";
 import NotificationsButton from "./NotificationsButton";
 import Image from "next/image";
+import home from "@/assets/home.png";
+import lessons from "@/assets/lessons.png";
+import library from "@/assets/library.png";
 
 interface MenuBarProps {
   className?: string;
@@ -36,13 +39,31 @@ export default async function MenuBar({ className }: MenuBarProps) {
         asChild
       >
         <Link href="/">
-          <Home />
+        <Image
+            src={home} // Add your image in the public/icons directory
+            alt="Home"
+            width={30}
+            height={30}
+          />
           <span className="hidden lg:inline">Home</span>
         </Link>
       </Button>
-      <NotificationsButton
-        initialState={{ unreadCount: unreadNotificationsCount }}
-      />
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Courses"
+        asChild
+      >
+        <Link href="/courses">
+        <Image
+            src={lessons} // Add your image in the public/icons directory
+            alt="Courses"
+            width={30}
+            height={30}
+          />
+          <span className="hidden lg:inline">Courses</span>
+        </Link>
+      </Button>
       <MessagesButton initialState={{ unreadCount: unreadMessagesCount }} />
       <Button
         variant="ghost"
@@ -51,7 +72,12 @@ export default async function MenuBar({ className }: MenuBarProps) {
         asChild
       >
         <Link href="/bookmarks">
-          <Bookmark />
+        <Image
+            src={library} // Add your image in the public/icons directory
+            alt="Home"
+            width={30}
+            height={30}
+          />
           <span className="hidden lg:inline">Bookmarks</span>
         </Link>
       </Button>
