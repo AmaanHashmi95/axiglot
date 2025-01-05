@@ -16,23 +16,24 @@ datasource db {
 }
 
 model User {
-  id                    String         @id
-  username              String         @unique
+  id                    String           @id
+  username              String           @unique
   displayName           String
-  email                 String?        @unique
+  email                 String?          @unique
   passwordHash          String?
-  googleId              String?        @unique
+  googleId              String?          @unique
   avatarUrl             String?
   bio                   String?
   sessions              Session[]
   posts                 Post[]
-  following             Follow[]       @relation("Following")
-  followers             Follow[]       @relation("Followers")
+  following             Follow[]         @relation("Following")
+  followers             Follow[]         @relation("Followers")
   likes                 Like[]
   bookmarks             Bookmark[]
   comments              Comment[]
-  receivedNotifications Notification[] @relation("Recipient")
-  issuedNotifications   Notification[] @relation("Issuer")
+  receivedNotifications Notification[]   @relation("Recipient")
+  issuedNotifications   Notification[]   @relation("Issuer")
+  lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
 
   createdAt DateTime @default(now())
 
@@ -147,4 +148,48 @@ enum NotificationType {
   LIKE
   FOLLOW
   COMMENT
+}
+
+model Lesson {
+  id          String           @id @default(cuid())
+  title       String
+  language    String
+  description String?
+  questions   Question[]
+  progress    LessonProgress[]
+  createdAt   DateTime         @default(now())
+}
+
+model Question {
+  id            String       @id @default(cuid())
+  lessonId      String
+  lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  type          QuestionType
+  content       String
+  audioUrl      String?
+  options       String[] // Store options for multiple-choice
+  correctAnswer String
+
+  createdAt DateTime @default(now())
+}
+
+model LessonProgress {
+  id       String @id @default(cuid())
+  userId   String
+  lessonId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  progress Int    @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+enum QuestionType {
+  TRUE_FALSE
+  MULTIPLE_CHOICE
+  AUDIO_TO_TEXT
+  WRITTEN
+  TEXT_INPUT
+  AUDIO_PREVIEW
+  DRAW_INPUT
 }
