@@ -1,7 +1,12 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ProgressBar from '@/components/ui/ProgressBar';
 import DrawCanvas from '@/components/ui/DrawCanvas';
+import DragDropAudio from '@/components/ui/DragDropAudio';
+import ListenAndType from '@/components/ui/ListenAndType';
+import SpeakAndAnswer from '@/components/ui/SpeakAndAnswer';
+import AudioRecorder from '@/components/ui/AudioRecorder';
+import Timer from '@/components/ui/Timer';
 
 interface Lesson {
     title: string;
@@ -15,6 +20,8 @@ interface Lesson {
     audioUrl?: string | null;
     correctAnswer: string;
     type: string;
+    language?: string | null; // New field for script/language
+    hasTimer?: boolean; // Determines if this question has a timer
   }
   
   export default function LessonComponent({ lesson }: { lesson: Lesson }) {
@@ -23,8 +30,26 @@ interface Lesson {
     const [typedAnswer, setTypedAnswer] = useState<string>('');
     const [feedback, setFeedback] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [performance, setPerformance] = useState<number[]>([]); // Tracks 1 for correct, 0 for incorrect
   
     const question = lesson.questions[currentQuestion];
+
+    // Adjust timer duration based on performance
+  useEffect(() => {
+    if (question.hasTimer) {
+      const baseTime = 30; // Base time in seconds
+      const adjustment = performance.slice(-3).reduce((sum, val) => sum + val, 0); // Last 3 answers
+      const newTime = baseTime + adjustment * 5; // +5 seconds for each correct answer
+      setTimeLeft(newTime > 10 ? newTime : 10); // Minimum 10 seconds
+    } else {
+      setTimeLeft(null);
+    }
+  }, [currentQuestion, question.hasTimer, performance]);
+
+  const handleTimeout = () => {
+    setFeedback('Time’s up!');
+  };
 
     const playAudio = (audioUrl: string | null | undefined) => {
         if (audioUrl && audioRef.current) {
@@ -37,11 +62,28 @@ interface Lesson {
         }
       };
   
-    // Handle answer selection or text input submission
-    const handleAnswer = (option: string) => {
-      setSelectedAnswer(option);
-      setFeedback(option === question.correctAnswer ? 'Correct!' : 'Try again.');
-    };
+        // Handle speak-and-answer submission
+  const handleSpeakSubmit = (isCorrect: boolean) => {
+    setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  };
+
+     // Handle submission for drag-and-drop audio questions
+  const handleDropSubmit = (isCorrect: boolean) => {
+    setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  };
+    
+  // Handle listen-and-type submission
+  const handleListenSubmit = (isCorrect: boolean) => {
+    setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  };
+
+       // Handle answer selection or text input submission
+  const handleAnswer = (option: string) => {
+    const isCorrect = option === question.correctAnswer; // Define isCorrect here
+    setSelectedAnswer(option);
+    setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+    setPerformance((prev) => [...prev, isCorrect ? 1 : 0]); // Update performance
+  };
     
     // Handle submission of canvas drawing
   const handleDrawingSubmit = (dataUrl: string) => {
@@ -80,8 +122,37 @@ interface Lesson {
         <p>{lesson.description || 'No description available.'}</p>
   
         <div className="question-section my-6">
+        {question.hasTimer && timeLeft !== null && (
+          <Timer timeLeft={timeLeft} onTimeout={handleTimeout} />
+        )}
+
           <p className="text-xl">{question.content}</p>
 
+          {/* Audio Recorder Section */}
+        {question.audioUrl && (
+          <AudioRecorder audioUrl={question.audioUrl} />
+        )}
+
+          {/* Render Drag and Drop Audio for DRAG_DROP_AUDIO Question Type */}
+        {question.type === 'DRAG_DROP_AUDIO' && question.options && (
+          <DragDropAudio
+            audioUrl={question.audioUrl!}
+            words={question.options}
+            correctOrder={question.correctAnswer.split(' ')}
+            onSubmit={handleDropSubmit}
+          />
+        )}
+          
+          {/* Render Listen and Type for LISTEN_AND_TYPE Question Type */}
+        {question.type === 'LISTEN_AND_TYPE' && question.audioUrl && (
+          <ListenAndType
+            audioUrl={question.audioUrl}
+            correctAnswer={question.correctAnswer}
+            language={question.language || 'arabic'}
+            onSubmit={handleListenSubmit}
+          />
+        )}
+          
           {/* Audio Preview Question */}
         {question.type === 'AUDIO_PREVIEW' && question.options && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -153,6 +224,15 @@ interface Lesson {
             </div>
           )}
         
+          {/* Render Speak and Answer for SPEAK_ANSWER Question Type */}
+        {question.type === 'SPEAK_ANSWER' && (
+          <SpeakAndAnswer
+            correctAnswer={question.correctAnswer}
+            onSubmit={handleSpeakSubmit}
+          />
+        )}
+
+
           {/* Render Draw Canvas for DRAW_INPUT questions */}
         {question.type === 'DRAW_INPUT' && (
           <DrawCanvas onSubmit={handleDrawingSubmit} />
