@@ -26,7 +26,13 @@ interface Question {
   hasTimer?: boolean; // Determines if this question has a timer
 }
 
-export default function LessonComponent({ lesson }: { lesson: Lesson }) {
+interface LessonComponentProps {
+  lesson: Lesson;
+  userId: string; // Add userId as a prop
+}
+
+
+export default function LessonComponent({ lesson, userId }: LessonComponentProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState<string>('');
@@ -40,6 +46,7 @@ export default function LessonComponent({ lesson }: { lesson: Lesson }) {
 
   // Adjust timer duration based on performance
   useEffect(() => {
+    console.log(`User ID: ${userId}`); // Log the userId to verify it's passed correctly
     if (question.hasTimer) {
       const baseTime = 30; // Base time in seconds
       const adjustment = performance.slice(-3).reduce((sum, val) => sum + val, 0); // Last 3 answers
@@ -48,7 +55,7 @@ export default function LessonComponent({ lesson }: { lesson: Lesson }) {
     } else {
       setTimeLeft(null);
     }
-  }, [currentQuestion, question.hasTimer, performance]);
+  }, [currentQuestion, question.hasTimer, performance, userId]);
 
   const handleTimeout = () => {
     setFeedback('Time’s up!');
