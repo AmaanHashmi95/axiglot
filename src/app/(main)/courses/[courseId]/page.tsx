@@ -2,6 +2,7 @@ import { getCourseWithLessons } from '@/lib/course';
 import { QuestionType } from '@prisma/client'; // Import the enum
 import Link from 'next/link';
 import { validateRequest } from '@/auth'; // Import validateRequest for session validation
+import ProgressBar from '@/components/ui/ProgressBar';
 
 // Define the types for lessons and course
 interface Question {
@@ -51,6 +52,15 @@ export default async function CoursePage({ params }: { params: { courseId: strin
         <div className="rounded-2xl bg-card p-5 shadow-sm">
           <h1 className="text-3xl font-bold">{course.title}</h1>
           <p>{course.description || 'No description available.'}</p>
+
+          {/* Display the course progress */}
+          <div className="my-4">
+            <p className="text-xl">
+              Course Progress:
+              <ProgressBar progress={course.courseProgress} />
+              <span className="font-bold">{course.courseProgress}%</span>
+            </p>
+          </div>
 
           <div className="lessons-list mt-6">
             <h2 className="text-2xl font-bold">Lessons</h2>
