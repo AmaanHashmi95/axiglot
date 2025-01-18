@@ -194,6 +194,8 @@ model LessonProgress {
   progress Int    @default(0)
 
   createdAt DateTime @default(now())
+
+  @@unique([userId, lessonId]) // Add this unique constraint
 }
 
 enum QuestionType {

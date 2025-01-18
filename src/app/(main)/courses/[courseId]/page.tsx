@@ -1,6 +1,7 @@
 import { getCourseWithLessons } from '@/lib/course';
 import { QuestionType } from '@prisma/client'; // Import the enum
 import Link from 'next/link';
+import { validateRequest } from '@/auth'; // Import validateRequest for session validation
 
 // Define the types for lessons and course
 interface Question {
@@ -21,6 +22,7 @@ interface Lesson {
   title: string;
   language: string;
   questions: Question[];
+  progress: number; // Add progress field
 }
 
 interface Course {
@@ -31,7 +33,13 @@ interface Course {
 }
 
 export default async function CoursePage({ params }: { params: { courseId: string } }) {
-  const course: Course | null = await getCourseWithLessons(params.courseId);
+  const { user } = await validateRequest();
+
+  if (!user) {
+    return <p>You must be logged in to view this course.</p>; // Handle unauthenticated users
+  }
+
+  const course = await getCourseWithLessons(params.courseId, user.id);
 
   if (!course) {
     return <p>Course not found</p>;
@@ -47,12 +55,14 @@ export default async function CoursePage({ params }: { params: { courseId: strin
           <div className="lessons-list mt-6">
             <h2 className="text-2xl font-bold">Lessons</h2>
             <ul className="space-y-3">
-              {course.lessons.map((lesson: Lesson) => (
+              {course.lessons.map((lesson) => (
                 <li key={lesson.id} className="flex items-center justify-between">
                   <Link href={`/courses/${course.id}/${lesson.id}`} className="text-blue-500">
                     {lesson.title}
                   </Link>
-                  <span className="text-gray-500">{lesson.language}</span>
+                  <span className="text-gray-500">
+                    {lesson.progress === 100 ? 'Completed' : `${lesson.progress}% Completed`}
+                  </span>
                 </li>
               ))}
             </ul>

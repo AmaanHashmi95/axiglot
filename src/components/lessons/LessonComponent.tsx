@@ -44,6 +44,22 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
   const question = lesson.questions[currentQuestion];
 
+  async function saveProgress(lessonId: string, progress: number) {
+  try {
+    const res = await fetch('/api/lesson/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lessonId, progress }),
+    });
+
+    if (!res.ok) {
+      console.error('Failed to save progress:', await res.text());
+    }
+  } catch (error) {
+    console.error('Error saving progress:', error);
+  }
+}
+
   // Adjust timer duration based on performance
   useEffect(() => {
     console.log(`User ID: ${userId}`); // Log the userId to verify it's passed correctly
@@ -110,12 +126,15 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
   };
 
   const handleNext = () => {
+    setSelectedAnswer(null);
+    setTypedAnswer('');
     setFeedback(null);
-
+  
     if (currentQuestion < lesson.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setLessonComplete(true);
+      saveProgress(lesson.id, 100); // Save progress when the lesson is complete
     }
   };
 
