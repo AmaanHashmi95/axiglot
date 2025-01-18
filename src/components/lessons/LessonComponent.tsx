@@ -41,6 +41,7 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [performance, setPerformance] = useState<number[]>([]); // Tracks 1 for correct, 0 for incorrect
   const [lessonComplete, setLessonComplete] = useState(false);
+  const [incorrectQuestions, setIncorrectQuestions] = useState<number[]>([]);
 
   const question = lesson.questions[currentQuestion];
 
@@ -105,10 +106,16 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
   // Handle answer selection or text input submission
   const handleAnswer = (option: string) => {
-    const isCorrect = option === question.correctAnswer; // Define isCorrect here
+    const isCorrect = option === question.correctAnswer;
+  
+    setFeedback(isCorrect ? 'Correct!' : `Incorrect! The correct answer is: ${question.correctAnswer}`);
     setSelectedAnswer(option);
-    setFeedback(isCorrect ? 'Correct!' : 'Try again.');
-    setPerformance((prev) => [...prev, isCorrect ? 1 : 0]); // Update performance
+  
+    if (!isCorrect && !incorrectQuestions.includes(currentQuestion)) {
+      setIncorrectQuestions((prev) => [...prev, currentQuestion]);
+    } else if (isCorrect && incorrectQuestions.includes(currentQuestion)) {
+      setIncorrectQuestions((prev) => prev.filter((qIndex) => qIndex !== currentQuestion));
+    }
   };
 
   // Handle submission of canvas drawing
@@ -126,16 +133,37 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
   };
 
   const handleNext = () => {
-    setSelectedAnswer(null);
-    setTypedAnswer('');
-    setFeedback(null);
+    if (selectedAnswer === null && !lessonComplete) {
+      // Prevent advancing if no answer is selected
+      setFeedback('Please answer the question before proceeding.');
+      return;
+    }
   
-    if (currentQuestion < lesson.questions.length - 1) {
+    setFeedback(null);
+    setSelectedAnswer(null);
+  
+    if (incorrectQuestions.length > 0) {
+      // Move to the next incorrect question
+      setCurrentQuestion(incorrectQuestions[0]);
+      setIncorrectQuestions((prev) => prev.slice(1));
+    } else if (currentQuestion < lesson.questions.length - 1) {
+      // Proceed to the next question
       setCurrentQuestion(currentQuestion + 1);
     } else {
+      // Complete the lesson if all questions are answered correctly
       setLessonComplete(true);
-      saveProgress(lesson.id, 100); // Save progress when the lesson is complete
+      saveProgress(lesson.id, 100); // Save 100% progress
     }
+  
+    savePartialProgress(); // Save partial progress after each question
+  };
+
+  const savePartialProgress = () => {
+    const totalQuestions = lesson.questions.length;
+    const answeredCorrectly = totalQuestions - incorrectQuestions.length;
+    const progress = Math.round((answeredCorrectly / totalQuestions) * 100);
+  
+    saveProgress(lesson.id, progress);
   };
 
   const handleBack = () => {
@@ -290,10 +318,16 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
           </button>
         )}
         {!lessonComplete && (
-          <button onClick={handleNext} className="btn btn-primary">
-            {currentQuestion < lesson.questions.length - 1 ? 'Next' : 'Finish'}
-          </button>
-        )}
+    <button
+      onClick={handleNext}
+      className={`btn btn-primary ${
+        selectedAnswer === null ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+      disabled={selectedAnswer === null} // Disable if no answer is selected
+    >
+      {currentQuestion < lesson.questions.length - 1 ? 'Next' : 'Finish'}
+    </button>
+  )}
       </div>
     </div>
   );
