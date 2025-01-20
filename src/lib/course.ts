@@ -6,7 +6,6 @@ export async function getCourseWithLessons(courseId: string, userId: string) {
     include: {
       lessons: {
         include: {
-          questions: true,
           progress: {
             where: { userId },
           },
@@ -17,22 +16,21 @@ export async function getCourseWithLessons(courseId: string, userId: string) {
 
   if (!course) return null;
 
-  // Calculate the average progress for the course
+  // Calculate the course progress
   const totalLessons = course.lessons.length;
-  const totalProgress = course.lessons.reduce((sum, lesson) => {
-    const progress = lesson.progress.length ? lesson.progress[0].progress : 0;
-    return sum + progress;
-  }, 0);
+  const completedLessons = course.lessons.filter(
+    (lesson) => lesson.progress.length && lesson.progress[0].completed
+  ).length;
 
-  const courseProgress = totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
+  const courseProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return {
     ...course,
-    courseProgress, // Add course completion percentage
     lessons: course.lessons.map((lesson) => ({
       ...lesson,
-      progress: lesson.progress.length ? lesson.progress[0].progress : 0,
+      completed: lesson.progress.length ? lesson.progress[0].completed : false, // Include completion status
     })),
+    courseProgress, // Include the calculated course progress
   };
 }
 

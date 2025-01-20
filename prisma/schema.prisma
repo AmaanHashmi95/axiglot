@@ -191,7 +191,7 @@ model LessonProgress {
   lessonId String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  progress Int    @default(0)
+  completed Boolean @default(false) // New field to indicate if the lesson is completed
 
   createdAt DateTime @default(now())
 

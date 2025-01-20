@@ -71,7 +71,7 @@ export default async function CoursePage({ params }: { params: { courseId: strin
                     {lesson.title}
                   </Link>
                   <span className="text-gray-500">
-                    {lesson.progress === 100 ? 'Completed' : `${lesson.progress}% Completed`}
+                  {lesson.completed ? '✅ Completed' : 'Not Completed'}
                   </span>
                 </li>
               ))}

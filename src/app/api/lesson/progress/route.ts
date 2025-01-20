@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Adjust the path to your Prisma client
-import { validateRequest } from '@/auth'; // Validate user session
+import prisma from '@/lib/prisma';
+import { validateRequest } from '@/auth';
 
 export async function POST(req: NextRequest) {
   const { user } = await validateRequest();
@@ -9,23 +9,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { lessonId, progress } = await req.json();
+  const { lessonId, completed } = await req.json();
 
-  if (!lessonId || typeof progress !== 'number' || progress < 0 || progress > 100) {
+  if (!lessonId || typeof completed !== 'boolean') {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
   }
 
   try {
-    // Save progress to the database
     await prisma.lessonProgress.upsert({
       where: {
         userId_lessonId: {
           userId: user.id,
-          lessonId: lessonId,
+          lessonId,
         },
       },
-      update: { progress },
-      create: { userId: user.id, lessonId, progress },
+      update: { completed },
+      create: { userId: user.id, lessonId, completed },
     });
 
     return NextResponse.json({ success: true });

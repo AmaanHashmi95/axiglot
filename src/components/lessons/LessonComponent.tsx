@@ -150,13 +150,30 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
       // Proceed to the next question
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Complete the lesson if all questions are answered correctly
-      setLessonComplete(true);
-      saveProgress(lesson.id, 100); // Save 100% progress
+      // Complete the lesson only if all questions are answered correctly
+    const isLessonCompleted = incorrectQuestions.length === 0;
+    setLessonComplete(isLessonCompleted);
+
+    // Save completion status
+    saveCompletion(lesson.id, isLessonCompleted);
+  }
+};
+
+const saveCompletion = async (lessonId: string, completed: boolean) => {
+  try {
+    const res = await fetch('/api/lesson/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lessonId, completed }),
+    });
+
+    if (!res.ok) {
+      console.error('Failed to save completion status:', await res.text());
     }
-  
-    savePartialProgress(); // Save partial progress after each question
-  };
+  } catch (error) {
+    console.error('Error saving completion status:', error);
+  }
+};
 
   const savePartialProgress = () => {
     const totalQuestions = lesson.questions.length;
