@@ -69,8 +69,11 @@ model Post {
   bookmarks           Bookmark[]
   comments            Comment[]
   linkedNotifications Notification[]
+  language            String?        // Add this field to store the post's language
 
   createdAt DateTime @default(now())
+
+  @@index([language])  // ✅ Index for better query performance
 
   @@map("posts")
 }

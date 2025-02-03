@@ -1,60 +1,47 @@
 "use client";
 
-import { useSession } from "@/app/(main)/SessionProvider";
-import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuPortal,
-   DropdownMenuSeparator,
-   DropdownMenuSub,
-   DropdownMenuSubContent,
-   DropdownMenuSubTrigger,
-   DropdownMenuTrigger,
- } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
+import { Dispatch, SetStateAction } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
+import { ChevronDown } from "lucide-react";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 
- interface LanguageChooserProps {
-   className?: string;
- }
+interface Language {
+  name: string;
+  flag: StaticImageData;
+}
 
- export default function UserButton({ className }: LanguageChooserProps) {
-   const { user } = useSession();
-   const { theme, setTheme } = useTheme();
-   const queryClient = useQueryClient();
+const languages: Language[] = [
+  { name: "Punjabi", flag: india },
+  { name: "Urdu", flag: pakistan },
+];
 
-   return <DropdownMenu>
-       <DropdownMenuTrigger asChild>
-           <button className={cn("flex-none rounded-full", className)}>
-           <p>Choose a language</p>
-           </button>
-       </DropdownMenuTrigger>
-       <DropdownMenuContent>
-         <DropdownMenuItem>
-         <Image
-           src={india}
-           alt="Home"
-           width={30}
-           height={30}
-         />
-           Punjabi
-         </DropdownMenuItem>
-         <DropdownMenuItem>
-         <Image
-           src={pakistan}
-           alt="Home"
-           width={30}
-           height={30}
-         />
-           Urdu
-         </DropdownMenuItem>
-       </DropdownMenuContent>
-   </DropdownMenu>
- }
+interface LanguageChooserProps {
+  className?: string;
+  selectedLanguage: Language;
+  setSelectedLanguage: Dispatch<SetStateAction<Language>>;
+}
+
+export default function LanguageChooser({ className, selectedLanguage, setSelectedLanguage }: LanguageChooserProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-white dark:bg-gray-900", className)}>
+          <Image src={selectedLanguage.flag} alt={selectedLanguage.name} width={24} height={24} />
+          <span>{selectedLanguage.name}</span>
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {languages.map((lang) => (
+          <DropdownMenuItem key={lang.name} onClick={() => setSelectedLanguage(lang)}>
+            <Image src={lang.flag} alt={lang.name} width={24} height={24} />
+            <span className="ml-2">{lang.name}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
