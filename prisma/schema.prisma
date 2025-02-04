@@ -70,6 +70,8 @@ model Post {
   comments            Comment[]
   linkedNotifications Notification[]
   language            String?        // Add this field to store the post's language
+  requiredLessonId    String?        // ✅ NEW: The lesson a user must complete to see this post
+  requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
 
   createdAt DateTime @default(now())
 
@@ -171,6 +173,7 @@ model Lesson {
   questions   Question[]
   progress    LessonProgress[] // Add this relation field
   createdAt   DateTime         @default(now())
+  posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
 }
 
 model Question {

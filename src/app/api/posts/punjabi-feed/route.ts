@@ -13,9 +13,28 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch posts where language is 'punjabi'
+    // Fetch the user's completed lessons
+    const completedLessons = await prisma.lessonProgress.findMany({
+      where: {
+        userId: user.id,
+        completed: true,
+      },
+      select: { lessonId: true },
+    });
+
+    const completedLessonIds = completedLessons.map((lesson) => lesson.lessonId);
+
+    // Fetch posts that are either:
+    // - General (no requiredLessonId)
+    // - Or require a lesson the user has completed
     const posts = await prisma.post.findMany({
-      where: { language: "punjabi" },
+      where: {
+        language: "punjabi",
+        OR: [
+          { requiredLessonId: null }, // ✅ Posts that are for everyone
+          { requiredLessonId: { in: completedLessonIds } }, // ✅ Posts user has unlocked
+        ],
+      },
       include: getPostDataInclude(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,
