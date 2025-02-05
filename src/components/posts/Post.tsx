@@ -15,6 +15,8 @@ import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";
 import LikeButton from "./LikeButton";
 import PostMoreButton from "./PostMoreButton";
+import HoverTranslate from "@/components/HoverTranslate";
+
 
 interface PostProps {
   post: PostData;
@@ -60,7 +62,9 @@ export default function Post({ post }: PostProps) {
         )}
       </div>
       <Linkify>
-        <div className="whitespace-pre-line break-words">{post.content}</div>
+        <div className="whitespace-pre-line break-words">
+        <HoverTranslate text={post.content} language={post.language || "ur"} />
+        </div>
       </Linkify>
       {!!post.attachments.length && (
         <MediaPreviews attachments={post.attachments} />
