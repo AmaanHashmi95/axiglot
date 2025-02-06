@@ -86,6 +86,7 @@ model Media {
   post   Post?     @relation(fields: [postId], references: [id], onDelete: SetNull)
   type   MediaType
   url    String
+  subtitle String?
 
   createdAt DateTime @default(now())
 

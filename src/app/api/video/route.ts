@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     try {
       const video = await prisma.media.findUnique({
         where: { id: videoId },
-        select: { id: true, url: true },
+        select: { id: true, url: true, subtitle: true },
       });
 
       if (!video) {
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   try {
     const videos = await prisma.media.findMany({
       where: { type: 'VIDEO' }, // Ensure only videos are fetched
-      select: { id: true, url: true },
+      select: { id: true, url: true,  subtitle: true },
       orderBy: { createdAt: 'desc' }, // Sort newest first
     });
 

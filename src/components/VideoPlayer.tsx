@@ -6,10 +6,10 @@ import ReactPlayer from 'react-player';
 import ky from 'ky';
 import { Play, Pause, Volume2, VolumeX, SkipForward, SkipBack, Settings } from 'lucide-react';
 
-
 type VideoData = {
   id: string;
   url: string;
+  subtitle?: string; // ✅ Include subtitle URL
 };
 
 const VideoPlayer: React.FC = () => {
@@ -22,6 +22,18 @@ const VideoPlayer: React.FC = () => {
 
   const playerRef = useRef<ReactPlayer>(null);
 
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playerRef.current && isPlaying) {
+        setProgress(playerRef.current.getCurrentTime() / playerRef.current.getDuration() * 100);
+      }
+    }, 500); // Update every 500ms
+  
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -71,10 +83,26 @@ const VideoPlayer: React.FC = () => {
             playing={isPlaying}
             volume={volume}
             playbackRate={playbackSpeed}
-            onProgress={handleProgress}
+            onProgress={handleProgress} // ✅ Ensures progress updates while playing
             width="100%"
             height="auto"
             controls={false} // Hide default controls
+            config={{
+              file: {
+                attributes: { crossOrigin: "anonymous" },
+                tracks: selectedVideo.subtitle
+                  ? [
+                      {
+                        kind: 'subtitles',
+                        src: selectedVideo.subtitle,
+                        srcLang: 'en',
+                        label: 'English',
+                        default: true,
+                      },
+                    ]
+                  : [],
+              },
+            }}
           />
           
           {/* Custom Controls */}
