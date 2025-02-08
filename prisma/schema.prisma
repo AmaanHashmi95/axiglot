@@ -217,3 +217,15 @@ enum QuestionType {
   LISTEN_AND_TYPE
   SPEAK_ANSWER
 }
+
+
+model Music {
+  id       String  @id @default(cuid())
+  title    String
+  artist   String
+  url      String  // Link to the uploaded audio file
+  lyrics   String? // JSON string for synced lyrics [{ time: 10, text: "Hello world" }]
+  createdAt DateTime @default(now())
+
+  @@map("music_tracks")
+}
