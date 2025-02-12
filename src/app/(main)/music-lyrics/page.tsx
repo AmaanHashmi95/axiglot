@@ -1,7 +1,10 @@
 import MusicPlayer from "@/components/MusicPlayer";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 async function fetchSong() {
-  const res = await fetch("http://localhost:3000/api/music");
+  const res = await fetch(`${API_URL}/api/music`);
   const songs = await res.json();
   return songs[0]; // Get the first song
 }
