@@ -11,7 +11,7 @@ export default function Page() {
   useEffect(() => {
     async function fetchSong() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const API_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
         const res = await fetch(`${API_URL}/api/music`);
 
         if (!res.ok) throw new Error("Failed to fetch song");
