@@ -226,4 +226,7 @@ model Song {
   audioUrl String
   lyrics   String?
   createdAt DateTime @default(now())
+
+  @@map("music_tracks") // ✅ Ensures Prisma is looking for the right table
+
 }
