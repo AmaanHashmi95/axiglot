@@ -8,18 +8,33 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const API_URL =
+    typeof window !== "undefined"
+      ? window.location.origin // ✅ Auto-detects correct base URL
+      : process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
+
   useEffect(() => {
     async function fetchSong() {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
-        const res = await fetch(`${API_URL}/api/music`);
+        console.log("Fetching from API:", `${API_URL}/api/music`); // ✅ Debugging log
 
-        if (!res.ok) throw new Error("Failed to fetch song");
+        const res = await fetch(`${API_URL}/api/music`);
+        console.log("Fetch response:", res);
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch song. Status: ${res.status}`);
+        }
 
         const songs = await res.json();
+        console.log("Fetched songs:", songs);
+
+        if (songs.length === 0) {
+          throw new Error("No songs available in the database.");
+        }
+
         setSong(songs[0]); // Get the first song
       } catch (err: any) {
-        setError("Failed to load music.");
+        setError(err.message);
         console.error("Fetch error:", err.message);
       } finally {
         setLoading(false);
@@ -27,7 +42,7 @@ export default function Page() {
     }
 
     fetchSong();
-  }, []);
+  }, [API_URL]); // ✅ Re-fetch when API URL changes
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
