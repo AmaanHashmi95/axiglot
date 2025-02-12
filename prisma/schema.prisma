@@ -219,13 +219,11 @@ enum QuestionType {
 }
 
 
-model Music {
-  id       String  @id @default(cuid())
+model Song {
+  id       String   @id @default(uuid())
   title    String
   artist   String
-  url      String  // Link to the uploaded audio file
-  lyrics   String? // JSON string for synced lyrics [{ time: 10, text: "Hello world" }]
+  audioUrl String
+  lyrics   String?
   createdAt DateTime @default(now())
-
-  @@map("music_tracks")
 }
