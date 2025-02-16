@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 interface TimerProps {
   timeLeft: number;
   onTimeout: () => void;
+  timerRunning: boolean;
 }
 
-export default function Timer({ timeLeft, onTimeout }: TimerProps) {
+export default function Timer({ timeLeft, onTimeout, timerRunning }: TimerProps) {
   const [time, setTime] = useState(timeLeft);
 
   useEffect(() => {
@@ -13,16 +14,16 @@ export default function Timer({ timeLeft, onTimeout }: TimerProps) {
   }, [timeLeft]);
 
   useEffect(() => {
-    if (time <= 0) {
-      onTimeout();
-      return;
+    if (!timerRunning || time <= 0) {
+      return; // Stop updating when timer is stopped or reaches 0
     }
+    
     const interval = setInterval(() => {
       setTime((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [time, onTimeout]);
+  }, [time, onTimeout, timerRunning]);
 
   return (
     <div className="timer text-center text-lg font-bold text-red-500">
@@ -30,3 +31,4 @@ export default function Timer({ timeLeft, onTimeout }: TimerProps) {
     </div>
   );
 }
+

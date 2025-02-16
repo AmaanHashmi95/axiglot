@@ -47,6 +47,8 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
  const [performance, setPerformance] = useState<number[]>([]); // Tracks 1 for correct, 0 for incorrect
  const [lessonComplete, setLessonComplete] = useState(false);
  const [incorrectQuestions, setIncorrectQuestions] = useState<number[]>([]);
+ const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
+ const [timerRunning, setTimerRunning] = useState(true);
 
 
  const question = lesson.questions[currentQuestion];
@@ -72,16 +74,20 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
  // Adjust timer duration based on performance
  useEffect(() => {
-   console.log(`User ID: ${userId}`); // Log the userId to verify it's passed correctly
-   if (question.hasTimer) {
-     const baseTime = 30; // Base time in seconds
-     const adjustment = performance.slice(-3).reduce((sum, val) => sum + val, 0); // Last 3 answers
-     const newTime = baseTime + adjustment * 5; // +5 seconds for each correct answer
-     setTimeLeft(newTime > 10 ? newTime : 10); // Minimum 10 seconds
-   } else {
-     setTimeLeft(null);
-   }
- }, [currentQuestion, question.hasTimer, performance, userId]);
+  console.log(`User ID: ${userId}`); // Log the userId to verify it's passed correctly
+  
+  if (question.hasTimer) {
+    const baseTime = 10;
+    const adjustment = performance.slice(-3).reduce((sum, val) => sum + val, 0);
+    const newTime = baseTime + adjustment * 5;
+    setTimeLeft(newTime > 10 ? newTime : 10);
+    setTimerRunning(true); // Start the timer when a new question loads
+  } else {
+    setTimeLeft(null);
+    setTimerRunning(false);
+  }
+}, [currentQuestion, question.hasTimer, performance, userId]);
+
 
 
  const handleTimeout = () => {
@@ -103,76 +109,84 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
  // Handle speak-and-answer submission
  const handleSpeakSubmit = (isCorrect: boolean) => {
-   setFeedback(isCorrect ? 'Correct!' : 'Try again.');
- };
+  setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  setIsAnswerCorrect(isCorrect);
+  if (isCorrect) setTimerRunning(false);
+};
 
 
  // Handle submission for drag-and-drop audio questions
  const handleDropSubmit = (isCorrect: boolean) => {
-   setFeedback(isCorrect ? 'Correct!' : 'Try again.');
- };
+  setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  setIsAnswerCorrect(isCorrect);
+  if (isCorrect) setTimerRunning(false);
+};
 
 
  // Handle listen-and-type submission
  const handleListenSubmit = (isCorrect: boolean) => {
-   setFeedback(isCorrect ? 'Correct!' : 'Try again.');
- };
+  setFeedback(isCorrect ? 'Correct!' : 'Try again.');
+  setIsAnswerCorrect(isCorrect);
+  if (isCorrect) setTimerRunning(false);
+};
 
 
  // Handle answer selection or text input submission
  const handleAnswer = (option: string) => {
-   const isCorrect = option === question.correctAnswer;
-    setFeedback(isCorrect ? 'Correct!' : `Incorrect! The correct answer is: ${question.correctAnswer}`);
-   setSelectedAnswer(option);
-    if (!isCorrect && !incorrectQuestions.includes(currentQuestion)) {
-     setIncorrectQuestions((prev) => [...prev, currentQuestion]);
-   } else if (isCorrect && incorrectQuestions.includes(currentQuestion)) {
-     setIncorrectQuestions((prev) => prev.filter((qIndex) => qIndex !== currentQuestion));
-   }
- };
+  const isCorrect = option === question.correctAnswer;
+  setFeedback(isCorrect ? 'Correct!' : `Incorrect! The correct answer is: ${question.correctAnswer}`);
+  setSelectedAnswer(option);
+  setIsAnswerCorrect(isCorrect);
+  if (isCorrect) setTimerRunning(false); // Stop the timer
+};
+
+
 
 
  // Handle submission of canvas drawing
  const handleDrawingSubmit = (dataUrl: string) => {
-   console.log('Drawing submitted:', dataUrl);
-   setFeedback('Drawing submitted successfully!');
- };
-
-
- const handleSubmitTextAnswer = () => {
-   if (typedAnswer.toLowerCase() === question.correctAnswer.toLowerCase()) {
-     setFeedback('Correct!');
-   } else {
-     setFeedback('Try again.');
-   }
- };
-
-
- const handleNext = () => {
-   if (selectedAnswer === null && !lessonComplete) {
-     // Prevent advancing if no answer is selected
-     setFeedback('Please answer the question before proceeding.');
-     return;
-   }
-    setFeedback(null);
-   setSelectedAnswer(null);
-    if (incorrectQuestions.length > 0) {
-     // Move to the next incorrect question
-     setCurrentQuestion(incorrectQuestions[0]);
-     setIncorrectQuestions((prev) => prev.slice(1));
-   } else if (currentQuestion < lesson.questions.length - 1) {
-     // Proceed to the next question
-     setCurrentQuestion(currentQuestion + 1);
-   } else {
-     // Complete the lesson only if all questions are answered correctly
-   const isLessonCompleted = incorrectQuestions.length === 0;
-   setLessonComplete(isLessonCompleted);
-
-
-   // Save completion status
-   saveCompletion(lesson.id, isLessonCompleted);
- }
+  console.log('Drawing submitted:', dataUrl);
+  setFeedback('Drawing submitted successfully!');
+  setIsAnswerCorrect(true);
+  setTimerRunning(false);
 };
+
+
+const handleSubmitTextAnswer = () => {
+  if (typedAnswer.toLowerCase() === question.correctAnswer.toLowerCase()) {
+    setFeedback('Correct!');
+    setIsAnswerCorrect(true);
+    setTimerRunning(false); // Stop the timer
+  } else {
+    setFeedback('Try again.');
+    setIsAnswerCorrect(false);
+  }
+};
+
+
+const handleNext = () => {
+  if (!isAnswerCorrect && !lessonComplete) {
+    setFeedback('Please answer the question correctly before proceeding.');
+    return;
+  }
+
+  setFeedback(null);
+  setSelectedAnswer(null);
+  setIsAnswerCorrect(false); // Reset for the next question
+
+  if (incorrectQuestions.length > 0) {
+    setCurrentQuestion(incorrectQuestions[0]);
+    setIncorrectQuestions((prev) => prev.slice(1));
+  } else if (currentQuestion < lesson.questions.length - 1) {
+    setCurrentQuestion(currentQuestion + 1);
+  } else {
+    const isLessonCompleted = incorrectQuestions.length === 0;
+    setLessonComplete(isLessonCompleted);
+    saveCompletion(lesson.id, isLessonCompleted);
+  }
+};
+
+
 
 
 const saveCompletion = async (lessonId: string, completed: boolean) => {
@@ -202,11 +216,13 @@ const saveCompletion = async (lessonId: string, completed: boolean) => {
 
 
  const handleBack = () => {
-   if (currentQuestion > 0) {
-     setCurrentQuestion(currentQuestion - 1);
-     setLessonComplete(false);
-   }
- };
+  if (currentQuestion > 0) {
+    setCurrentQuestion(currentQuestion - 1);
+    setFeedback(null); // Clear feedback when going back
+    setLessonComplete(false);
+  }
+};
+
 
 
  return (
@@ -227,8 +243,9 @@ const saveCompletion = async (lessonId: string, completed: boolean) => {
      ) : (
        <div className="question-section my-6">
          {question.hasTimer && timeLeft !== null && (
-           <Timer timeLeft={timeLeft} onTimeout={handleTimeout} />
-         )}
+        <Timer timeLeft={timeLeft} onTimeout={handleTimeout} timerRunning={timerRunning} />
+        )}
+
 
 
          <p className="text-xl">{question.content}</p>
@@ -369,14 +386,16 @@ const saveCompletion = async (lessonId: string, completed: boolean) => {
        )}
        {!lessonComplete && (
    <button
-     onClick={handleNext}
-     className={`btn btn-primary ${
-       selectedAnswer === null ? 'opacity-50 cursor-not-allowed' : ''
-     }`}
-     disabled={selectedAnswer === null} // Disable if no answer is selected
-   >
-     {currentQuestion < lesson.questions.length - 1 ? 'Next' : 'Finish'}
-   </button>
+   onClick={handleNext}
+   className={`btn btn-primary ${
+     !isAnswerCorrect ? 'opacity-50 cursor-not-allowed' : ''
+   }`}
+   disabled={!isAnswerCorrect} // Only enabled if the answer is correct
+ >
+   {currentQuestion < lesson.questions.length - 1 ? 'Next' : 'Finish'}
+ </button> 
+ 
+ 
  )}
      </div>
    </div>
