@@ -1,232 +1,274 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+ provider        = "prisma-client-js"
+ previewFeatures = ["fullTextSearch"]
 }
+
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+ provider  = "postgresql"
+ url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+ directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
+
 
 model User {
-  id                    String           @id
-  username              String           @unique
-  displayName           String
-  email                 String?          @unique
-  passwordHash          String?
-  googleId              String?          @unique
-  avatarUrl             String?
-  bio                   String?
-  sessions              Session[]
-  posts                 Post[]
-  following             Follow[]         @relation("Following")
-  followers             Follow[]         @relation("Followers")
-  likes                 Like[]
-  bookmarks             Bookmark[]
-  comments              Comment[]
-  receivedNotifications Notification[]   @relation("Recipient")
-  issuedNotifications   Notification[]   @relation("Issuer")
-  lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
+ id                    String           @id
+ username              String           @unique
+ displayName           String
+ email                 String?          @unique
+ passwordHash          String?
+ googleId              String?          @unique
+ avatarUrl             String?
+ bio                   String?
+ sessions              Session[]
+ posts                 Post[]
+ following             Follow[]         @relation("Following")
+ followers             Follow[]         @relation("Followers")
+ likes                 Like[]
+ bookmarks             Bookmark[]
+ comments              Comment[]
+ receivedNotifications Notification[]   @relation("Recipient")
+ issuedNotifications   Notification[]   @relation("Issuer")
+ lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
 
-  createdAt DateTime @default(now())
 
-  @@map("users")
+ createdAt DateTime @default(now())
+
+
+ @@map("users")
 }
+
 
 model Session {
-  id        String   @id
-  userId    String
-  expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ id        String   @id
+ userId    String
+ expiresAt DateTime
+ user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("sessions")
+
+ @@map("sessions")
 }
+
 
 model Follow {
-  followerId  String
-  follower    User   @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
-  followingId String
-  following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+ followerId  String
+ follower    User   @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+ followingId String
+ following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
 
-  @@unique([followerId, followingId])
-  @@map("follows")
+
+ @@unique([followerId, followingId])
+ @@map("follows")
 }
+
 
 model Post {
-  id                  String         @id @default(cuid())
-  content             String
-  userId              String
-  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attachments         Media[]
-  likes               Like[]
-  bookmarks           Bookmark[]
-  comments            Comment[]
-  linkedNotifications Notification[]
-  language            String?        // Add this field to store the post's language
-  requiredLessonId    String?        // ✅ NEW: The lesson a user must complete to see this post
-  requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
+ id                  String         @id @default(cuid())
+ content             String
+ userId              String
+ user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+ attachments         Media[]
+ likes               Like[]
+ bookmarks           Bookmark[]
+ comments            Comment[]
+ linkedNotifications Notification[]
+ language            String?        // Add this field to store the post's language
+ requiredLessonId    String?        // ✅ NEW: The lesson a user must complete to see this post
+ requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
 
-  createdAt DateTime @default(now())
 
-  @@index([language])  // ✅ Index for better query performance
+ createdAt DateTime @default(now())
 
-  @@map("posts")
+
+ @@index([language])  // ✅ Index for better query performance
+
+
+ @@map("posts")
 }
+
 
 model Media {
-  id     String    @id @default(cuid())
-  postId String?
-  post   Post?     @relation(fields: [postId], references: [id], onDelete: SetNull)
-  type   MediaType
-  url    String
-  subtitle String?
+ id     String    @id @default(cuid())
+ postId String?
+ post   Post?     @relation(fields: [postId], references: [id], onDelete: SetNull)
+ type   MediaType
+ url    String
+ subtitle String?
 
-  createdAt DateTime @default(now())
 
-  @@map("post_media")
+ createdAt DateTime @default(now())
+
+
+ @@map("post_media")
 }
+
 
 enum MediaType {
-  IMAGE
-  VIDEO
+ IMAGE
+ VIDEO
 }
+
 
 model Comment {
-  id      String @id @default(cuid())
-  content String
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+ id      String @id @default(cuid())
+ content String
+ userId  String
+ user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ postId  String
+ post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
 
-  @@map("comments")
+ createdAt DateTime @default(now())
+
+
+ @@map("comments")
 }
+
 
 model Like {
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+ userId String
+ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ postId String
+ post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, postId])
-  @@map("likes")
+
+ @@unique([userId, postId])
+ @@map("likes")
 }
+
 
 model Bookmark {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+ id     String @id @default(cuid())
+ userId String
+ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ postId String
+ post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
 
-  @@unique([userId, postId])
-  @@map("bookmarks")
+ createdAt DateTime @default(now())
+
+
+ @@unique([userId, postId])
+ @@map("bookmarks")
 }
+
 
 model Notification {
-  id          String           @id @default(cuid())
-  recipientId String
-  recipient   User             @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  issuerId    String
-  issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
-  postId      String?
-  post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
-  type        NotificationType
-  read        Boolean          @default(false)
+ id          String           @id @default(cuid())
+ recipientId String
+ recipient   User             @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+ issuerId    String
+ issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
+ postId      String?
+ post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+ type        NotificationType
+ read        Boolean          @default(false)
 
-  createdAt DateTime @default(now())
 
-  @@map("notifications")
+ createdAt DateTime @default(now())
+
+
+ @@map("notifications")
 }
+
 
 enum NotificationType {
-  LIKE
-  FOLLOW
-  COMMENT
+ LIKE
+ FOLLOW
+ COMMENT
 }
+
 
 model Course {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  lessons     Lesson[] // Relation to lessons
-  createdAt   DateTime @default(now())
+ id          String   @id @default(cuid())
+ title       String
+ description String?
+ lessons     Lesson[] // Relation to lessons
+ createdAt   DateTime @default(now())
 }
+
 
 model Lesson {
-  id          String           @id @default(cuid())
-  title       String
-  language    String
-  description String?
-  courseId    String?
-  course      Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  questions   Question[]
-  progress    LessonProgress[] // Add this relation field
-  createdAt   DateTime         @default(now())
-  posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
+ id          String           @id @default(cuid())
+ title       String
+ language    String
+ description String?
+ courseId    String?
+ course      Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+ questions   Question[]
+ progress    LessonProgress[] // Add this relation field
+ createdAt   DateTime         @default(now())
+ posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
 }
+
 
 model Question {
-  id            String       @id @default(cuid())
-  lessonId      String
-  lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  type          QuestionType
-  content       String
-  audioUrl      String?
-  options       String[] // Store options for multiple-choice
-  correctAnswer String
-  language      String? // Add this field to store the question's language
-  hasTimer      Boolean      @default(false) // Determines if the question has a timer
+ id            String       @id @default(cuid())
+ lessonId      String
+ lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+ type          QuestionType
+ content       String
+ audioUrl      String?
+ options       String[] // Store options for multiple-choice
+ correctAnswer String
+ language      String? // Add this field to store the question's language
+ hasTimer      Boolean      @default(false) // Determines if the question has a timer
 
-  createdAt DateTime @default(now())
+
+ createdAt DateTime @default(now())
 }
+
 
 model LessonProgress {
-  id       String @id @default(cuid())
-  userId   String
-  lessonId String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  completed Boolean @default(false) // New field to indicate if the lesson is completed
+ id       String @id @default(cuid())
+ userId   String
+ lessonId String
+ user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+ lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+ completed Boolean @default(false) // New field to indicate if the lesson is completed
 
-  createdAt DateTime @default(now())
 
-  @@unique([userId, lessonId]) // Add this unique constraint
+ createdAt DateTime @default(now())
+
+
+ @@unique([userId, lessonId]) // Add this unique constraint
 }
+
 
 enum QuestionType {
-  TRUE_FALSE
-  MULTIPLE_CHOICE
-  AUDIO_TO_TEXT
-  WRITTEN
-  TEXT_INPUT
-  AUDIO_PREVIEW
-  DRAW_INPUT
-  DRAG_DROP_AUDIO
-  LISTEN_AND_TYPE
-  SPEAK_ANSWER
+ TRUE_FALSE
+ MULTIPLE_CHOICE
+ AUDIO_TO_TEXT
+ WRITTEN
+ TEXT_INPUT
+ AUDIO_PREVIEW
+ DRAW_INPUT
+ DRAG_DROP_AUDIO
+ LISTEN_AND_TYPE
+ SPEAK_ANSWER
 }
+
+
 
 
 model Song {
-  id       String   @id @default(uuid())
-  title    String
-  artist   String
-  audioUrl String
-  lyrics   String?
-  createdAt DateTime @default(now())
+ id       String   @id @default(uuid())
+ title    String
+ artist   String
+ audioUrl String
+ lyrics   String?
+ createdAt DateTime @default(now())
 
-  @@map("music_tracks") // ✅ Ensures Prisma is looking for the right table
+
+ @@map("music_tracks") // ✅ Ensures Prisma is looking for the right table
+
 
 }
