@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface DragDropAudioProps {
   audioUrl: string;
@@ -8,56 +8,42 @@ interface DragDropAudioProps {
 }
 
 export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit }: DragDropAudioProps) {
-  const [userOrder, setUserOrder] = useState<string[]>(Array(correctOrder.length).fill(null));
-  const [draggingWord, setDraggingWord] = useState<string | null>(null);
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [userOrder, setUserOrder] = useState<(string | null)[]>(Array(correctOrder.length).fill(null));
+  const [availableWords, setAvailableWords] = useState<string[]>(words);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Auto-play audio on load
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.play().catch(err => console.error('Audio playback failed:', err));
+      audioRef.current.play().catch((err) => console.error('Audio playback failed:', err));
     }
   }, []);
 
-  /** DRAG HANDLERS FOR DESKTOP **/
-  const handleDragStart = (index: number) => {
-    setDraggingWord(words[index]);
-    setDraggingIndex(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // Allow drop
-  };
-
-  const handleDrop = (index: number) => {
-    if (draggingWord !== null) {
+  // Handle word selection (placing a word into the next available slot)
+  const handleSelectWord = (word: string) => {
+    const emptyIndex = userOrder.indexOf(null);
+    if (emptyIndex !== -1) {
       const newOrder = [...userOrder];
-      newOrder[index] = draggingWord;
+      newOrder[emptyIndex] = word;
+
       setUserOrder(newOrder);
-      setDraggingWord(null);
+      setAvailableWords(availableWords.filter((w) => w !== word));
     }
   };
 
-  /** TOUCH HANDLERS FOR MOBILE **/
-  const handleTouchStart = (index: number) => {
-    setDraggingWord(words[index]);
-    setDraggingIndex(index);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent scrolling while dragging
-  };
-
-  const handleTouchEnd = (index: number) => {
-    if (draggingWord !== null) {
+  // Handle removing a placed word (returning it to the selection area)
+  const handleRemoveWord = (index: number) => {
+    const wordToRemove = userOrder[index];
+    if (wordToRemove !== null) {
       const newOrder = [...userOrder];
-      newOrder[index] = draggingWord;
+      newOrder[index] = null;
+
       setUserOrder(newOrder);
-      setDraggingWord(null);
+      setAvailableWords([...availableWords, wordToRemove]);
     }
   };
 
-  /** SUBMIT FUNCTION **/
+  // Submit and check order
   const handleSubmit = () => {
     const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
     onSubmit(isCorrect);
@@ -66,33 +52,30 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
   return (
     <div className="flex flex-col items-center mt-4">
       <audio ref={audioRef} src={audioUrl} autoPlay />
-      <div className="text-xl mt-6">Drag the words into the correct order:</div>
+      <div className="text-xl mt-6">Tap the words in the correct order:</div>
 
       {/* Drop Zones */}
       <div className="flex space-x-4 mt-6">
-        {correctOrder.map((_, index) => (
+        {userOrder.map((word, index) => (
           <div
             key={index}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(index)}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={() => handleTouchEnd(index)}
-            className="w-24 h-12 border-2 border-dashed flex items-center justify-center text-gray-700 bg-gray-100 rounded-md"
+            onClick={() => handleRemoveWord(index)} // Allow removal
+            className={`w-24 h-12 border-2 flex items-center justify-center cursor-pointer ${
+              word ? 'bg-green-200' : 'border-dashed'
+            }`}
           >
-            {userOrder[index] || 'Drop here'}
+            {word || 'Tap here'}
           </div>
         ))}
       </div>
 
-      {/* Draggable Words */}
+      {/* Selectable Words */}
       <div className="flex gap-4 mt-8">
-        {words.map((word, index) => (
+        {availableWords.map((word, index) => (
           <div
             key={index}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onTouchStart={() => handleTouchStart(index)}
-            className="bg-blue-200 px-4 py-2 rounded shadow cursor-pointer select-none"
+            onClick={() => handleSelectWord(word)} // Handle taps
+            className="bg-blue-200 px-4 py-2 rounded shadow cursor-pointer"
           >
             {word}
           </div>
