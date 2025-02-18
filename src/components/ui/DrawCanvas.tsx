@@ -23,25 +23,30 @@ export default function DrawCanvas({ onSubmit }: DrawCanvasProps) {
 
   // Start drawing
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling while drawing
     drawing = true;
     ctxRef.current?.beginPath();
     draw(e);
   };
 
   // Stop drawing
-  const stopDrawing = () => {
+  const stopDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent unwanted touch events
     drawing = false;
     ctxRef.current?.closePath();
   };
 
   // Draw on the canvas
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent the default touch behavior (scrolling)
     if (!drawing) return;
+
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     const rect = canvas!.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
     ctx!.lineTo(clientX - rect.left, clientY - rect.top);
     ctx!.stroke();
   };
@@ -66,7 +71,7 @@ export default function DrawCanvas({ onSubmit }: DrawCanvasProps) {
         ref={canvasRef}
         width={400}
         height={300}
-        className="border border-gray-400"
+        className="border border-gray-400 touch-none"
         onMouseDown={startDrawing}
         onMouseUp={stopDrawing}
         onMouseMove={draw}
