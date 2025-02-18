@@ -8,38 +8,49 @@ interface DragDropAudioProps {
 }
 
 export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit }: DragDropAudioProps) {
-  const [userOrder, setUserOrder] = useState<string[]>([]);
+  const [userOrder, setUserOrder] = useState<string[]>(Array(correctOrder.length).fill(null));
+  const [draggingWord, setDraggingWord] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const dragItem = useRef<number | null>(null);
 
-  // Auto-play audio on load
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.play().catch(err => console.error('Audio playback failed:', err));
     }
   }, []);
 
-  // Drag start event
-  const handleDragStart = (index: number) => {
-    dragItem.current = index;
+  /** DRAG & DROP HANDLERS FOR DESKTOP **/
+  const handleDragStart = (word: string) => {
+    setDraggingWord(word);
   };
 
-  // Drag over event to allow drop
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  // Drop event to reorder words
   const handleDrop = (index: number) => {
-    if (dragItem.current !== null) {
+    if (draggingWord) {
       const newOrder = [...userOrder];
-      const draggedWord = words[dragItem.current];
-      newOrder[index] = draggedWord;
+      newOrder[index] = draggingWord;
       setUserOrder(newOrder);
+      setDraggingWord(null);
     }
   };
 
-  // Submit and check order
+  /** TOUCH HANDLERS FOR MOBILE **/
+  const handleTouchStart = (word: string) => {
+    setDraggingWord(word);
+  };
+
+  const handleTouchEnd = (index: number) => {
+    if (draggingWord) {
+      const newOrder = [...userOrder];
+      newOrder[index] = draggingWord;
+      setUserOrder(newOrder);
+      setDraggingWord(null);
+    }
+  };
+
+  /** SUBMIT FUNCTION **/
   const handleSubmit = () => {
     const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
     onSubmit(isCorrect);
@@ -57,7 +68,8 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
             key={index}
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(index)}
-            className="w-24 h-12 border-2 border-dashed flex items-center justify-center"
+            onTouchEnd={() => handleTouchEnd(index)}
+            className="w-24 h-12 border-2 border-dashed flex items-center justify-center text-gray-700 bg-gray-100 rounded-md"
           >
             {userOrder[index] || 'Drop here'}
           </div>
@@ -70,8 +82,9 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
           <div
             key={index}
             draggable
-            onDragStart={() => handleDragStart(index)}
-            className="bg-blue-200 px-4 py-2 rounded shadow cursor-pointer"
+            onDragStart={() => handleDragStart(word)}
+            onTouchStart={() => handleTouchStart(word)}
+            className="bg-blue-200 px-4 py-2 rounded shadow cursor-pointer select-none"
           >
             {word}
           </div>
