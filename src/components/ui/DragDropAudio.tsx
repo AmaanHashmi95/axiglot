@@ -10,6 +10,7 @@ interface DragDropAudioProps {
 export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit }: DragDropAudioProps) {
   const [userOrder, setUserOrder] = useState<string[]>(Array(correctOrder.length).fill(null));
   const [draggingWord, setDraggingWord] = useState<string | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -18,17 +19,18 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
     }
   }, []);
 
-  /** DRAG & DROP HANDLERS FOR DESKTOP **/
-  const handleDragStart = (word: string) => {
-    setDraggingWord(word);
+  /** DRAG HANDLERS FOR DESKTOP **/
+  const handleDragStart = (index: number) => {
+    setDraggingWord(words[index]);
+    setDraggingIndex(index);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+    e.preventDefault(); // Allow drop
   };
 
   const handleDrop = (index: number) => {
-    if (draggingWord) {
+    if (draggingWord !== null) {
       const newOrder = [...userOrder];
       newOrder[index] = draggingWord;
       setUserOrder(newOrder);
@@ -37,12 +39,17 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
   };
 
   /** TOUCH HANDLERS FOR MOBILE **/
-  const handleTouchStart = (word: string) => {
-    setDraggingWord(word);
+  const handleTouchStart = (index: number) => {
+    setDraggingWord(words[index]);
+    setDraggingIndex(index);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling while dragging
   };
 
   const handleTouchEnd = (index: number) => {
-    if (draggingWord) {
+    if (draggingWord !== null) {
       const newOrder = [...userOrder];
       newOrder[index] = draggingWord;
       setUserOrder(newOrder);
@@ -68,6 +75,7 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
             key={index}
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(index)}
+            onTouchMove={handleTouchMove}
             onTouchEnd={() => handleTouchEnd(index)}
             className="w-24 h-12 border-2 border-dashed flex items-center justify-center text-gray-700 bg-gray-100 rounded-md"
           >
@@ -82,8 +90,8 @@ export default function DragDropAudio({ audioUrl, words, correctOrder, onSubmit 
           <div
             key={index}
             draggable
-            onDragStart={() => handleDragStart(word)}
-            onTouchStart={() => handleTouchStart(word)}
+            onDragStart={() => handleDragStart(index)}
+            onTouchStart={() => handleTouchStart(index)}
             className="bg-blue-200 px-4 py-2 rounded shadow cursor-pointer select-none"
           >
             {word}
