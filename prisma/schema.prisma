@@ -295,8 +295,8 @@ model Word {
   id       String  @id @default(cuid())
   text     String
   type     WordType
-  questionId String
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String?
+  question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 
