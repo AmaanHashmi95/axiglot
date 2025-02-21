@@ -13,6 +13,7 @@ interface Word {
   id: string;
   text: string;
   type: "NOUN" | "VERB" | "PRONOUN" | "ADJECTIVE";
+  audioUrl?: string; // ✅ Add an optional audio URL field
 }
 
 
@@ -51,12 +52,6 @@ interface LessonComponentProps {
 lesson: Lesson;
 userId: string; // Add userId as a prop
 }
-
-
-
-
-
-
 
 
 export default function LessonComponent({ lesson, userId }: LessonComponentProps) {
@@ -138,6 +133,21 @@ const playAudio = (audioUrl: string | null | undefined) => {
   } else {
     console.error('Audio URL is missing or invalid.');
   }
+};
+
+
+const playWordAudio = (audioUrl?: string) => {
+  if (!audioUrl) {
+    console.error("No audio URL provided.");
+    return;
+  }
+
+  console.log("Attempting to play audio from:", audioUrl);
+
+  const audio = new Audio(audioUrl);
+  audio.play()
+    .then(() => console.log("Audio playing..."))
+    .catch((error) => console.error("Audio playback failed:", error));
 };
 
 
@@ -315,24 +325,26 @@ return (
        <Timer timeLeft={timeLeft} onTimeout={handleTimeout} timerRunning={timerRunning} />
        )}
 
-
-
-
-
-
         <p className="text-xl">{question.content}</p>
 
         <p className="text-lg mt-2">
-          {question.words && question.words.length > 0 ? (
-            question.words.map((word: Word) => (
-              <span key={word.id} className={`${wordColors[word.type]} mx-1`}>
-                {word.text}
-              </span>
-            ))
-          ) : (
-            <span className="text-gray-500">No words available.</span>
-          )}
-        </p>
+  {question.words && question.words.length > 0 ? (
+    question.words.map((word: Word) => {
+      console.log(`Word: ${word.text}, Audio URL: ${word.audioUrl}`); // Debugging log
+      return (
+        <span
+          key={word.id}
+          className={`${wordColors[word.type]} mx-1 cursor-pointer`}
+          onClick={() => playWordAudio(word.audioUrl)}
+        >
+          {word.text}
+        </span>
+      );
+    })
+  ) : (
+    <span className="text-gray-500">No words available.</span>
+  )}
+</p>
 
 
         {/* Audio Recorder Section */}

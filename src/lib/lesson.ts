@@ -6,9 +6,13 @@ export async function getLesson(lessonId: string) {
     include: {
       questions: {
         include: {
-          words: true, // ✅ Ensure words are included
-        },
-      },
+          words: { 
+            select: { id: true, text: true, type: true, audioUrl: true } // ✅ Include audioUrl
+          }
+        }
+      }
     },
   });
 }
+
+

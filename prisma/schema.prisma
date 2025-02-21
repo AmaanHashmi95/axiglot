@@ -297,6 +297,7 @@ model Word {
   type     WordType
   questionId String?
   question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  audioUrl   String? // ✅ Add optional audio URL field
 }
 
 
