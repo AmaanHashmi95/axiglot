@@ -13,7 +13,7 @@ interface Word {
   id: string;
   text: string;
   type: "NOUN" | "VERB" | "PRONOUN" | "ADJECTIVE";
-  audioUrl?: string; // ✅ Add an optional audio URL field
+  audioUrl?: string | null; // ✅ Allow both `string` and `null`
 }
 
 
@@ -149,6 +149,7 @@ const playWordAudio = (audioUrl?: string) => {
     .then(() => console.log("Audio playing..."))
     .catch((error) => console.error("Audio playback failed:", error));
 };
+
 
 
 
@@ -335,7 +336,8 @@ return (
         <span
           key={word.id}
           className={`${wordColors[word.type]} mx-1 cursor-pointer`}
-          onClick={() => playWordAudio(word.audioUrl)}
+          onClick={() => playWordAudio(word.audioUrl ?? undefined)}
+
         >
           {word.text}
         </span>

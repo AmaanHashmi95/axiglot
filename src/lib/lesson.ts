@@ -6,13 +6,33 @@ export async function getLesson(lessonId: string) {
     include: {
       questions: {
         include: {
-          words: { 
-            select: { id: true, text: true, type: true, audioUrl: true } // ✅ Include audioUrl
-          }
-        }
-      }
+          words: {
+            select: {
+              id: true,
+              text: true,
+              type: true,
+              audioUrl: true, // ✅ Keep this
+            },
+          },
+        },
+      },
     },
+  }).then(lesson => {
+    if (!lesson) return null;
+    
+    // ✅ Convert `null` audioUrl to `undefined`
+    return {
+      ...lesson,
+      questions: lesson.questions.map(q => ({
+        ...q,
+        words: q.words.map(w => ({
+          ...w,
+          audioUrl: w.audioUrl ?? undefined, // Convert `null` to `undefined`
+        })),
+      })),
+    };
   });
 }
+
 
 
