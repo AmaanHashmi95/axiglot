@@ -7,12 +7,17 @@ export async function getLesson(lessonId: string) {
       questions: {
         include: {
           words: {
-            select: {
-              id: true,
-              text: true,
-              type: true,
-              audioUrl: true, // ✅ Keep this
-            },
+            orderBy: { order: 'asc' }, // ✅ Order words within the question
+            include: {
+              word: { // ✅ Fetch word details
+                select: {
+                  id: true,
+                  text: true,
+                  type: true,
+                  audioUrl: true,
+                }
+              }
+            }
           },
         },
       },
@@ -20,19 +25,15 @@ export async function getLesson(lessonId: string) {
   }).then(lesson => {
     if (!lesson) return null;
     
-    // ✅ Convert `null` audioUrl to `undefined`
     return {
       ...lesson,
       questions: lesson.questions.map(q => ({
         ...q,
-        words: q.words.map(w => ({
-          ...w,
-          audioUrl: w.audioUrl ?? undefined, // Convert `null` to `undefined`
+        words: q.words.map(qw => ({
+          ...qw.word, // ✅ Use word details from `QuestionWord`
+          audioUrl: qw.word.audioUrl ?? undefined, // Convert `null` to `undefined`
         })),
       })),
     };
   });
 }
-
-
-

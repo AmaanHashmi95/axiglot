@@ -329,23 +329,20 @@ return (
         <p className="text-xl">{question.content}</p>
 
         <p className="text-lg mt-2">
-  {question.words && question.words.length > 0 ? (
-    question.words.map((word: Word) => {
-      console.log(`Word: ${word.text}, Audio URL: ${word.audioUrl}`); // Debugging log
-      return (
-        <span
-          key={word.id}
-          className={`${wordColors[word.type]} mx-1 cursor-pointer`}
-          onClick={() => playWordAudio(word.audioUrl ?? undefined)}
-
-        >
-          {word.text}
-        </span>
-      );
-    })
-  ) : (
-    <span className="text-gray-500">No words available.</span>
-  )}
+        {question.words.length > 0 ? (
+  question.words
+    .map((word: Word) => (
+      <span
+        key={word.id}
+        className={`${wordColors[word.type]} mx-1 cursor-pointer`}
+        onClick={() => playWordAudio(word.audioUrl ?? undefined)}
+      >
+        {word.text}
+      </span>
+    ))
+) : (
+  <span className="text-gray-500">No words available.</span>
+)}
 </p>
 
 

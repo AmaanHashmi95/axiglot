@@ -282,7 +282,7 @@ model Question {
   lesson     Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   type       QuestionType
   content    String
-  words      Word[]
+  words      QuestionWord[] // ✅ New many-to-many relation for ordered words
   audioUrl   String?
   correctAnswer String
   language   String?
@@ -296,8 +296,20 @@ model Word {
   text     String
   type     WordType
   questionId String?
-  question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questions QuestionWord[] // ✅ Many-to-many relation with Question
   audioUrl   String? // ✅ Add optional audio URL field
+}
+
+model QuestionWord { 
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  wordId String
+  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  order Int // ✅ The position of the word in the question
+
+  @@id([questionId, wordId]) // ✅ Composite primary key to enforce uniqueness
 }
 
 
