@@ -7,31 +7,51 @@ export async function getLesson(lessonId: string) {
       questions: {
         include: {
           words: {
-            orderBy: { order: 'asc' }, // ✅ Order words within the question
-            include: {
-              word: { // ✅ Fetch word details
+            orderBy: { order: 'asc' },
+            select: {
+              word: {
                 select: {
                   id: true,
                   text: true,
-                  type: true,
-                  audioUrl: true,
+                  audioUrl: true
                 }
-              }
+              },
+              color: true, // ✅ Ensure color is selected
             }
           },
-        },
-      },
-    },
-  }).then(lesson => {
+          translations: {
+            orderBy: { order: 'asc' },
+            select: {
+              translation: {
+                select: {
+                  id: true,
+                  text: true,
+                  language: true
+                }
+              },
+              color: true, // ✅ Ensure color is selected
+            }
+          }
+        }
+      }
+    }
+  }).then((lesson) => {
     if (!lesson) return null;
-    
+
     return {
       ...lesson,
-      questions: lesson.questions.map(q => ({
+      questions: lesson.questions.map((q: any) => ({
         ...q,
-        words: q.words.map(qw => ({
-          ...qw.word, // ✅ Use word details from `QuestionWord`
-          audioUrl: qw.word.audioUrl ?? undefined, // Convert `null` to `undefined`
+        words: q.words.map((qw: any) => ({
+          id: qw.word.id,
+          text: qw.word.text,
+          color: qw.color, // ✅ Apply stored color
+          audioUrl: qw.word.audioUrl ?? undefined,
+        })),
+        translations: q.translations.map((qt: any) => ({
+          id: qt.translation.id,
+          text: qt.translation.text,
+          color: qt.color, // ✅ Apply stored color
         })),
       })),
     };

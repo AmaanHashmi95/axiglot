@@ -3,10 +3,8 @@
 
 
 
-
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 
 
 
@@ -16,15 +14,11 @@ previewFeatures = ["fullTextSearch"]
 }
 
 
-
-
 datasource db {
 provider  = "postgresql"
 url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
 directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
-
-
 
 
 model User {
@@ -47,13 +41,7 @@ receivedNotifications Notification[]   @relation("Recipient")
 issuedNotifications   Notification[]   @relation("Issuer")
 lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@map("users")
 }
@@ -67,13 +55,8 @@ userId    String
 expiresAt DateTime
 user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-
-
-
 @@map("sessions")
 }
-
-
 
 
 model Follow {
@@ -81,9 +64,6 @@ followerId  String
 follower    User   @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
 followingId String
 following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
-
-
-
 
 @@unique([followerId, followingId])
 @@map("follows")
@@ -106,22 +86,11 @@ language            String?        // Add this field to store the post's languag
 requiredLessonId    String?        // ✅ NEW: The lesson a user must complete to see this post
 requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
 
-
-
-
 createdAt DateTime @default(now())
 
-
-
-
 @@index([language])  // ✅ Index for better query performance
-
-
-
-
 @@map("posts")
 }
-
 
 
 
@@ -133,26 +102,16 @@ type   MediaType
 url    String
 subtitle String?
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@map("post_media")
 }
-
-
 
 
 enum MediaType {
 IMAGE
 VIDEO
 }
-
-
 
 
 model Comment {
@@ -163,18 +122,10 @@ user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 postId  String
 post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@map("comments")
 }
-
-
 
 
 model Like {
@@ -183,14 +134,9 @@ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-
-
-
 @@unique([userId, postId])
 @@map("likes")
 }
-
-
 
 
 model Bookmark {
@@ -200,19 +146,11 @@ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@unique([userId, postId])
 @@map("bookmarks")
 }
-
-
 
 
 model Notification {
@@ -226,18 +164,10 @@ post        Post?            @relation(fields: [postId], references: [id], onDel
 type        NotificationType
 read        Boolean          @default(false)
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@map("notifications")
 }
-
-
 
 
 enum NotificationType {
@@ -247,8 +177,6 @@ COMMENT
 }
 
 
-
-
 model Course {
 id          String   @id @default(cuid())
 title       String
@@ -256,7 +184,6 @@ description String?
 lessons     Lesson[] // Relation to lessons
 createdAt   DateTime @default(now())
 }
-
 
 
 
@@ -275,41 +202,68 @@ posts       Post[]           @relation("LessonToPost") // ✅ Add this back-refe
 
 
 
-
 model Question {
-  id         String    @id @default(cuid())
-  lessonId   String
-  lesson     Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  type       QuestionType
-  content    String
-  words      QuestionWord[] // ✅ New many-to-many relation for ordered words
-  audioUrl   String?
-  correctAnswer String
-  language   String?
-  hasTimer   Boolean @default(false)
-  createdAt  DateTime @default(now())
+ id         String    @id @default(cuid())
+ lessonId   String
+ lesson     Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+ type       QuestionType
+ content    String
+ words      QuestionWord[] // ✅ New many-to-many relation for ordered words
+ translations  QuestionTranslation[] // ✅ Translated sentence words in order
+ audioUrl   String?
+ correctAnswer String
+ language   String?
+ hasTimer   Boolean @default(false)
+ createdAt  DateTime @default(now())
 }
+
 
 
 model Word {
-  id       String  @id @default(cuid())
-  text     String
-  type     WordType
-  questionId String?
-  questions QuestionWord[] // ✅ Many-to-many relation with Question
-  audioUrl   String? // ✅ Add optional audio URL field
+ id       String  @id @default(cuid())
+ text     String
+ type     WordType
+ questionId String?
+ questions QuestionWord[] // ✅ Many-to-many relation with Question
+ translations Translation[] // ✅ New relation to translations
+ audioUrl   String? // ✅ Add optional audio URL field
 }
 
-model QuestionWord { 
+model Translation {
+  id        String @id @default(cuid())
+  wordId    String
+  word      Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  text      String  // ✅ Possible translation for the word
+  language  String  // ✅ Language of this translation
+
+  questions QuestionTranslation[] // ✅ Fix: Add inverse relation
+}
+
+
+model QuestionWord {
+ questionId String
+ question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+ wordId String
+ word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+ order Int // ✅ The position of the word in the question
+ color String? @default("#000000") // ✅ Optional with default black color
+
+ @@id([questionId, wordId]) // ✅ Composite primary key to enforce uniqueness
+}
+
+model QuestionTranslation {
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  wordId String
-  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  translationId String
+  translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
-  order Int // ✅ The position of the word in the question
+  order Int // ✅ Position of the translated word in the sentence
+  color String? @default("#000000") // ✅ Optional with default black color
 
-  @@id([questionId, wordId]) // ✅ Composite primary key to enforce uniqueness
+  @@id([questionId, translationId]) // ✅ Composite primary key
 }
 
 
@@ -319,19 +273,12 @@ userId   String
 lessonId String
 user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-completed Boolean @default(false) // New field to indicate if the lesson is completed
-
-
-
+completed Boolean @default(false) // New field to indicate if the lesson is complete
 
 createdAt DateTime @default(now())
 
-
-
-
 @@unique([userId, lessonId]) // Add this unique constraint
 }
-
 
 
 
@@ -351,13 +298,11 @@ SPEAK_ANSWER
 
 
 enum WordType {
-  NOUN
-  VERB
-  PRONOUN
-  ADJECTIVE
+ NOUN
+ VERB
+ PRONOUN
+ ADJECTIVE
 }
-
-
 
 
 model Song {
@@ -368,13 +313,10 @@ audioUrl String
 lyrics   String?
 createdAt DateTime @default(now())
 
-
-
-
 @@map("music_tracks") // ✅ Ensures Prisma is looking for the right table
 
-
-
-
 }
+
+
+
 
