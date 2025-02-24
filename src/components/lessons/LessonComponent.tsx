@@ -76,33 +76,49 @@ const [timerRunning, setTimerRunning] = useState(true);
 const question = lesson.questions[currentQuestion];
 
 const [activeWordId, setActiveWordId] = useState<string | null>(null);
+const [lastClickedWord, setLastClickedWord] = useState<string | null>(null);
 
 const handleMouseEnter = (wordId: string) => {
-  setActiveWordId(wordId);
+  // Only show on hover if it was not clicked before
+  if (!lastClickedWord) {
+    setActiveWordId(wordId);
+  }
 };
 
-const handleMouseLeave = () => {
-  setActiveWordId(null);
+const handleMouseLeave = (wordId: string) => {
+  // Only hide if it was NOT clicked
+  if (lastClickedWord !== wordId) {
+    setActiveWordId(null);
+  }
 };
 
 const handleWordClick = (wordId: string) => {
-  setActiveWordId((prev) => (prev === wordId ? null : wordId));
+  if (activeWordId === wordId) {
+    // If clicking the same word, do nothing (keep tooltip open)
+    return;
+  }
+
+  setLastClickedWord(wordId);
+  setActiveWordId(wordId);
 };
 
 // Close transliteration when clicking outside
 useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
     if (!(event.target as HTMLElement).closest(".word-container")) {
       setActiveWordId(null);
+      setLastClickedWord(null);
     }
   };
 
   document.addEventListener("click", handleClickOutside);
+  document.addEventListener("touchstart", handleClickOutside);
+
   return () => {
     document.removeEventListener("click", handleClickOutside);
+    document.removeEventListener("touchstart", handleClickOutside);
   };
 }, []);
-
 
 
 async function saveProgress(lessonId: string, progress: number) {
@@ -346,7 +362,7 @@ return (
             style={{ color: word.color }}
             className="relative mx-1 cursor-pointer word-container"
             onMouseEnter={() => handleMouseEnter(word.id)}
-            onMouseLeave={handleMouseLeave}
+            onMouseLeave={() => handleMouseLeave(word.id)}
             onClick={() => {
               handleWordClick(word.id);
               playWordAudio(word.audioUrl ?? undefined); // ✅ Play audio on click
