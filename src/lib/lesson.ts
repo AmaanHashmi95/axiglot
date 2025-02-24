@@ -13,7 +13,8 @@ export async function getLesson(lessonId: string) {
                 select: {
                   id: true,
                   text: true,
-                  audioUrl: true
+                  audioUrl: true,
+                  transliteration: true, // ✅ Fetch transliteration
                 }
               },
               color: true, // ✅ Ensure color is selected
@@ -47,6 +48,7 @@ export async function getLesson(lessonId: string) {
           text: qw.word.text,
           color: qw.color, // ✅ Apply stored color
           audioUrl: qw.word.audioUrl ?? undefined,
+          transliteration: qw.word.transliteration ?? "", // ✅ Include transliteration
         })),
         translations: q.translations.map((qt: any) => ({
           id: qt.translation.id,

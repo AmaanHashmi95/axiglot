@@ -227,6 +227,7 @@ model Word {
  questions QuestionWord[] // ✅ Many-to-many relation with Question
  translations Translation[] // ✅ New relation to translations
  audioUrl   String? // ✅ Add optional audio URL field
+ transliteration String? // ✅ New optional transliteration field
 }
 
 model Translation {

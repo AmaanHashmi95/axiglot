@@ -15,11 +15,9 @@ interface Word {
  id: string;
  text: string;
  color: string; // ✅ New: Apply dynamic color from database
- audioUrl?: string | null; // ✅ Allow both `string` and `null`
+ audioUrl?: string | null; // ✅ Allow both `string` and `null
+ transliteration?: string; // ✅ Include transliteration
 }
-
-
-
 
 
 
@@ -75,19 +73,35 @@ const [incorrectQuestions, setIncorrectQuestions] = useState<number[]>([]);
 const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
 const [timerRunning, setTimerRunning] = useState(true);
 
-
-
-
-
-
-
-
 const question = lesson.questions[currentQuestion];
 
+const [activeWordId, setActiveWordId] = useState<string | null>(null);
 
+const handleMouseEnter = (wordId: string) => {
+  setActiveWordId(wordId);
+};
 
+const handleMouseLeave = () => {
+  setActiveWordId(null);
+};
 
+const handleWordClick = (wordId: string) => {
+  setActiveWordId((prev) => (prev === wordId ? null : wordId));
+};
 
+// Close transliteration when clicking outside
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (!(event.target as HTMLElement).closest(".word-container")) {
+      setActiveWordId(null);
+    }
+  };
+
+  document.addEventListener("click", handleClickOutside);
+  return () => {
+    document.removeEventListener("click", handleClickOutside);
+  };
+}, []);
 
 
 
@@ -100,12 +114,6 @@ try {
  });
 
 
-
-
-
-
-
-
  if (!res.ok) {
    console.error('Failed to save progress:', await res.text());
  }
@@ -113,10 +121,6 @@ try {
  console.error('Error saving progress:', error);
 }
 }
-
-
-
-
 
 
 
@@ -139,22 +143,9 @@ console.log(`User ID: ${userId}`); // Log the userId to verify it's passed corre
 
 
 
-
-
-
-
-
-
-
-
 const handleTimeout = () => {
  setFeedback('Time’s up!');
 };
-
-
-
-
-
 
 
 
@@ -190,13 +181,6 @@ const playWordAudio = (audioUrl?: string) => {
 
 
 
-
-
-
-
-
-
-
 // Handle speak-and-answer submission
 const handleSpeakSubmit = (isCorrect: boolean) => {
 setFeedback(isCorrect ? 'Correct!' : 'Try again.');
@@ -220,22 +204,12 @@ if (isCorrect) setTimerRunning(false);
 
 
 
-
-
-
-
-
 // Handle listen-and-type submission
 const handleListenSubmit = (isCorrect: boolean) => {
 setFeedback(isCorrect ? 'Correct!' : 'Try again.');
 setIsAnswerCorrect(isCorrect);
 if (isCorrect) setTimerRunning(false);
 };
-
-
-
-
-
 
 
 
@@ -250,19 +224,6 @@ if (isCorrect) setTimerRunning(false); // Stop the timer
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Handle submission of canvas drawing
 const handleDrawingSubmit = (dataUrl: string) => {
 console.log('Drawing submitted:', dataUrl);
@@ -270,12 +231,6 @@ setFeedback('Drawing submitted successfully!');
 setIsAnswerCorrect(true);
 setTimerRunning(false);
 };
-
-
-
-
-
-
 
 
 const handleSubmitTextAnswer = () => {
@@ -291,11 +246,6 @@ if (typedAnswer.toLowerCase() === question.correctAnswer.toLowerCase()) {
 
 
 
-
-
-
-
-
 const handleNext = () => {
 if (!isAnswerCorrect && !lessonComplete) {
   setFeedback('Please answer the question correctly before proceeding.');
@@ -303,13 +253,9 @@ if (!isAnswerCorrect && !lessonComplete) {
 }
 
 
-
-
 setFeedback(null);
 setSelectedAnswer(null);
 setIsAnswerCorrect(false); // Reset for the next question
-
-
 
 
 if (incorrectQuestions.length > 0) {
@@ -326,19 +272,6 @@ if (incorrectQuestions.length > 0) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 const saveCompletion = async (lessonId: string, completed: boolean) => {
 try {
  const res = await fetch('/api/lesson/progress', {
@@ -346,11 +279,6 @@ try {
    headers: { 'Content-Type': 'application/json' },
    body: JSON.stringify({ lessonId, completed }),
  });
-
-
-
-
-
 
 
 
@@ -363,23 +291,12 @@ try {
 };
 
 
-
-
-
-
-
-
 const savePartialProgress = () => {
  const totalQuestions = lesson.questions.length;
  const answeredCorrectly = totalQuestions - incorrectQuestions.length;
  const progress = Math.round((answeredCorrectly / totalQuestions) * 100);
   saveProgress(lesson.id, progress);
 };
-
-
-
-
-
 
 
 
@@ -394,14 +311,6 @@ if (currentQuestion > 0) {
 
 
 
-
-
-
-
-
-
-
-
 return (
  <div className="lesson-container">
    <ProgressBar
@@ -409,20 +318,8 @@ return (
    />
 
 
-
-
-
-
-
-
    <h1 className="text-3xl font-bold">{lesson.title}</h1>
    <p>{lesson.description || 'No description available.'}</p>
-
-
-
-
-
-
 
 
    {lessonComplete ? (
@@ -442,21 +339,33 @@ return (
        <div className="text-lg mt-2">
   {/* Original sentence with colors */}
   {question.words.length > 0 ? (
-    <div>
-      {question.words.map((word) => (
-        <span
-          key={word.id}
-          style={{ color: word.color }} // ✅ Apply dynamic color
-          className="mx-1 cursor-pointer"
-          onClick={() => playWordAudio(word.audioUrl ?? undefined)}
-        >
-          {word.text}
-        </span>
-      ))}
-    </div>
-  ) : (
-    <span className="text-gray-500">No words available.</span>
-  )}
+      <div>
+        {question.words.map((word) => (
+          <span
+            key={word.id}
+            style={{ color: word.color }}
+            className="relative mx-1 cursor-pointer word-container"
+            onMouseEnter={() => handleMouseEnter(word.id)}
+            onMouseLeave={handleMouseLeave}
+            onClick={() => {
+              handleWordClick(word.id);
+              playWordAudio(word.audioUrl ?? undefined); // ✅ Play audio on click
+            }}
+          >
+            {/* Transliteration Popup (Shows above word) */}
+            {activeWordId === word.id && word.transliteration && (
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm shadow-lg transition-opacity duration-200 ease-in-out">
+                {word.transliteration}
+              </span>
+            )}
+
+            {word.text}
+          </span>
+        ))}
+      </div>
+    ) : (
+      <span className="text-gray-500">No words available.</span>
+    )}
 
   {/* Translated sentence with colors */}
   {question.translations.length > 0 ? (
