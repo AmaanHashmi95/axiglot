@@ -9,9 +9,10 @@ import {
 
 interface HoverTranslateProps {
   text: string;
-  language: string;
+  language: string; // Source language (e.g., "ur" for Urdu, "pa" for Punjabi")
 }
 
+// Mapping full language names to Azure Translator API codes
 const languageCodeMap: { [key: string]: string } = {
   english: "en",
   punjabi: "pa",
@@ -25,6 +26,12 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const [loading, setLoading] = useState(false);
   const [showWordDropdown, setShowWordDropdown] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isTouchscreen, setIsTouchscreen] = useState(false);
+
+  // Detect if the device is a touchscreen
+  useEffect(() => {
+    setIsTouchscreen("ontouchstart" in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
@@ -35,7 +42,6 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
     }
 
     setLoading(true);
-    setDropdownOpen(true); // Open dropdown immediately to show "Translating..."
 
     try {
       const response = await fetch("/api/hover-translate", {
@@ -50,19 +56,21 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setTranslation(data.translation || "Translation error");
       setTransliteration(data.transliteration || null);
       setWordTranslations(data.wordTranslations || []);
+
+      setLoading(false);
+      setDropdownOpen(true); // ✅ Open dropdown only after translation is ready
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleClick = () => {
-    if (!dropdownOpen) {
-      handleTranslate();
+    if (isTouchscreen) {
+      handleTranslate(); // ✅ Ensure translation happens before opening
     } else {
-      setDropdownOpen(false);
+      setDropdownOpen(!dropdownOpen); // ✅ Keep desktop behavior unchanged
     }
   };
 
@@ -72,41 +80,44 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
         <span
           className="cursor-pointer text-blue-600 underline"
           onClick={handleClick}
-          onMouseEnter={handleTranslate}
+          onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Hover only for desktops
         >
           {text}
         </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
-        {loading && <p className="text-sm text-gray-500">Translating...</p>}
-        {!loading && translation && (
-          <>
-            <div className="text-lg font-semibold px-3 py-1">{translation}</div>
-            {transliteration && (
-              <div className="text-sm italic text-gray-500 px-3 py-1">
-                {transliteration}
-              </div>
-            )}
-            {wordTranslations.length > 0 && (
-              <div
-                className="text-blue-600 cursor-pointer px-3 py-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowWordDropdown(!showWordDropdown);
-                }}
-              >
-                {showWordDropdown ? "Hide Word Breakdown" : "Show Word Breakdown"}
-              </div>
-            )}
-            {showWordDropdown &&
-              wordTranslations.map((word, idx) => (
-                <div key={idx} className="text-sm text-gray-700 px-3 py-1">
-                  <strong>{word.original}:</strong> {word.translation} ({word.transliteration})
+      {dropdownOpen && ( // ✅ Ensures dropdown only opens when fully ready
+        <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
+          {loading ? (
+            <p className="text-sm text-gray-500">Translating...</p>
+          ) : (
+            <>
+              {translation && <div className="text-lg font-semibold px-3 py-1">{translation}</div>}
+              {transliteration && (
+                <div className="text-sm italic text-gray-500 px-3 py-1">
+                  {transliteration}
                 </div>
-              ))}
-          </>
-        )}
-      </DropdownMenuContent>
+              )}
+              {wordTranslations.length > 0 && (
+                <div
+                  className="text-blue-600 cursor-pointer px-3 py-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowWordDropdown(!showWordDropdown);
+                  }}
+                >
+                  {showWordDropdown ? "Hide Word Breakdown" : "Show Word Breakdown"}
+                </div>
+              )}
+              {showWordDropdown &&
+                wordTranslations.map((word, idx) => (
+                  <div key={idx} className="text-sm text-gray-700 px-3 py-1">
+                    <strong>{word.original}:</strong> {word.translation} ({word.transliteration})
+                  </div>
+                ))}
+            </>
+          )}
+        </DropdownMenuContent>
+      )}
     </DropdownMenu>
   );
 }
