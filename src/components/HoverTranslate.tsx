@@ -36,10 +36,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (loading || translation) {
-      setDropdownOpen(true);
-      return;
-    }
+    if (loading || translation) return;
 
     setLoading(true);
 
@@ -58,7 +55,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setWordTranslations(data.wordTranslations || []);
 
       setLoading(false);
-      setDropdownOpen(true); // ✅ Open dropdown only after translation is ready
+      setDropdownOpen(true); // ✅ Open only when translation is ready
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
@@ -66,11 +63,12 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
     }
   };
 
-  const handleClick = () => {
-    if (isTouchscreen) {
-      handleTranslate(); // ✅ Ensure translation happens before opening
+  const handleTouchInteraction = () => {
+    if (!dropdownOpen) {
+      handleTranslate(); // ✅ Ensure translation loads before opening
+      setTimeout(() => setDropdownOpen(true), 200); // ✅ Small delay prevents "empty dropdown"
     } else {
-      setDropdownOpen(!dropdownOpen); // ✅ Keep desktop behavior unchanged
+      setDropdownOpen(false);
     }
   };
 
@@ -79,13 +77,13 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       <DropdownMenuTrigger asChild>
         <span
           className="cursor-pointer text-blue-600 underline"
-          onClick={handleClick}
+          onClick={isTouchscreen ? handleTouchInteraction : undefined}
           onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Hover only for desktops
         >
           {text}
         </span>
       </DropdownMenuTrigger>
-      {dropdownOpen && ( // ✅ Ensures dropdown only opens when fully ready
+      {dropdownOpen && ( // ✅ Prevents opening an empty dropdown
         <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
           {loading ? (
             <p className="text-sm text-gray-500">Translating...</p>
