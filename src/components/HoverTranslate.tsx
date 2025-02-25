@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -27,7 +26,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const [loading, setLoading] = useState(false);
   const [showWordDropdown, setShowWordDropdown] = useState(false);
   const [isTouchscreen, setIsTouchscreen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false); // Controls manual dropdown open state
+  const [dropdownOpen, setDropdownOpen] = useState(false); // Controls dropdown visibility
 
   useEffect(() => {
     // Detect if the user is on a touchscreen device
@@ -37,7 +36,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (translation) return;
+    if (loading || translation) return; // Prevent duplicate calls
     setLoading(true);
 
     try {
@@ -53,6 +52,9 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setTranslation(data.translation || "Translation error");
       setTransliteration(data.transliteration || null);
       setWordTranslations(data.wordTranslations || []);
+
+      // ✅ Only open the dropdown once data is ready
+      setDropdownOpen(true);
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
@@ -63,13 +65,14 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
 
   const handleInteraction = () => {
     if (isTouchscreen) {
-      setDropdownOpen(true); // Keep dropdown open on touch devices
+      handleTranslate(); // Ensure translation is triggered before dropdown opens
+    } else {
+      setDropdownOpen(true);
     }
-    handleTranslate(); // Always trigger translation
   };
 
   return (
-    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+    <DropdownMenu open={dropdownOpen} onOpenChange={(open) => setDropdownOpen(isTouchscreen ? true : open)}>
       <DropdownMenuTrigger asChild>
         <span
           className="cursor-pointer text-blue-600 underline"
@@ -79,7 +82,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
           {text}
         </span>
       </DropdownMenuTrigger>
-      {(!loading || translation) && ( // ✅ Prevents rendering empty/thin dropdown
+      {(!loading || translation) && dropdownOpen && ( // ✅ Prevents empty dropdown before translation loads
         <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
           {loading ? (
             <p className="text-sm text-gray-500">Translating...</p>
