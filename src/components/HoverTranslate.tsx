@@ -10,7 +10,7 @@ import {
 
 interface HoverTranslateProps {
   text: string;
-  language: string; // Source language (e.g., "ur" for Urdu, "pa" for Punjabi)
+  language: string; // Source language (e.g., "ur" for Urdu, "pa" for Punjabi")
 }
 
 // Mapping full language names to Azure Translator API codes
@@ -23,13 +23,14 @@ const languageCodeMap: { [key: string]: string } = {
 export default function HoverTranslate({ text, language }: HoverTranslateProps) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [transliteration, setTransliteration] = useState<string | null>(null);
+  const [wordTranslations, setWordTranslations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showWordDropdown, setShowWordDropdown] = useState(false);
 
-  // Convert language name to API-friendly language code
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (translation) return; // Avoid unnecessary API calls
+    if (translation) return;
     setLoading(true);
 
     try {
@@ -39,13 +40,12 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
         body: JSON.stringify({ text, from: sourceLangCode }),
       });
 
-      if (!response.ok) {
-        throw new Error("Translation API failed");
-      }
+      if (!response.ok) throw new Error("Translation API failed");
 
       const data = await response.json();
       setTranslation(data.translation || "Translation error");
-      setTransliteration(data.transliteration || null); // Show transliteration if available
+      setTransliteration(data.transliteration || null);
+      setWordTranslations(data.wordTranslations || []);
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
@@ -57,29 +57,38 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <span
-          className="relative inline-block cursor-pointer text-blue-600 underline"
-          onMouseEnter={handleTranslate}
-        >
+        <span className="cursor-pointer text-blue-600 underline" onMouseEnter={handleTranslate}>
           {text}
         </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="p-2 w-64 bg-white shadow-lg rounded-lg">
+      <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
         {loading ? (
           <p className="text-sm text-gray-500">Translating...</p>
         ) : (
           <>
             {translation && (
-              <DropdownMenuItem className="text-lg font-semibold">
-                {translation}
-              </DropdownMenuItem>
+              <div className="text-lg font-semibold px-3 py-1">{translation}</div> // ✅ Non-clickable
             )}
             {transliteration && (
-              <DropdownMenuItem className="text-sm italic text-gray-500">
-                {transliteration}
-              </DropdownMenuItem>
+              <div className="text-sm italic text-gray-500 px-3 py-1">{transliteration}</div> // ✅ Non-clickable
             )}
-            {!translation && <p className="text-sm text-gray-400">Hover to translate</p>}
+            {wordTranslations.length > 0 && (
+              <div
+                className="text-blue-600 cursor-pointer px-3 py-1"
+                onClick={(e) => {
+                  e.stopPropagation(); // ✅ Prevent dropdown from closing
+                  setShowWordDropdown(!showWordDropdown);
+                }}
+              >
+                {showWordDropdown ? "Hide Word Breakdown" : "Show Word Breakdown"}
+              </div>
+            )}
+            {showWordDropdown &&
+              wordTranslations.map((word, idx) => (
+                <div key={idx} className="text-sm text-gray-700 px-3 py-1">
+                  <strong>{word.original}:</strong> {word.translation} ({word.transliteration})
+                </div> // ✅ Non-clickable
+              ))}
           </>
         )}
       </DropdownMenuContent>
