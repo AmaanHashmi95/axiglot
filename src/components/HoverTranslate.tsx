@@ -28,7 +28,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isTouchscreen, setIsTouchscreen] = useState(false);
 
-  // Detect if the user is on a touchscreen device
+  // Detect if the device is a touchscreen
   useEffect(() => {
     setIsTouchscreen("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
@@ -36,9 +36,10 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (translation) return;
+    if (loading || translation) return;
 
     setLoading(true);
+
     try {
       const response = await fetch("/api/hover-translate", {
         method: "POST",
@@ -54,7 +55,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setWordTranslations(data.wordTranslations || []);
 
       setLoading(false);
-      setDropdownOpen(true); // ✅ Ensures dropdown only opens when translation is ready
+      setDropdownOpen(true); // ✅ Open dropdown AFTER translation is ready
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
@@ -62,9 +63,11 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
     }
   };
 
-  const handleTouchInteraction = async () => {
+  const handleTouchInteraction = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     if (!dropdownOpen) {
-      await handleTranslate(); // ✅ Waits for translation to complete before opening
+      await handleTranslate(); // ✅ Wait for translation before opening
     } else {
       setDropdownOpen(false);
     }
@@ -81,7 +84,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
           {text}
         </span>
       </DropdownMenuTrigger>
-      {dropdownOpen && ( // ✅ Prevents dropdown from opening empty
+      {dropdownOpen && translation && ( // ✅ Prevents opening an empty dropdown
         <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
           {loading ? (
             <p className="text-sm text-gray-500">Translating...</p>
