@@ -9,7 +9,7 @@ import {
 
 interface HoverTranslateProps {
   text: string;
-  language: string; // Source language (e.g., "ur" for Urdu, "pa" for Punjabi")
+  language: string;
 }
 
 // Mapping full language names to Azure Translator API codes
@@ -28,7 +28,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isTouchscreen, setIsTouchscreen] = useState(false);
 
-  // Detect if the device is a touchscreen
+  // Detect if the user is on a touchscreen device
   useEffect(() => {
     setIsTouchscreen("ontouchstart" in window || navigator.maxTouchPoints > 0);
   }, []);
@@ -36,10 +36,9 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (loading || translation) return;
+    if (translation) return;
 
     setLoading(true);
-
     try {
       const response = await fetch("/api/hover-translate", {
         method: "POST",
@@ -55,7 +54,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setWordTranslations(data.wordTranslations || []);
 
       setLoading(false);
-      setDropdownOpen(true); // ✅ Open only when translation is ready
+      setDropdownOpen(true); // ✅ Ensures dropdown only opens when translation is ready
     } catch (error) {
       console.error("Translation failed:", error);
       setTranslation("Error translating");
@@ -63,10 +62,9 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
     }
   };
 
-  const handleTouchInteraction = () => {
+  const handleTouchInteraction = async () => {
     if (!dropdownOpen) {
-      handleTranslate(); // ✅ Ensure translation loads before opening
-      setTimeout(() => setDropdownOpen(true), 200); // ✅ Small delay prevents "empty dropdown"
+      await handleTranslate(); // ✅ Waits for translation to complete before opening
     } else {
       setDropdownOpen(false);
     }
@@ -78,12 +76,12 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
         <span
           className="cursor-pointer text-blue-600 underline"
           onClick={isTouchscreen ? handleTouchInteraction : undefined}
-          onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Hover only for desktops
+          onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Hover only for desktop
         >
           {text}
         </span>
       </DropdownMenuTrigger>
-      {dropdownOpen && ( // ✅ Prevents opening an empty dropdown
+      {dropdownOpen && ( // ✅ Prevents dropdown from opening empty
         <DropdownMenuContent className="p-3 w-64 bg-white shadow-lg rounded-lg">
           {loading ? (
             <p className="text-sm text-gray-500">Translating...</p>
