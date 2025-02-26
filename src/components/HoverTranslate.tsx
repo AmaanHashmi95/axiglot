@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,9 @@ const languageCodeMap: { [key: string]: string } = {
   urdu: "ur",
 };
 
+// Translation Cache to Avoid Redundant Requests
+const translationCache = new Map<string, any>();
+
 export default function HoverTranslate({ text, language }: HoverTranslateProps) {
   const [translation, setTranslation] = useState<string | null>(null);
   const [transliteration, setTransliteration] = useState<string | null>(null);
@@ -27,6 +30,7 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const [showWordDropdown, setShowWordDropdown] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isTouchscreen, setIsTouchscreen] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Detect if the device is a touchscreen
   useEffect(() => {
@@ -36,15 +40,30 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
   const sourceLangCode = languageCodeMap[language.toLowerCase()] || language;
 
   const handleTranslate = async () => {
-    if (loading || translation) return;
+    if (translationCache.has(text)) {
+      // ✅ Use cached translation if available
+      const cachedData = translationCache.get(text);
+      setTranslation(cachedData.translation);
+      setTransliteration(cachedData.transliteration);
+      setWordTranslations(cachedData.wordTranslations);
+      setDropdownOpen(true);
+      return;
+    }
 
     setLoading(true);
+
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch("/api/hover-translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, from: sourceLangCode }),
+        signal: abortControllerRef.current.signal, // Allow request cancellation
       });
 
       if (!response.ok) throw new Error("Translation API failed");
@@ -54,20 +73,27 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       setTransliteration(data.transliteration || null);
       setWordTranslations(data.wordTranslations || []);
 
+      // ✅ Cache the translation to speed up future requests
+      translationCache.set(text, data);
+
       setLoading(false);
       setDropdownOpen(true); // ✅ Open dropdown AFTER translation is ready
     } catch (error) {
-      console.error("Translation failed:", error);
+      if (error instanceof Error) {
+        console.error("Translation failed:", error.message);
+      } else {
+        console.error("Translation failed: Unknown error");
+      }
       setTranslation("Error translating");
       setLoading(false);
     }
   };
 
-  const handleTouchInteraction = async (e: React.MouseEvent) => {
+  const handleInteraction = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
     if (!dropdownOpen) {
-      await handleTranslate(); // ✅ Wait for translation before opening
+      await handleTranslate(); // ✅ Ensure translation loads before opening
     } else {
       setDropdownOpen(false);
     }
@@ -78,8 +104,9 @@ export default function HoverTranslate({ text, language }: HoverTranslateProps) 
       <DropdownMenuTrigger asChild>
         <span
           className="cursor-pointer text-blue-600 underline"
-          onClick={isTouchscreen ? handleTouchInteraction : undefined}
-          onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Hover only for desktop
+          onClick={isTouchscreen ? handleInteraction : undefined}
+          onMouseEnter={!isTouchscreen ? handleTranslate : undefined} // ✅ Prefetch on hover
+          onTouchStart={isTouchscreen ? handleTranslate : undefined} // ✅ Prefetch on touch
         >
           {text}
         </span>
