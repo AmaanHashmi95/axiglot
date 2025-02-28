@@ -32,7 +32,12 @@ export default function MusicPlayer({ song }: { song: Song }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
-  const [currentSentence, setCurrentSentence] = useState<Sentence | null>(null);
+  const [currentSentences, setCurrentSentences] = useState<{
+    english?: Sentence;
+    target?: Sentence;
+    transliteration?: Sentence;
+  }>({});
+
   const [highlightedWords, setHighlightedWords] = useState<Record<string, string | null>>({
     english: null,
     target: null,
@@ -46,25 +51,28 @@ export default function MusicPlayer({ song }: { song: Song }) {
         setCurrentTime(time);
         setProgress((time / duration) * 100);
 
-        // ✅ Keep the sentence visible for full duration
-        const activeSentence = song.englishSentences.find((s) => time >= s.startTime && time < s.endTime);
-        setCurrentSentence(activeSentence || null);
+        // ✅ Keep the sentences visible during their entire time range
+        setCurrentSentences({
+          english: song.englishSentences.find((s) => time >= s.startTime && time < s.endTime),
+          target: song.targetSentences.find((s) => time >= s.startTime && time < s.endTime),
+          transliteration: song.transliterationSentences.find((s) => time >= s.startTime && time < s.endTime),
+        });
 
         // ✅ Highlight words at the correct time
         const getHighlightedWord = (sentence?: Sentence) =>
           sentence?.words.find((word) => time >= word.startTime && time < word.endTime)?.word || null;
 
         setHighlightedWords({
-          english: getHighlightedWord(activeSentence),
-          target: getHighlightedWord(song.targetSentences.find((s) => time >= s.startTime && time < s.endTime)),
-          transliteration: getHighlightedWord(song.transliterationSentences.find((s) => time >= s.startTime && time < s.endTime)),
+          english: getHighlightedWord(currentSentences.english),
+          target: getHighlightedWord(currentSentences.target),
+          transliteration: getHighlightedWord(currentSentences.transliteration),
         });
       }
     };
 
-    const interval = setInterval(updateProgress, 100); // ✅ Faster updates for smooth highlighting
+    const interval = setInterval(updateProgress, 100);
     return () => clearInterval(interval);
-  }, [duration, song, isSeeking]);
+  }, [duration, song, isSeeking, currentSentences]);
 
   // ✅ Format time as mm:ss
   const formatTime = (time: number) => {
@@ -107,7 +115,6 @@ export default function MusicPlayer({ song }: { song: Song }) {
           onChange={handleSeekChange}
           onMouseUp={handleSeekEnd}
           className="absolute w-full h-2 bg-transparent cursor-pointer appearance-none"
-          style={{ WebkitAppearance: "none", background: "transparent" }}
         />
         <div className="absolute bg-blue-500 h-2 rounded-lg" style={{ width: `${progress}%` }}></div>
       </div>
@@ -119,7 +126,7 @@ export default function MusicPlayer({ song }: { song: Song }) {
 
       {/* ✅ Lyrics Display (Sentence stays, words highlight) */}
       <p className="mt-4 text-center font-semibold">
-        {currentSentence?.text.split(" ").map((word, index) => (
+        {currentSentences.english?.text.split(" ").map((word, index) => (
           <span key={index} className={word === highlightedWords.english ? "bg-yellow-300 px-1 rounded" : ""}>
             {word}{" "}
           </span>
@@ -127,25 +134,19 @@ export default function MusicPlayer({ song }: { song: Song }) {
       </p>
 
       <p className="mt-1 text-center text-gray-700">
-        {song.targetSentences
-          .find((s) => currentTime >= s.startTime && currentTime < s.endTime)
-          ?.text.split(" ")
-          .map((word, index) => (
-            <span key={index} className={word === highlightedWords.target ? "bg-yellow-300 px-1 rounded" : ""}>
-              {word}{" "}
-            </span>
-          )) || "♫ ♪"}
+        {currentSentences.target?.text.split(" ").map((word, index) => (
+          <span key={index} className={word === highlightedWords.target ? "bg-yellow-300 px-1 rounded" : ""}>
+            {word}{" "}
+          </span>
+        )) || "♫ ♪"}
       </p>
 
       <p className="mt-1 text-center text-gray-500 italic">
-        {song.transliterationSentences
-          .find((s) => currentTime >= s.startTime && currentTime < s.endTime)
-          ?.text.split(" ")
-          .map((word, index) => (
-            <span key={index} className={word === highlightedWords.transliteration ? "bg-yellow-300 px-1 rounded" : ""}>
-              {word}{" "}
-            </span>
-          )) || "♫ ♪"}
+        {currentSentences.transliteration?.text.split(" ").map((word, index) => (
+          <span key={index} className={word === highlightedWords.transliteration ? "bg-yellow-300 px-1 rounded" : ""}>
+            {word}{" "}
+          </span>
+        )) || "♫ ♪"}
       </p>
     </div>
   );

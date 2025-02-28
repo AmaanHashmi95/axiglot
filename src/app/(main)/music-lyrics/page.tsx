@@ -2,8 +2,9 @@
 
 import MusicPlayer from "@/components/MusicPlayer";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
-// ✅ Update TypeScript interface for Song
+// ✅ TypeScript interfaces
 interface Word {
   word: string;
   startTime: number;
@@ -29,6 +30,7 @@ interface Song {
 
 export default function Page() {
   const [songs, setSongs] = useState<Song[]>([]);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,22 +43,13 @@ export default function Page() {
     async function fetchSongs() {
       try {
         console.log("Fetching from API:", `${API_URL}/api/music`);
-
         const res = await fetch(`${API_URL}/api/music`);
-        console.log("Fetch response:", res);
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch songs. Status: ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`Failed to fetch songs. Status: ${res.status}`);
         const fetchedSongs: Song[] = await res.json();
-        console.log("Fetched songs:", fetchedSongs);
-
-        if (fetchedSongs.length === 0) {
-          throw new Error("No songs available in the database.");
-        }
+        if (fetchedSongs.length === 0) throw new Error("No songs available in the database.");
 
         setSongs(fetchedSongs);
+        setSelectedSong(fetchedSongs[0]); // ✅ Default to first song
       } catch (err: any) {
         setError(err.message);
         console.error("Fetch error:", err.message);
@@ -73,11 +66,24 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6">
-      {songs.length > 0 ? (
-        songs.map((song: Song) => <MusicPlayer key={song.id} song={song} />)
-      ) : (
-        <p>No songs available</p>
-      )}
+      {/* ✅ Song Selection Carousel */}
+      <div className="flex overflow-x-auto gap-4 p-4 w-full max-w-3xl">
+        {songs.map((song) => (
+          <div
+            key={song.id}
+            className={`cursor-pointer p-3 border rounded-lg transition ${
+              selectedSong?.id === song.id ? "bg-blue-500 text-white" : "bg-white"
+            }`}
+            onClick={() => setSelectedSong(song)}
+          >
+            <h3 className="text-md font-semibold">{song.title}</h3>
+            <p className="text-sm">{song.artist}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ✅ Single Music Player */}
+      {selectedSong && <MusicPlayer song={selectedSong} />}
     </div>
   );
 }
