@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent, MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Word {
@@ -31,6 +31,7 @@ export default function MusicPlayer({ song }: { song: Song }) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [currentSentence, setCurrentSentence] = useState<Sentence | null>(null);
   const [highlightedWords, setHighlightedWords] = useState<Record<string, string | null>>({
     english: null,
@@ -40,7 +41,7 @@ export default function MusicPlayer({ song }: { song: Song }) {
 
   useEffect(() => {
     const updateProgress = () => {
-      if (audioRef.current) {
+      if (audioRef.current && !isSeeking) {
         const time = audioRef.current.currentTime;
         setCurrentTime(time);
         setProgress((time / duration) * 100);
@@ -61,9 +62,27 @@ export default function MusicPlayer({ song }: { song: Song }) {
       }
     };
 
-    const interval = setInterval(updateProgress, 100); // ✅ Update faster for smooth highlighting
+    const interval = setInterval(updateProgress, 100); // ✅ Faster updates for smooth highlighting
     return () => clearInterval(interval);
-  }, [duration, song]);
+  }, [duration, song, isSeeking]);
+
+  // ✅ Format time as mm:ss
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  // ✅ Handle seeking (scrubbing through song)
+  const handleSeekStart = (e: MouseEvent<HTMLInputElement>) => setIsSeeking(true);
+  const handleSeekChange = (e: ChangeEvent<HTMLInputElement>) => setProgress(parseFloat(e.target.value));
+  const handleSeekEnd = (e: MouseEvent<HTMLInputElement>) => {
+    if (audioRef.current) {
+      const newTime = (parseFloat((e.target as HTMLInputElement).value) / 100) * duration;
+      audioRef.current.currentTime = newTime;
+      setIsSeeking(false);
+    }
+  };
 
   return (
     <div className="p-4 border rounded-lg w-full max-w-lg mx-auto">
@@ -77,7 +96,28 @@ export default function MusicPlayer({ song }: { song: Song }) {
         <Button onClick={() => audioRef.current!.currentTime += 5}>⏩</Button>
       </div>
 
-      {/* Lyrics Display (Sentence stays, words highlight) */}
+      {/* ✅ Progress Bar with Interactive Scrubbing */}
+      <div className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={progress}
+          onMouseDown={handleSeekStart}
+          onChange={handleSeekChange}
+          onMouseUp={handleSeekEnd}
+          className="absolute w-full h-2 bg-transparent cursor-pointer appearance-none"
+          style={{ WebkitAppearance: "none", background: "transparent" }}
+        />
+        <div className="absolute bg-blue-500 h-2 rounded-lg" style={{ width: `${progress}%` }}></div>
+      </div>
+
+      {/* ✅ Time Display */}
+      <p className="mt-2 text-sm text-center text-gray-600">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </p>
+
+      {/* ✅ Lyrics Display (Sentence stays, words highlight) */}
       <p className="mt-4 text-center font-semibold">
         {currentSentence?.text.split(" ").map((word, index) => (
           <span key={index} className={word === highlightedWords.english ? "bg-yellow-300 px-1 rounded" : ""}>
