@@ -65,9 +65,9 @@ export default function Page() {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+    <div className="flex flex-col items-center gap-6 p-6">
       {/* ✅ Song Selection Carousel */}
-      <div className="flex overflow-x-auto gap-4 p-4 w-full max-w-3xl">
+      <div className="flex overflow-x-auto gap-4 w-full max-w-3xl bg-gray-100 rounded-lg p-2">
         {songs.map((song) => (
           <div
             key={song.id}
