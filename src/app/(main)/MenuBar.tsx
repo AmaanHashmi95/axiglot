@@ -13,9 +13,10 @@ import library from "@/assets/library.png";
 
 interface MenuBarProps {
   className?: string;
+  id?: string;
 }
 
-export default async function MenuBar({ className }: MenuBarProps) {
+export default async function MenuBar({ className, id }: MenuBarProps) {
   const { user } = await validateRequest();
 
   if (!user) return null;
@@ -31,7 +32,7 @@ export default async function MenuBar({ className }: MenuBarProps) {
   ]);
 
   return (
-    <div className={className}>
+    <div className={className} id={id}>
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"

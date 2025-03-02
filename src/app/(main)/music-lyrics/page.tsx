@@ -1,36 +1,15 @@
 "use client";
 
-import MusicPlayer from "@/components/MusicPlayer";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-
-// ✅ TypeScript interfaces
-interface Word {
-  word: string;
-  startTime: number;
-  endTime: number;
-}
-
-interface Sentence {
-  text: string;
-  startTime: number;
-  endTime: number;
-  words: Word[];
-}
-
-interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  audioUrl: string;
-  englishSentences: Sentence[];
-  targetSentences: Sentence[];
-  transliterationSentences: Sentence[];
-}
+import SongChooser from "@/components/SongChooser";
+import MusicPlayer from "@/components/MusicPlayer";
+import Lyrics from "@/components/Lyrics";
+import { Song } from "@/lib/song"; // ✅ Import the shared type
 
 export default function Page() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -61,29 +40,19 @@ export default function Page() {
     fetchSongs();
   }, [API_URL]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
+    <div className="flex flex-col items-center gap-4 p-4">
       {/* ✅ Song Selection Carousel */}
-      <div className="flex overflow-x-auto gap-4 w-full max-w-3xl bg-gray-100 rounded-lg p-2">
-        {songs.map((song) => (
-          <div
-            key={song.id}
-            className={`cursor-pointer p-3 border rounded-lg transition ${
-              selectedSong?.id === song.id ? "bg-blue-500 text-white" : "bg-white"
-            }`}
-            onClick={() => setSelectedSong(song)}
-          >
-            <h3 className="text-md font-semibold">{song.title}</h3>
-            <p className="text-sm">{song.artist}</p>
-          </div>
-        ))}
-      </div>
+      <SongChooser songs={songs} selectedSong={selectedSong} onSelectSong={(song) => setSelectedSong(song)} />
 
-      {/* ✅ Single Music Player */}
-      {selectedSong && <MusicPlayer song={selectedSong} />}
+      {/* ✅ Lyrics Display */}
+      {selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />}
+
+      {/* ✅ Music Player */}
+      {selectedSong && <MusicPlayer song={selectedSong} onTimeUpdate={setCurrentTime} />}
     </div>
   );
 }

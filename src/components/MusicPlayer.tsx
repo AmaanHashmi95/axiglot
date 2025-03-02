@@ -1,48 +1,22 @@
 "use client";
 
-import { useState, useRef, useEffect, ChangeEvent, MouseEvent } from "react";
+import { useState, useEffect, useRef, ChangeEvent, MouseEvent } from "react";
 import { Button } from "@/components/ui/button";
-
-interface Word {
-  word: string;
-  startTime: number;
-  endTime: number;
-}
-
-interface Sentence {
-  text: string;
-  startTime: number;
-  endTime: number;
-  words: Word[];
-}
 
 interface Song {
   title: string;
   artist: string;
   audioUrl: string;
-  englishSentences: Sentence[];
-  targetSentences: Sentence[];
-  transliterationSentences: Sentence[];
 }
 
-export default function MusicPlayer({ song }: { song: Song }) {
+export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTimeUpdate: (time: number) => void }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
-  const [currentSentences, setCurrentSentences] = useState<{
-    english?: Sentence;
-    target?: Sentence;
-    transliteration?: Sentence;
-  }>({});
-
-  const [highlightedWords, setHighlightedWords] = useState<Record<string, string | null>>({
-    english: null,
-    target: null,
-    transliteration: null,
-  });
+  const [bottomPadding, setBottomPadding] = useState(0); // ✅ New state to adjust position
 
   useEffect(() => {
     const updateProgress = () => {
@@ -50,39 +24,37 @@ export default function MusicPlayer({ song }: { song: Song }) {
         const time = audioRef.current.currentTime;
         setCurrentTime(time);
         setProgress((time / duration) * 100);
-
-        // ✅ Keep the sentences visible during their entire time range
-        setCurrentSentences({
-          english: song.englishSentences.find((s) => time >= s.startTime && time < s.endTime),
-          target: song.targetSentences.find((s) => time >= s.startTime && time < s.endTime),
-          transliteration: song.transliterationSentences.find((s) => time >= s.startTime && time < s.endTime),
-        });
-
-        // ✅ Highlight words at the correct time
-        const getHighlightedWord = (sentence?: Sentence) =>
-          sentence?.words.find((word) => time >= word.startTime && time < word.endTime)?.word || null;
-
-        setHighlightedWords({
-          english: getHighlightedWord(currentSentences.english),
-          target: getHighlightedWord(currentSentences.target),
-          transliteration: getHighlightedWord(currentSentences.transliteration),
-        });
+        onTimeUpdate(time);
       }
     };
 
     const interval = setInterval(updateProgress, 100);
     return () => clearInterval(interval);
-  }, [duration, song, isSeeking, currentSentences]);
+  }, [duration, isSeeking, onTimeUpdate]);
 
-  // ✅ Format time as mm:ss
+  // ✅ Detect bottom menu bar and adjust position accordingly
+  useEffect(() => {
+    const checkMenuBar = () => {
+      const menuBar = document.getElementById("mobile-bottom-menu");
+      if (menuBar) {
+        setBottomPadding(menuBar.offsetHeight);
+      } else {
+        setBottomPadding(0);
+      }
+    };
+
+    checkMenuBar();
+    window.addEventListener("resize", checkMenuBar);
+    return () => window.removeEventListener("resize", checkMenuBar);
+  }, []);
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  // ✅ Handle seeking (scrubbing through song)
-  const handleSeekStart = (e: MouseEvent<HTMLInputElement>) => setIsSeeking(true);
+  const handleSeekStart = () => setIsSeeking(true);
   const handleSeekChange = (e: ChangeEvent<HTMLInputElement>) => setProgress(parseFloat(e.target.value));
   const handleSeekEnd = (e: MouseEvent<HTMLInputElement>) => {
     if (audioRef.current) {
@@ -93,9 +65,13 @@ export default function MusicPlayer({ song }: { song: Song }) {
   };
 
   return (
-    <div className="p-4 border rounded-lg w-full max-w-lg mx-auto">
+    <div
+      className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
+      style={{ bottom: `${bottomPadding}px` }} // ✅ Adjust position dynamically
+    >
       <h2 className="text-xl font-bold">{song.title} - {song.artist}</h2>
       <audio ref={audioRef} src={song.audioUrl} onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} />
+
       <div className="flex items-center gap-2 mt-4">
         <Button onClick={() => audioRef.current!.currentTime -= 5}>⏪</Button>
         <Button onClick={() => (isPlaying ? audioRef.current!.pause() : audioRef.current!.play(), setIsPlaying(!isPlaying))}>
@@ -104,7 +80,7 @@ export default function MusicPlayer({ song }: { song: Song }) {
         <Button onClick={() => audioRef.current!.currentTime += 5}>⏩</Button>
       </div>
 
-      {/* ✅ Progress Bar with Interactive Scrubbing */}
+      {/* Progress Bar */}
       <div className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center">
         <input
           type="range"
@@ -119,34 +95,9 @@ export default function MusicPlayer({ song }: { song: Song }) {
         <div className="absolute bg-blue-500 h-2 rounded-lg" style={{ width: `${progress}%` }}></div>
       </div>
 
-      {/* ✅ Time Display */}
+      {/* Time Display */}
       <p className="mt-2 text-sm text-center text-gray-600">
         {formatTime(currentTime)} / {formatTime(duration)}
-      </p>
-
-      {/* ✅ Lyrics Display (Sentence stays, words highlight) */}
-      <p className="mt-4 text-center font-semibold">
-        {currentSentences.english?.text.split(" ").map((word, index) => (
-          <span key={index} className={word === highlightedWords.english ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "♫ ♪"}
-      </p>
-
-      <p className="mt-1 text-center text-gray-700">
-        {currentSentences.target?.text.split(" ").map((word, index) => (
-          <span key={index} className={word === highlightedWords.target ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "♫ ♪"}
-      </p>
-
-      <p className="mt-1 text-center text-gray-500 italic">
-        {currentSentences.transliteration?.text.split(" ").map((word, index) => (
-          <span key={index} className={word === highlightedWords.transliteration ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "♫ ♪"}
       </p>
     </div>
   );
