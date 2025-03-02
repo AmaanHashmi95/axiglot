@@ -16,7 +16,17 @@ declare global {
   }
 }
 
-export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTimeUpdate: (time: number) => void }) {
+export default function MusicPlayer({ 
+  song, 
+  onTimeUpdate, 
+  showLyrics, 
+  setShowLyrics 
+}: { 
+  song: Song; 
+  onTimeUpdate: (time: number) => void; 
+  showLyrics: boolean; 
+  setShowLyrics: (state: boolean) => void;
+}) {
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -140,31 +150,6 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  // ✅ Handle User Progress Bar Click/Drag
-  const handleProgressBarClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!playerRef.current || !isPlayerReady || !duration) return;
-
-    const bar = event.currentTarget;
-    const clickX = event.nativeEvent.offsetX;
-    const barWidth = bar.clientWidth;
-    const newTime = (clickX / barWidth) * duration;
-
-    playerRef.current.seekTo(newTime, true);
-    setCurrentTime(newTime);
-  };
-
-  // ✅ Handle Dragging on Progress Bar
-  const handleProgressBarDrag = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!isSeeking || !playerRef.current || !isPlayerReady || !duration) return;
-
-    const bar = event.currentTarget;
-    const clickX = event.nativeEvent.offsetX;
-    const barWidth = bar.clientWidth;
-    const newTime = (clickX / barWidth) * duration;
-
-    setCurrentTime(newTime);
-  };
-
   return (
     <div
       className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
@@ -179,15 +164,17 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
         <Button onClick={() => seek(5)}>⏩</Button>
       </div>
 
-      {/* ✅ Movable Progress Bar */}
+      {/* ✅ Toggle Lyrics/Songs Button */}
+      <Button 
+        className="mt-4 px-4 py-2 text-white bg-blue-600 rounded-lg"
+        onClick={() => setShowLyrics(!showLyrics)}
+      >
+        {showLyrics ? "Songs" : "Lyrics"}
+      </Button>
+
+      {/* ✅ Progress Bar */}
       <div
         className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center cursor-pointer"
-        onMouseDown={() => setIsSeeking(true)}
-        onMouseUp={(event) => {
-          setIsSeeking(false);
-          handleProgressBarClick(event);
-        }}
-        onMouseMove={handleProgressBarDrag}
       >
         <div
           className="absolute bg-blue-500 h-2 rounded-lg"

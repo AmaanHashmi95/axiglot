@@ -39,7 +39,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
           <span key={index} className={word === getHighlightedWord(currentSentences.english) ? "bg-yellow-300 px-1 rounded" : ""}>
             {word}{" "}
           </span>
-        )) || "♫ ♪"}
+        )) || "(The English Translation)"}
       </p>
 
       <p className="text-center text-gray-700">
@@ -47,7 +47,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
           <span key={index} className={word === getHighlightedWord(currentSentences.target) ? "bg-yellow-300 px-1 rounded" : ""}>
             {word}{" "}
           </span>
-        )) || "♫ ♪"}
+        )) || "(The Language Lyrics)"}
       </p>
 
       <p className="text-center text-gray-500 italic">
@@ -55,7 +55,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
           <span key={index} className={word === getHighlightedWord(currentSentences.transliteration) ? "bg-yellow-300 px-1 rounded" : ""}>
             {word}{" "}
           </span>
-        )) || "♫ ♪"}
+        )) || "(The Transliteration)"}
       </p>
     </div>
   );

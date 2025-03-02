@@ -12,6 +12,7 @@ export default function Page() {
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showLyrics, setShowLyrics] = useState(false); // ✅ Track lyrics toggle
 
   const API_URL =
     typeof window !== "undefined"
@@ -50,14 +51,22 @@ export default function Page() {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      {/* ✅ Song Selection Carousel */}
-      <SongChooser songs={songs} selectedSong={selectedSong} onSelectSong={(song) => setSelectedSong(song)} />
+      {/* ✅ Toggle between SongChooser & Lyrics */}
+      {showLyrics ? (
+        selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />
+      ) : (
+        <SongChooser songs={songs} selectedSong={selectedSong} onSelectSong={setSelectedSong} />
+      )}
 
-      {/* ✅ Lyrics Display */}
-      {selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />}
-
-      {/* ✅ Music Player with onTimeUpdate */}
-      {selectedSong && <MusicPlayer song={selectedSong} onTimeUpdate={handleTimeUpdate} />}
+      {/* ✅ Music Player with Lyrics Toggle */}
+      {selectedSong && (
+        <MusicPlayer 
+          song={selectedSong} 
+          onTimeUpdate={setCurrentTime} 
+          showLyrics={showLyrics} 
+          setShowLyrics={setShowLyrics} 
+        />
+      )}
     </div>
   );
 }
