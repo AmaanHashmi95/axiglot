@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import SongChooser from "@/components/SongChooser";
 import MusicPlayer from "@/components/MusicPlayer";
 import Lyrics from "@/components/Lyrics";
@@ -40,6 +40,11 @@ export default function Page() {
     fetchSongs();
   }, [API_URL]);
 
+  // ✅ Wrap `setCurrentTime` in useCallback to prevent re-renders
+  const handleTimeUpdate = useCallback((time: number) => {
+    setCurrentTime(time);
+  }, []);
+
   if (loading) return <p className="text-center text-lg">Loading...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
@@ -51,8 +56,9 @@ export default function Page() {
       {/* ✅ Lyrics Display */}
       {selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />}
 
-      {/* ✅ Music Player */}
-      {selectedSong && <MusicPlayer song={selectedSong} />}
+      {/* ✅ Music Player with onTimeUpdate */}
+      {selectedSong && <MusicPlayer song={selectedSong} onTimeUpdate={handleTimeUpdate} />}
     </div>
   );
 }
+

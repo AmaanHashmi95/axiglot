@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-export default function MusicPlayer({ song }: { song: Song }) {
+export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTimeUpdate: (time: number) => void }) {
   const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -106,16 +106,20 @@ export default function MusicPlayer({ song }: { song: Song }) {
     }
   };
 
-  // ✅ Update Progress Bar (Only when player is ready)
+  // ✅ Update Progress Bar and Sync Time
   useEffect(() => {
     const interval = setInterval(() => {
       if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
-        setCurrentTime(playerRef.current.getCurrentTime());
+        const time = playerRef.current.getCurrentTime();
+        setCurrentTime(time);
+        onTimeUpdate(time); // ✅ Sync time with lyrics
         setDuration(playerRef.current.getDuration());
       }
-    }, 500);
+    }, 100);
+    
     return () => clearInterval(interval);
-  }, [isPlaying, isPlayerReady]);
+  }, [isPlaying, isPlayerReady, onTimeUpdate]); // ✅ Add `onTimeUpdate` dependency
+  
 
   // ✅ Adjust for mobile bottom menu bar
   useEffect(() => {
