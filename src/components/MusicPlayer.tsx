@@ -35,7 +35,6 @@ export default function MusicPlayer({
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false); // ✅ Track if user is moving progress bar
 
-  // ✅ Load YouTube API only once globally
   useEffect(() => {
     if (!window.YT) {
       const script = document.createElement("script");
@@ -50,18 +49,15 @@ export default function MusicPlayer({
     }
   }, []);
 
-  // ✅ Ensure Player is initialized when the song changes
   useEffect(() => {
     if (!song.youtubeUrl) return;
 
     const initializePlayer = () => {
-      // Destroy existing player before creating a new one
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
 
-      // ✅ Create new YouTube Player
       playerRef.current = new window.YT.Player("youtube-audio", {
         videoId: song.youtubeUrl,
         playerVars: {
@@ -97,7 +93,6 @@ export default function MusicPlayer({
     }
   }, [song.youtubeUrl]);
 
-  // ✅ Play/Pause Handling
   const togglePlay = () => {
     if (!playerRef.current || !isPlayerReady) return;
 
@@ -109,7 +104,6 @@ export default function MusicPlayer({
     setIsPlaying(!isPlaying);
   };
 
-  // ✅ Seek Handling
   const seek = (seconds: number) => {
     if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
       const newTime = Math.max(0, playerRef.current.getCurrentTime() + seconds);
@@ -118,20 +112,18 @@ export default function MusicPlayer({
     }
   };
 
-  // ✅ Update Progress Bar and Sync Time
   useEffect(() => {
     const interval = setInterval(() => {
       if (playerRef.current && isPlayerReady && !isSeeking && typeof playerRef.current.getCurrentTime === "function") {
         const time = playerRef.current.getCurrentTime();
         setCurrentTime(time);
-        onTimeUpdate(time); // ✅ Sync time with lyrics
+        onTimeUpdate(time); 
         setDuration(playerRef.current.getDuration());
       }
     }, 100);
     return () => clearInterval(interval);
   }, [isPlaying, isPlayerReady, isSeeking, onTimeUpdate]);
 
-  // ✅ Adjust for mobile bottom menu bar
   useEffect(() => {
     const adjustBottomPadding = () => {
       const menuBar = document.getElementById("mobile-bottom-menu");
@@ -143,11 +135,35 @@ export default function MusicPlayer({
     return () => window.removeEventListener("resize", adjustBottomPadding);
   }, []);
 
-  // ✅ Format time as mm:ss
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  // ✅ Handle progress bar click
+  const handleProgressBarClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!playerRef.current || !isPlayerReady || !duration) return;
+
+    const bar = event.currentTarget;
+    const clickX = event.nativeEvent.offsetX;
+    const barWidth = bar.clientWidth;
+    const newTime = (clickX / barWidth) * duration;
+
+    playerRef.current.seekTo(newTime, true);
+    setCurrentTime(newTime);
+  };
+
+  // ✅ Handle progress bar drag
+  const handleProgressBarDrag = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!isSeeking || !playerRef.current || !isPlayerReady || !duration) return;
+
+    const bar = event.currentTarget;
+    const clickX = event.nativeEvent.offsetX;
+    const barWidth = bar.clientWidth;
+    const newTime = (clickX / barWidth) * duration;
+
+    setCurrentTime(newTime);
   };
 
   return (
@@ -172,9 +188,15 @@ export default function MusicPlayer({
         {showLyrics ? "Songs" : "Lyrics"}
       </Button>
 
-      {/* ✅ Progress Bar */}
+      {/* ✅ Movable Progress Bar */}
       <div
         className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center cursor-pointer"
+        onMouseDown={() => setIsSeeking(true)}
+        onMouseUp={(event) => {
+          setIsSeeking(false);
+          handleProgressBarClick(event);
+        }}
+        onMouseMove={handleProgressBarDrag}
       >
         <div
           className="absolute bg-blue-500 h-2 rounded-lg"
