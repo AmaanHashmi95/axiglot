@@ -23,6 +23,7 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
   const [duration, setDuration] = useState(0);
   const [bottomPadding, setBottomPadding] = useState(0);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const [isSeeking, setIsSeeking] = useState(false); // ✅ Track if user is moving progress bar
 
   // ✅ Load YouTube API only once globally
   useEffect(() => {
@@ -103,23 +104,22 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
     if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
       const newTime = Math.max(0, playerRef.current.getCurrentTime() + seconds);
       playerRef.current.seekTo(newTime, true);
+      setCurrentTime(newTime);
     }
   };
 
   // ✅ Update Progress Bar and Sync Time
   useEffect(() => {
     const interval = setInterval(() => {
-      if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
+      if (playerRef.current && isPlayerReady && !isSeeking && typeof playerRef.current.getCurrentTime === "function") {
         const time = playerRef.current.getCurrentTime();
         setCurrentTime(time);
         onTimeUpdate(time); // ✅ Sync time with lyrics
         setDuration(playerRef.current.getDuration());
       }
     }, 100);
-    
     return () => clearInterval(interval);
-  }, [isPlaying, isPlayerReady, onTimeUpdate]); // ✅ Add `onTimeUpdate` dependency
-  
+  }, [isPlaying, isPlayerReady, isSeeking, onTimeUpdate]);
 
   // ✅ Adjust for mobile bottom menu bar
   useEffect(() => {
@@ -140,6 +140,31 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  // ✅ Handle User Progress Bar Click/Drag
+  const handleProgressBarClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!playerRef.current || !isPlayerReady || !duration) return;
+
+    const bar = event.currentTarget;
+    const clickX = event.nativeEvent.offsetX;
+    const barWidth = bar.clientWidth;
+    const newTime = (clickX / barWidth) * duration;
+
+    playerRef.current.seekTo(newTime, true);
+    setCurrentTime(newTime);
+  };
+
+  // ✅ Handle Dragging on Progress Bar
+  const handleProgressBarDrag = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!isSeeking || !playerRef.current || !isPlayerReady || !duration) return;
+
+    const bar = event.currentTarget;
+    const clickX = event.nativeEvent.offsetX;
+    const barWidth = bar.clientWidth;
+    const newTime = (clickX / barWidth) * duration;
+
+    setCurrentTime(newTime);
+  };
+
   return (
     <div
       className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
@@ -154,8 +179,16 @@ export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTime
         <Button onClick={() => seek(5)}>⏩</Button>
       </div>
 
-      {/* ✅ Progress Bar */}
-      <div className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center">
+      {/* ✅ Movable Progress Bar */}
+      <div
+        className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center cursor-pointer"
+        onMouseDown={() => setIsSeeking(true)}
+        onMouseUp={(event) => {
+          setIsSeeking(false);
+          handleProgressBarClick(event);
+        }}
+        onMouseMove={handleProgressBarDrag}
+      >
         <div
           className="absolute bg-blue-500 h-2 rounded-lg"
           style={{ width: `${(currentTime / duration) * 100}%` }}
