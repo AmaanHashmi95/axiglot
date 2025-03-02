@@ -1,101 +1,164 @@
 "use client";
 
-import { useState, useEffect, useRef, ChangeEvent, MouseEvent } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Song {
   title: string;
   artist: string;
-  audioUrl: string;
+  youtubeUrl: string;
 }
 
-export default function MusicPlayer({ song, onTimeUpdate }: { song: Song; onTimeUpdate: (time: number) => void }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+declare global {
+  interface Window {
+    YT?: any;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+export default function MusicPlayer({ song }: { song: Song }) {
+  const playerRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [bottomPadding, setBottomPadding] = useState(0); // ✅ New state to adjust position
+  const [bottomPadding, setBottomPadding] = useState(0);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+  // ✅ Load YouTube API only once globally
   useEffect(() => {
-    const updateProgress = () => {
-      if (audioRef.current && !isSeeking) {
-        const time = audioRef.current.currentTime;
-        setCurrentTime(time);
-        setProgress((time / duration) * 100);
-        onTimeUpdate(time);
-      }
-    };
-
-    const interval = setInterval(updateProgress, 100);
-    return () => clearInterval(interval);
-  }, [duration, isSeeking, onTimeUpdate]);
-
-  // ✅ Detect bottom menu bar and adjust position accordingly
-  useEffect(() => {
-    const checkMenuBar = () => {
-      const menuBar = document.getElementById("mobile-bottom-menu");
-      if (menuBar) {
-        setBottomPadding(menuBar.offsetHeight);
-      } else {
-        setBottomPadding(0);
-      }
-    };
-
-    checkMenuBar();
-    window.addEventListener("resize", checkMenuBar);
-    return () => window.removeEventListener("resize", checkMenuBar);
+    if (!window.YT) {
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.onload = () => {
+        if (window.YT) {
+          window.onYouTubeIframeAPIReady?.();
+        }
+      };
+      document.body.appendChild(script);
+    }
   }, []);
 
+  // ✅ Ensure Player is initialized when the song changes
+  useEffect(() => {
+    if (!song.youtubeUrl) return;
+
+    const initializePlayer = () => {
+      // Destroy existing player before creating a new one
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+
+      // ✅ Create new YouTube Player
+      playerRef.current = new window.YT.Player("youtube-audio", {
+        videoId: song.youtubeUrl,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          rel: 0,
+          fs: 0,
+          disablekb: 1,
+          iv_load_policy: 3,
+          playsinline: 1,
+        },
+        events: {
+          onReady: (event: any) => {
+            setIsPlayerReady(true);
+            setDuration(event.target.getDuration());
+            setCurrentTime(0);
+          },
+          onStateChange: (event: any) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              setIsPlaying(false);
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT) {
+      initializePlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initializePlayer;
+    }
+  }, [song.youtubeUrl]);
+
+  // ✅ Play/Pause Handling
+  const togglePlay = () => {
+    if (!playerRef.current || !isPlayerReady) return;
+
+    if (isPlaying) {
+      playerRef.current.pauseVideo();
+    } else {
+      playerRef.current.playVideo();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  // ✅ Seek Handling
+  const seek = (seconds: number) => {
+    if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
+      const newTime = Math.max(0, playerRef.current.getCurrentTime() + seconds);
+      playerRef.current.seekTo(newTime, true);
+    }
+  };
+
+  // ✅ Update Progress Bar (Only when player is ready)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
+        setCurrentTime(playerRef.current.getCurrentTime());
+        setDuration(playerRef.current.getDuration());
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying, isPlayerReady]);
+
+  // ✅ Adjust for mobile bottom menu bar
+  useEffect(() => {
+    const adjustBottomPadding = () => {
+      const menuBar = document.getElementById("mobile-bottom-menu");
+      setBottomPadding(menuBar ? menuBar.offsetHeight : 0);
+    };
+
+    adjustBottomPadding();
+    window.addEventListener("resize", adjustBottomPadding);
+    return () => window.removeEventListener("resize", adjustBottomPadding);
+  }, []);
+
+  // ✅ Format time as mm:ss
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  const handleSeekStart = () => setIsSeeking(true);
-  const handleSeekChange = (e: ChangeEvent<HTMLInputElement>) => setProgress(parseFloat(e.target.value));
-  const handleSeekEnd = (e: MouseEvent<HTMLInputElement>) => {
-    if (audioRef.current) {
-      const newTime = (parseFloat((e.target as HTMLInputElement).value) / 100) * duration;
-      audioRef.current.currentTime = newTime;
-      setIsSeeking(false);
-    }
-  };
-
   return (
     <div
       className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
-      style={{ bottom: `${bottomPadding}px` }} // ✅ Adjust position dynamically
+      style={{ bottom: `${bottomPadding}px` }}
     >
       <h2 className="text-xl font-bold">{song.title} - {song.artist}</h2>
-      <audio ref={audioRef} src={song.audioUrl} onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} />
+      <div id="youtube-audio" className="absolute opacity-0 pointer-events-none"></div>
 
       <div className="flex items-center gap-2 mt-4">
-        <Button onClick={() => audioRef.current!.currentTime -= 5}>⏪</Button>
-        <Button onClick={() => (isPlaying ? audioRef.current!.pause() : audioRef.current!.play(), setIsPlaying(!isPlaying))}>
-          {isPlaying ? "⏸️" : "▶️"}
-        </Button>
-        <Button onClick={() => audioRef.current!.currentTime += 5}>⏩</Button>
+        <Button onClick={() => seek(-5)}>⏪</Button>
+        <Button onClick={togglePlay}>{isPlaying ? "⏸️" : "▶️"}</Button>
+        <Button onClick={() => seek(5)}>⏩</Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* ✅ Progress Bar */}
       <div className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center">
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={progress}
-          onMouseDown={handleSeekStart}
-          onChange={handleSeekChange}
-          onMouseUp={handleSeekEnd}
-          className="absolute w-full h-2 bg-transparent cursor-pointer appearance-none"
-        />
-        <div className="absolute bg-blue-500 h-2 rounded-lg" style={{ width: `${progress}%` }}></div>
+        <div
+          className="absolute bg-blue-500 h-2 rounded-lg"
+          style={{ width: `${(currentTime / duration) * 100}%` }}
+        ></div>
       </div>
 
-      {/* Time Display */}
+      {/* ✅ Time Display */}
       <p className="mt-2 text-sm text-center text-gray-600">
         {formatTime(currentTime)} / {formatTime(duration)}
       </p>

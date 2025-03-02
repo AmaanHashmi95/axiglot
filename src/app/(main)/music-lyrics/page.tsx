@@ -52,7 +52,7 @@ export default function Page() {
       {selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />}
 
       {/* ✅ Music Player */}
-      {selectedSong && <MusicPlayer song={selectedSong} onTimeUpdate={setCurrentTime} />}
+      {selectedSong && <MusicPlayer song={selectedSong} />}
     </div>
   );
 }

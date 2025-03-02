@@ -15,7 +15,7 @@ export interface Word {
     id: string;
     title: string;
     artist: string;
-    audioUrl: string;
+    youtubeUrl: string; // ✅ Use YouTube ID instead of direct audio
     englishSentences: Sentence[];
     targetSentences: Sentence[];
     transliterationSentences: Sentence[];

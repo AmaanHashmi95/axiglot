@@ -338,7 +338,7 @@ model Song {
   id        String   @id @default(uuid())
   title     String
   artist    String
-  audioUrl  String
+  youtubeUrl String?  // ✅ Store YouTube video ID instead of direct audio URL
   createdAt DateTime @default(now())
 
   englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")
@@ -347,6 +347,7 @@ model Song {
 
   @@map("music_tracks")
 }
+
 
 model LyricEnglishSentence {
   id       String   @id @default(uuid())
