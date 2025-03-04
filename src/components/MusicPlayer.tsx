@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 interface Song {
   title: string;
@@ -16,24 +17,26 @@ declare global {
   }
 }
 
-export default function MusicPlayer({ 
-  song, 
-  onTimeUpdate, 
-  showLyrics, 
-  setShowLyrics 
-}: { 
-  song: Song; 
-  onTimeUpdate: (time: number) => void; 
-  showLyrics: boolean; 
+export default function MusicPlayer({
+  song,
+  onTimeUpdate,
+  showLyrics,
+  setShowLyrics,
+}: {
+  song: Song;
+  onTimeUpdate: (time: number) => void;
+  showLyrics: boolean;
   setShowLyrics: (state: boolean) => void;
 }) {
   const playerRef = useRef<any>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [bottomPadding, setBottomPadding] = useState(0);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
-  const [isSeeking, setIsSeeking] = useState(false); // ✅ Track if user is moving progress bar
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [bottomPadding, setBottomPadding] = useState(0);
 
   useEffect(() => {
     if (!window.YT) {
@@ -75,7 +78,8 @@ export default function MusicPlayer({
           onReady: (event: any) => {
             setIsPlayerReady(true);
             setDuration(event.target.getDuration());
-            setCurrentTime(0);
+            setCurrentTime(event.target.getCurrentTime());
+            event.target.setPlaybackRate(playbackRate);
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
@@ -105,25 +109,27 @@ export default function MusicPlayer({
   };
 
   const seek = (seconds: number) => {
-    if (playerRef.current && isPlayerReady && typeof playerRef.current.getCurrentTime === "function") {
+    if (
+      playerRef.current &&
+      isPlayerReady &&
+      typeof playerRef.current.getCurrentTime === "function"
+    ) {
       const newTime = Math.max(0, playerRef.current.getCurrentTime() + seconds);
       playerRef.current.seekTo(newTime, true);
       setCurrentTime(newTime);
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (playerRef.current && isPlayerReady && !isSeeking && typeof playerRef.current.getCurrentTime === "function") {
-        const time = playerRef.current.getCurrentTime();
-        setCurrentTime(time);
-        onTimeUpdate(time); 
-        setDuration(playerRef.current.getDuration());
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [isPlaying, isPlayerReady, isSeeking, onTimeUpdate]);
+  const changeSpeed = (rate: number) => {
+    if (playerRef.current && isPlayerReady) {
+      const currentVideoTime = playerRef.current.getCurrentTime();
+      playerRef.current.setPlaybackRate(rate);
+      setPlaybackRate(rate);
+      playerRef.current.seekTo(currentVideoTime, true);
+    }
+  };
 
+  // ✅ Adjust for mobile bottom menu bar
   useEffect(() => {
     const adjustBottomPadding = () => {
       const menuBar = document.getElementById("mobile-bottom-menu");
@@ -135,35 +141,40 @@ export default function MusicPlayer({
     return () => window.removeEventListener("resize", adjustBottomPadding);
   }, []);
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (
+        playerRef.current &&
+        isPlayerReady &&
+        !isSeeking &&
+        typeof playerRef.current.getCurrentTime === "function"
+      ) {
+        const time = playerRef.current.getCurrentTime();
+        setCurrentTime(time);
+        onTimeUpdate(time);
+        setDuration(playerRef.current.getDuration());
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isPlaying, isPlayerReady, isSeeking, onTimeUpdate]);
 
-  // ✅ Handle progress bar click
-  const handleProgressBarClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!playerRef.current || !isPlayerReady || !duration) return;
+  const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
+    if (!progressBarRef.current || !playerRef.current || !isPlayerReady) return;
 
-    const bar = event.currentTarget;
-    const clickX = event.nativeEvent.offsetX;
-    const barWidth = bar.clientWidth;
-    const newTime = (clickX / barWidth) * duration;
+    const bar = progressBarRef.current;
+    const rect = bar.getBoundingClientRect();
+    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
+    const offsetX = clientX - rect.left;
+    const newTime = (offsetX / rect.width) * duration;
 
     playerRef.current.seekTo(newTime, true);
     setCurrentTime(newTime);
   };
 
-  // ✅ Handle progress bar drag
-  const handleProgressBarDrag = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!isSeeking || !playerRef.current || !isPlayerReady || !duration) return;
-
-    const bar = event.currentTarget;
-    const clickX = event.nativeEvent.offsetX;
-    const barWidth = bar.clientWidth;
-    const newTime = (clickX / barWidth) * duration;
-
-    setCurrentTime(newTime);
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   return (
@@ -171,41 +182,51 @@ export default function MusicPlayer({
       className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
       style={{ bottom: `${bottomPadding}px` }}
     >
-      <h2 className="text-xl font-bold">{song.title} - {song.artist}</h2>
-      <div id="youtube-audio" className="absolute opacity-0 pointer-events-none"></div>
+      <h2 className="text-xl font-bold">
+        {song.title} - {song.artist}
+      </h2>
+      <div id="youtube-audio" className="pointer-events-none absolute opacity-0"></div>
 
-      <div className="flex items-center gap-2 mt-4">
+      <div className="mt-4 flex items-center gap-2">
         <Button onClick={() => seek(-5)}>⏪</Button>
         <Button onClick={togglePlay}>{isPlaying ? "⏸️" : "▶️"}</Button>
         <Button onClick={() => seek(5)}>⏩</Button>
       </div>
 
-      {/* ✅ Toggle Lyrics/Songs Button */}
-      <Button 
-        className="mt-4 px-4 py-2 text-white bg-blue-600 rounded-lg"
-        onClick={() => setShowLyrics(!showLyrics)}
-      >
-        {showLyrics ? "Songs" : "Lyrics"}
+      {/* ✅ Speed Toggle Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="mt-4">Speed: {playbackRate}x ⏷</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {[1, 0.75, 0.5, 0.25].map((speed) => (
+            <DropdownMenuItem key={speed} onClick={() => changeSpeed(speed)}>
+              {speed}x
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* ✅ Lyrics/Songs Toggle Button */}
+      <Button className="mt-4 bg-blue-600 text-white" onClick={() => setShowLyrics(!showLyrics)}>
+        {showLyrics ? "Show Songs" : "Show Lyrics"}
       </Button>
 
-      {/* ✅ Movable Progress Bar */}
+      {/* ✅ Movable Progress Bar (Clickable & Draggable) */}
       <div
-        className="relative w-full bg-gray-200 h-2 rounded-lg mt-2 flex items-center cursor-pointer"
-        onMouseDown={() => setIsSeeking(true)}
-        onMouseUp={(event) => {
-          setIsSeeking(false);
-          handleProgressBarClick(event);
-        }}
-        onMouseMove={handleProgressBarDrag}
+        ref={progressBarRef}
+        className="relative mt-2 flex h-2 w-full cursor-pointer items-center rounded-lg bg-gray-200"
+        onMouseDown={(e) => handleSeek(e)}
+        onTouchStart={(e) => handleSeek(e)}
       >
         <div
-          className="absolute bg-blue-500 h-2 rounded-lg"
+          className="absolute h-2 rounded-lg bg-blue-500"
           style={{ width: `${(currentTime / duration) * 100}%` }}
         ></div>
       </div>
 
       {/* ✅ Time Display */}
-      <p className="mt-2 text-sm text-center text-gray-600">
+      <p className="mt-2 text-center text-sm text-gray-600">
         {formatTime(currentTime)} / {formatTime(duration)}
       </p>
     </div>

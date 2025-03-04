@@ -24,9 +24,11 @@ export default function Page() {
       try {
         console.log("Fetching from API:", `${API_URL}/api/music`);
         const res = await fetch(`${API_URL}/api/music`);
-        if (!res.ok) throw new Error(`Failed to fetch songs. Status: ${res.status}`);
+        if (!res.ok)
+          throw new Error(`Failed to fetch songs. Status: ${res.status}`);
         const fetchedSongs: Song[] = await res.json();
-        if (fetchedSongs.length === 0) throw new Error("No songs available in the database.");
+        if (fetchedSongs.length === 0)
+          throw new Error("No songs available in the database.");
 
         setSongs(fetchedSongs);
         setSelectedSong(fetchedSongs[0]); // ✅ Default to first song
@@ -55,19 +57,22 @@ export default function Page() {
       {showLyrics ? (
         selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />
       ) : (
-        <SongChooser songs={songs} selectedSong={selectedSong} onSelectSong={setSelectedSong} />
+        <SongChooser
+          songs={songs}
+          selectedSong={selectedSong}
+          onSelectSong={setSelectedSong}
+        />
       )}
 
       {/* ✅ Music Player with Lyrics Toggle */}
       {selectedSong && (
-        <MusicPlayer 
-          song={selectedSong} 
-          onTimeUpdate={setCurrentTime} 
-          showLyrics={showLyrics} 
-          setShowLyrics={setShowLyrics} 
+        <MusicPlayer
+          song={selectedSong}
+          onTimeUpdate={setCurrentTime}
+          showLyrics={showLyrics}
+          setShowLyrics={setShowLyrics}
         />
       )}
     </div>
   );
 }
-
