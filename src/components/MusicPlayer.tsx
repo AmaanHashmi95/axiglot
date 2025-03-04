@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface Song {
   title: string;
@@ -37,7 +42,6 @@ export default function MusicPlayer({
   const [isSeeking, setIsSeeking] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
-  const [userInteracted, setUserInteracted] = useState(false);
 
   useEffect(() => {
     if (!window.YT) {
@@ -54,7 +58,7 @@ export default function MusicPlayer({
   }, []);
 
   useEffect(() => {
-    if (!song.youtubeUrl || !userInteracted) return; // ✅ Safari requires user interaction
+    if (!song.youtubeUrl) return;
 
     const initializePlayer = () => {
       if (playerRef.current) {
@@ -74,7 +78,6 @@ export default function MusicPlayer({
           disablekb: 1,
           iv_load_policy: 3,
           playsinline: 1,
-          mute: 1, // ✅ Ensures Safari allows autoplay
         },
         events: {
           onReady: (event: any) => {
@@ -82,20 +85,10 @@ export default function MusicPlayer({
             setDuration(event.target.getDuration());
             setCurrentTime(event.target.getCurrentTime());
             event.target.setPlaybackRate(playbackRate);
-
-            // ✅ Unmute after Safari allows playback
-            setTimeout(() => {
-              event.target.unMute();
-            }, 500);
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
-            }
-
-            // ✅ Safari Fix: Prevents video from getting stuck in paused state
-            if (event.data === window.YT.PlayerState.PAUSED && isPlaying) {
-              event.target.playVideo();
             }
           },
         },
@@ -107,21 +100,7 @@ export default function MusicPlayer({
     } else {
       window.onYouTubeIframeAPIReady = initializePlayer;
     }
-  }, [song.youtubeUrl, userInteracted]); // ✅ Fix: Added playbackRate
-
-  // ✅ Effect 2: Update Playback Speed Without Restarting
-  useEffect(() => {
-    if (playerRef.current && isPlayerReady) {
-      playerRef.current.setPlaybackRate(playbackRate);
-    }
-  }, [playbackRate, isPlayerReady]);
-
-  // ✅ Fix Safari: Require user interaction before loading YouTube iframe
-  const handleUserInteraction = () => {
-    if (!userInteracted) {
-      setUserInteracted(true);
-    }
-  };
+  }, [song.youtubeUrl]); // ✅ Fix: Added playbackRate
 
   const togglePlay = () => {
     if (!playerRef.current || !isPlayerReady) return;
@@ -189,7 +168,8 @@ export default function MusicPlayer({
 
     const bar = progressBarRef.current;
     const rect = bar.getBoundingClientRect();
-    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
+    const clientX =
+      "touches" in event ? event.touches[0].clientX : event.clientX;
     const offsetX = clientX - rect.left;
     const newTime = (offsetX / rect.width) * duration;
 
@@ -205,13 +185,16 @@ export default function MusicPlayer({
 
   return (
     <div
-      className="fixed bottom-0 left-0 w-full bg-white shadow-lg p-4 border-t flex flex-col items-center transition-all"
+      className="fixed bottom-0 left-0 flex w-full flex-col items-center border-t bg-white p-4 shadow-lg transition-all"
       style={{ bottom: `${bottomPadding}px` }}
     >
       <h2 className="text-xl font-bold">
         {song.title} - {song.artist}
       </h2>
-      <div id="youtube-audio" className="pointer-events-none absolute opacity-0"></div>
+      <div
+        id="youtube-audio"
+        className="pointer-events-none absolute opacity-0"
+      ></div>
 
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={() => seek(-5)}>⏪</Button>
@@ -234,7 +217,10 @@ export default function MusicPlayer({
       </DropdownMenu>
 
       {/* ✅ Lyrics/Songs Toggle Button */}
-      <Button className="mt-4 bg-blue-600 text-white" onClick={() => setShowLyrics(!showLyrics)}>
+      <Button
+        className="mt-4 bg-blue-600 text-white"
+        onClick={() => setShowLyrics(!showLyrics)}
+      >
         {showLyrics ? "Show Songs" : "Show Lyrics"}
       </Button>
 
