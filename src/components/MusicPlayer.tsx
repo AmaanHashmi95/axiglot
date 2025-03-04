@@ -73,6 +73,7 @@ export default function MusicPlayer({
           disablekb: 1,
           iv_load_policy: 3,
           playsinline: 1,
+          mute: 1, // ✅ Ensures Safari allows autoplay
         },
         events: {
           onReady: (event: any) => {
@@ -80,6 +81,11 @@ export default function MusicPlayer({
             setDuration(event.target.getDuration());
             setCurrentTime(event.target.getCurrentTime());
             event.target.setPlaybackRate(playbackRate);
+
+            // ✅ Unmute for Safari after user interaction
+            setTimeout(() => {
+              event.target.unMute();
+            }, 500);
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
