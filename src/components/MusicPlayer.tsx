@@ -73,7 +73,6 @@ export default function MusicPlayer({
           disablekb: 1,
           iv_load_policy: 3,
           playsinline: 1,
-          mute: 1, // ✅ Ensures Safari allows autoplay
         },
         events: {
           onReady: (event: any) => {
@@ -81,20 +80,10 @@ export default function MusicPlayer({
             setDuration(event.target.getDuration());
             setCurrentTime(event.target.getCurrentTime());
             event.target.setPlaybackRate(playbackRate);
-
-            // ✅ Unmute for Safari after user interaction
-            setTimeout(() => {
-              event.target.unMute();
-            }, 500);
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
-            }
-
-            // ✅ Safari Desktop Fix: Forces playback on interaction
-            if (event.data === window.YT.PlayerState.PAUSED && isPlaying) {
-              event.target.playVideo();
             }
           },
         },
@@ -106,7 +95,7 @@ export default function MusicPlayer({
     } else {
       window.onYouTubeIframeAPIReady = initializePlayer;
     }
-  }, [song.youtubeUrl, playbackRate]); // ✅ Fix: Added playbackRate
+  }, [song.youtubeUrl]); // ✅ Fix: Added playbackRate
 
   const togglePlay = () => {
     if (!playerRef.current || !isPlayerReady) return;
