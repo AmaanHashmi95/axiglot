@@ -37,6 +37,7 @@ export default function MusicPlayer({
   const [isSeeking, setIsSeeking] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   useEffect(() => {
     if (!window.YT) {
@@ -53,7 +54,7 @@ export default function MusicPlayer({
   }, []);
 
   useEffect(() => {
-    if (!song.youtubeUrl) return;
+    if (!song.youtubeUrl || !userInteracted) return; // ✅ Safari requires user interaction
 
     const initializePlayer = () => {
       if (playerRef.current) {
@@ -73,6 +74,7 @@ export default function MusicPlayer({
           disablekb: 1,
           iv_load_policy: 3,
           playsinline: 1,
+          mute: 1, // ✅ Ensures Safari allows autoplay
         },
         events: {
           onReady: (event: any) => {
@@ -80,10 +82,20 @@ export default function MusicPlayer({
             setDuration(event.target.getDuration());
             setCurrentTime(event.target.getCurrentTime());
             event.target.setPlaybackRate(playbackRate);
+
+            // ✅ Unmute after Safari allows playback
+            setTimeout(() => {
+              event.target.unMute();
+            }, 500);
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
+            }
+
+            // ✅ Safari Fix: Prevents video from getting stuck in paused state
+            if (event.data === window.YT.PlayerState.PAUSED && isPlaying) {
+              event.target.playVideo();
             }
           },
         },
@@ -95,7 +107,21 @@ export default function MusicPlayer({
     } else {
       window.onYouTubeIframeAPIReady = initializePlayer;
     }
-  }, [song.youtubeUrl]); // ✅ Fix: Added playbackRate
+  }, [song.youtubeUrl, userInteracted]); // ✅ Fix: Added playbackRate
+
+  // ✅ Effect 2: Update Playback Speed Without Restarting
+  useEffect(() => {
+    if (playerRef.current && isPlayerReady) {
+      playerRef.current.setPlaybackRate(playbackRate);
+    }
+  }, [playbackRate, isPlayerReady]);
+
+  // ✅ Fix Safari: Require user interaction before loading YouTube iframe
+  const handleUserInteraction = () => {
+    if (!userInteracted) {
+      setUserInteracted(true);
+    }
+  };
 
   const togglePlay = () => {
     if (!playerRef.current || !isPlayerReady) return;
