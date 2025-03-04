@@ -95,7 +95,7 @@ export default function MusicPlayer({
     } else {
       window.onYouTubeIframeAPIReady = initializePlayer;
     }
-  }, [song.youtubeUrl]);
+  }, [song.youtubeUrl, playbackRate]); // ✅ Fix: Added playbackRate
 
   const togglePlay = () => {
     if (!playerRef.current || !isPlayerReady) return;
