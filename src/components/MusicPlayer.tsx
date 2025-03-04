@@ -91,6 +91,11 @@ export default function MusicPlayer({
             if (event.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
             }
+
+            // ✅ Safari Desktop Fix: Forces playback on interaction
+            if (event.data === window.YT.PlayerState.PAUSED && isPlaying) {
+              event.target.playVideo();
+            }
           },
         },
       });
