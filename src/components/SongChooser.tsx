@@ -24,7 +24,7 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
   }, {});
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full rounded-lg p-4 overflow-hidden relative">
+    <div className="flex flex-col gap-6 w-full max-w-none p-4 overflow-visible">
       {Object.entries(categorizedSongs).map(([language, songs]) => (
         <div key={language} className="w-full">
           {/* Language Heading with Flag */}
@@ -45,24 +45,6 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
           <SongCarousel songs={songs} selectedSong={selectedSong} onSelectSong={onSelectSong} />
         </div>
       ))}
-
-      {/* ✅ Inline CSS to Prevent Page Overflow */}
-      <style jsx>{`
-        html, body {
-          overflow-x: hidden;
-          width: 100%;
-          max-width: 100%;
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-          display: none; /* Hide scrollbar on WebKit browsers */
-        }
-
-        .no-scrollbar {
-          -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
-          scrollbar-width: none; /* Hide scrollbar on Firefox */
-        }
-      `}</style>
     </div>
   );
 }
@@ -108,12 +90,12 @@ function SongCarousel({
   };
 
   return (
-    <div className="relative w-full overflow-hidden">
-      {/* Left Arrow */}
+    <div className="relative w-full flex items-center">
+      {/* Left Arrow - Positioned Fully Outside */}
       {canScrollLeft && (
         <button
           onClick={scrollLeft}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-300 p-2 rounded-full shadow-md z-10"
+          className="absolute left-[-40px] top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-md z-20"
         >
           ◀
         </button>
@@ -145,11 +127,11 @@ function SongCarousel({
         ))}
       </div>
 
-      {/* Right Arrow */}
+      {/* Right Arrow - Positioned Fully Outside */}
       {canScrollRight && (
         <button
           onClick={scrollRight}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-300 p-2 rounded-full shadow-md z-10"
+          className="absolute right-[-40px] top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-md z-20"
         >
           ▶
         </button>
