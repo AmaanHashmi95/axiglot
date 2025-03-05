@@ -12,14 +12,7 @@ import {
 interface Song {
   title: string;
   artist: string;
-  youtubeUrl: string;
-}
-
-declare global {
-  interface Window {
-    YT?: any;
-    onYouTubeIframeAPIReady?: () => void;
-  }
+  audioUrl: string;
 }
 
 export default function MusicPlayer({
@@ -33,108 +26,56 @@ export default function MusicPlayer({
   showLyrics: boolean;
   setShowLyrics: (state: boolean) => void;
 }) {
-  const playerRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
 
   useEffect(() => {
-    if (!window.YT) {
-      const script = document.createElement("script");
-      script.src = "https://www.youtube.com/iframe_api";
-      script.async = true;
-      script.onload = () => {
-        if (window.YT) {
-          window.onYouTubeIframeAPIReady?.();
-        }
-      };
-      document.body.appendChild(script);
+    if (audioRef.current) {
+      audioRef.current.load(); // Ensure the new song is loaded properly
+      setIsPlaying(false);
+      setCurrentTime(0);
     }
-  }, []);
-
-  useEffect(() => {
-    if (!song.youtubeUrl) return;
-
-    const initializePlayer = () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-
-      playerRef.current = new window.YT.Player("youtube-audio", {
-        videoId: song.youtubeUrl,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          showinfo: 0,
-          modestbranding: 1,
-          rel: 0,
-          fs: 0,
-          disablekb: 1,
-          iv_load_policy: 3,
-          playsinline: 1,
-        },
-        events: {
-          onReady: (event: any) => {
-            setIsPlayerReady(true);
-            setDuration(event.target.getDuration());
-            setCurrentTime(event.target.getCurrentTime());
-            event.target.setPlaybackRate(playbackRate);
-          },
-          onStateChange: (event: any) => {
-            if (event.data === window.YT.PlayerState.ENDED) {
-              setIsPlaying(false);
-            }
-          },
-        },
-      });
-    };
-
-    if (window.YT) {
-      initializePlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = initializePlayer;
-    }
-  }, [song.youtubeUrl]); // ✅ Fix: Added playbackRate
+  }, [song.audioUrl]);
 
   const togglePlay = () => {
-    if (!playerRef.current || !isPlayerReady) return;
-
-    if (isPlaying) {
-      playerRef.current.pauseVideo();
-    } else {
-      playerRef.current.playVideo();
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setIsPlaying(true))
+            .catch((error) => console.error("Playback failed:", error));
+        }
+      }
     }
-    setIsPlaying(!isPlaying);
   };
 
   const seek = (seconds: number) => {
-    if (
-      playerRef.current &&
-      isPlayerReady &&
-      typeof playerRef.current.getCurrentTime === "function"
-    ) {
-      const newTime = Math.max(0, playerRef.current.getCurrentTime() + seconds);
-      playerRef.current.seekTo(newTime, true);
+    if (audioRef.current) {
+      const newTime = Math.max(0, Math.min(audioRef.current.currentTime + seconds, duration));
+      audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
   };
 
   const changeSpeed = (rate: number) => {
-    if (playerRef.current && isPlayerReady) {
-      const currentVideoTime = playerRef.current.getCurrentTime();
-      playerRef.current.setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
       setPlaybackRate(rate);
-      playerRef.current.seekTo(currentVideoTime, true);
+    } else {
+      console.warn("Audio element is not available to change speed.");
     }
   };
 
-  // ✅ Adjust for mobile bottom menu bar
   useEffect(() => {
     const adjustBottomPadding = () => {
       const menuBar = document.getElementById("mobile-bottom-menu");
@@ -147,33 +88,37 @@ export default function MusicPlayer({
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (
-        playerRef.current &&
-        isPlayerReady &&
-        !isSeeking &&
-        typeof playerRef.current.getCurrentTime === "function"
-      ) {
-        const time = playerRef.current.getCurrentTime();
-        setCurrentTime(time);
-        onTimeUpdate(time);
-        setDuration(playerRef.current.getDuration());
+    const updateTime = () => {
+      if (audioRef.current) {
+        setCurrentTime(audioRef.current.currentTime);
+        setDuration(audioRef.current.duration || 0);
+        onTimeUpdate(audioRef.current.currentTime);
       }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [isPlaying, isPlayerReady, isSeeking, onTimeUpdate]);
+    };
+
+    if (audioRef.current) {
+      audioRef.current.addEventListener("timeupdate", updateTime);
+      audioRef.current.addEventListener("loadedmetadata", updateTime);
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener("timeupdate", updateTime);
+        audioRef.current.removeEventListener("loadedmetadata", updateTime);
+      }
+    };
+  }, [onTimeUpdate]);
 
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
-    if (!progressBarRef.current || !playerRef.current || !isPlayerReady) return;
-
+    if (!progressBarRef.current || !audioRef.current) return;
+  
     const bar = progressBarRef.current;
     const rect = bar.getBoundingClientRect();
-    const clientX =
-      "touches" in event ? event.touches[0].clientX : event.clientX;
+    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
     const offsetX = clientX - rect.left;
     const newTime = (offsetX / rect.width) * duration;
-
-    playerRef.current.seekTo(newTime, true);
+  
+    audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
 
@@ -191,10 +136,24 @@ export default function MusicPlayer({
       <h2 className="text-xl font-bold">
         {song.title} - {song.artist}
       </h2>
-      <div
-        id="youtube-audio"
-        className="pointer-events-none absolute opacity-0"
-      ></div>
+
+      {/* ✅ Audio Element for Playing Music */}
+      <audio
+        ref={audioRef}
+        src={song.audioUrl}
+        onLoadedMetadata={() => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+          }
+        }}
+        onTimeUpdate={() => {
+          if (audioRef.current) {
+            setCurrentTime(audioRef.current.currentTime);
+            onTimeUpdate(audioRef.current.currentTime);
+          }
+        }}
+        onEnded={() => setIsPlaying(false)}
+      />
 
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={() => seek(-5)}>⏪</Button>

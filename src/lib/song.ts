@@ -1,23 +1,23 @@
 export interface Word {
-    word: string;
-    startTime: number;
-    endTime: number;
-  }
-  
-  export interface Sentence {
-    text: string;
-    startTime: number;
-    endTime: number;
-    words: Word[];
-  }
-  
-  export interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    youtubeUrl: string; // ✅ Use YouTube ID instead of direct audio
-    englishSentences: Sentence[];
-    targetSentences: Sentence[];
-    transliterationSentences: Sentence[];
-  }
-  
+  word: string;
+  startTime: number;
+  endTime: number;
+}
+
+export interface Sentence {
+  text: string;
+  startTime: number;
+  endTime: number;
+  words: Word[];
+}
+
+export interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  audioUrl: string; // ✅ Use direct audio URL from Vercel Storage
+  language?: string; // ✅ Add language field
+  englishSentences: Sentence[];
+  targetSentences: Sentence[];
+  transliterationSentences: Sentence[];
+}

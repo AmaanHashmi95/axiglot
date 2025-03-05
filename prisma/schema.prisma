@@ -338,7 +338,8 @@ model Song {
   id        String   @id @default(uuid())
   title     String
   artist    String
-  youtubeUrl String?  // ✅ Store YouTube video ID instead of direct audio URL
+  audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
+  language  String?
   createdAt DateTime @default(now())
 
   englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")

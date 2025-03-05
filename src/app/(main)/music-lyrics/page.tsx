@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import SongChooser from "@/components/SongChooser";
 import MusicPlayer from "@/components/MusicPlayer";
 import Lyrics from "@/components/Lyrics";
-import { Song } from "@/lib/song"; // ✅ Import the shared type
+import { Song } from "@/lib/song";
 
 export default function Page() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -12,7 +12,7 @@ export default function Page() {
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showLyrics, setShowLyrics] = useState(false); // ✅ Track lyrics toggle
+  const [showLyrics, setShowLyrics] = useState(false);
 
   const API_URL =
     typeof window !== "undefined"
@@ -43,7 +43,6 @@ export default function Page() {
     fetchSongs();
   }, [API_URL]);
 
-  // ✅ Wrap `setCurrentTime` in useCallback to prevent re-renders
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
   }, []);
@@ -53,7 +52,6 @@ export default function Page() {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      {/* ✅ Toggle between SongChooser & Lyrics */}
       {showLyrics ? (
         selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />
       ) : (
@@ -64,7 +62,6 @@ export default function Page() {
         />
       )}
 
-      {/* ✅ Music Player with Lyrics Toggle */}
       {selectedSong && (
         <MusicPlayer
           song={selectedSong}
