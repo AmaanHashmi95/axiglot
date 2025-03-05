@@ -339,6 +339,7 @@ model Song {
   title     String
   artist    String
   audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
+  imageUrl  String?   // ✅ New field to store the image URL
   language  String?
   createdAt DateTime @default(now())
 

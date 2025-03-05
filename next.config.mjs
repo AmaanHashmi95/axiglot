@@ -13,6 +13,11 @@ const nextConfig = {
         hostname: "utfs.io",
         pathname: `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
       },
+      {
+        protocol: "https",
+        hostname: "u8ombuwywmnulg03.public.blob.vercel-storage.com", // ✅ Allow images from this host
+        pathname: "/*",
+      },
     ],
   },
   rewrites: () => {

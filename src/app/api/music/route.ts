@@ -17,6 +17,7 @@ export async function GET() {
       ...song,
       audioUrl: song.audioUrl || "", // Ensure it's always a string
       language: song.language || "Unknown",
+      imageUrl: song.imageUrl || "/icons/Music.png", // ✅ Set default image if missing
     }));
     
 
