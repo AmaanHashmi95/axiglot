@@ -45,28 +45,6 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
           <SongCarousel songs={songs} selectedSong={selectedSong} onSelectSong={onSelectSong} />
         </div>
       ))}
-      {/* ✅ Move Style Inside JSX */}
-      <style jsx>{`
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
-    scrollbar-width: none; /* Hide scrollbar on Firefox */
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Hide scrollbar on WebKit browsers (Chrome, Safari) */
-  }
-
-  /* ✅ Safari-Specific Fix: Hides Scrollbar but Keeps Scroll Functionality */
-  @supports (-webkit-touch-callout: none) {
-    .no-scrollbar {
-      overflow: hidden;
-      clip-path: inset(0 0 0 0);
-      -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-    }
-  }
-`}</style>
-
-
     </div>
   );
 }
@@ -161,3 +139,24 @@ function SongCarousel({
     </div>
   );
 }
+
+
+<style jsx>{`
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
+    scrollbar-width: none; /* Hide scrollbar on Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    height: 0px; /* Hide scrollbar on WebKit browsers (Chrome, Safari) */
+  }
+
+  /* ✅ Safari-specific fix: Uses overflow hidden with masking to prevent scrollbar flickering */
+  @supports (-webkit-touch-callout: none) {
+    .no-scrollbar {
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    }
+  }
+`}</style>
