@@ -51,7 +51,7 @@ export default function Page() {
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 w-full overflow-hidden">
       {showLyrics ? (
         selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />
       ) : (

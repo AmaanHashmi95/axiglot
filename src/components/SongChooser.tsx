@@ -24,9 +24,9 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
   }, {});
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-3xl black rounded-lg p-4">
+    <div className="flex flex-col gap-6 w-full max-w-full rounded-lg p-4 overflow-hidden relative">
       {Object.entries(categorizedSongs).map(([language, songs]) => (
-        <div key={language}>
+        <div key={language} className="w-full">
           {/* Language Heading with Flag */}
           <div className="flex items-center gap-2 mb-2">
             <h2 className="text-lg font-bold">{language}</h2>
@@ -45,6 +45,24 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
           <SongCarousel songs={songs} selectedSong={selectedSong} onSelectSong={onSelectSong} />
         </div>
       ))}
+
+      {/* ✅ Inline CSS to Prevent Page Overflow */}
+      <style jsx>{`
+        html, body {
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+          display: none; /* Hide scrollbar on WebKit browsers */
+        }
+
+        .no-scrollbar {
+          -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
+          scrollbar-width: none; /* Hide scrollbar on Firefox */
+        }
+      `}</style>
     </div>
   );
 }
@@ -61,7 +79,7 @@ function SongCarousel({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(songs.length > 3); // Show right arrow if there are more than 3 songs
+  const [canScrollRight, setCanScrollRight] = useState(songs.length > 3);
 
   // Scroll left
   const scrollLeft = () => {
@@ -90,7 +108,7 @@ function SongCarousel({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full overflow-hidden">
       {/* Left Arrow */}
       {canScrollLeft && (
         <button
@@ -104,8 +122,14 @@ function SongCarousel({
       {/* Scrollable Song List */}
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto gap-4 p-2 no-scrollbar"
+        className="flex overflow-x-auto gap-4 p-2 no-scrollbar w-full"
         onScroll={updateScrollButtons}
+        style={{
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+          scrollbarWidth: "none", // Hide scrollbar (Firefox)
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         {songs.map((song) => (
           <div
