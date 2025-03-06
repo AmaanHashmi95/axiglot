@@ -13,7 +13,11 @@ const languageFlags: Record<string, string> = {
   Urdu: "/flags/pakistan-flag.png",
 };
 
-export default function SongChooser({ songs, selectedSong, onSelectSong }: SongChooserProps) {
+export default function SongChooser({
+  songs,
+  selectedSong,
+  onSelectSong,
+}: SongChooserProps) {
   const categorizedSongs = songs.reduce<Record<string, Song[]>>((acc, song) => {
     const language = song.language || "Unknown";
     if (!acc[language]) acc[language] = [];
@@ -22,10 +26,10 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
   }, {});
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-none p-4 overflow-visible">
+    <div className="flex w-full max-w-none flex-col gap-6 overflow-visible p-4">
       {Object.entries(categorizedSongs).map(([language, songs]) => (
         <div key={language} className="w-full">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <h2 className="text-lg font-bold">{language}</h2>
             {languageFlags[language] && (
               <Image
@@ -38,14 +42,26 @@ export default function SongChooser({ songs, selectedSong, onSelectSong }: SongC
             )}
           </div>
 
-          <SongCarousel songs={songs} selectedSong={selectedSong} onSelectSong={onSelectSong} />
+          <SongCarousel
+            songs={songs}
+            selectedSong={selectedSong}
+            onSelectSong={onSelectSong}
+          />
         </div>
       ))}
     </div>
   );
 }
 
-function SongCarousel({ songs, selectedSong, onSelectSong }: { songs: Song[]; selectedSong: Song | null; onSelectSong: (song: Song) => void; }) {
+function SongCarousel({
+  songs,
+  selectedSong,
+  onSelectSong,
+}: {
+  songs: Song[];
+  selectedSong: Song | null;
+  onSelectSong: (song: Song) => void;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(songs.length > 3);
@@ -67,7 +83,10 @@ function SongCarousel({ songs, selectedSong, onSelectSong }: { songs: Song[]; se
   const updateScrollButtons = () => {
     if (scrollRef.current) {
       setCanScrollLeft(scrollRef.current.scrollLeft > 0);
-      setCanScrollRight(scrollRef.current.scrollLeft < scrollRef.current.scrollWidth - scrollRef.current.clientWidth);
+      setCanScrollRight(
+        scrollRef.current.scrollLeft <
+          scrollRef.current.scrollWidth - scrollRef.current.clientWidth,
+      );
     }
   };
 
@@ -84,47 +103,66 @@ function SongCarousel({ songs, selectedSong, onSelectSong }: { songs: Song[]; se
   };
 
   return (
-    <div className="relative w-full flex items-center">
+    <div className="relative flex w-full items-center">
       {canScrollLeft && (
-        <button onClick={scrollLeft} className="absolute left-[-40px] top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-md z-20">
+        <button
+          onClick={scrollLeft}
+          className="absolute left-[-40px] top-1/2 z-20 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+        >
           ◀
         </button>
       )}
 
-      <div ref={scrollRef} className="flex overflow-x-auto gap-4 p-2 no-scrollbar w-full"
+      <div
+        ref={scrollRef}
+        className="no-scrollbar flex w-full gap-4 overflow-x-auto p-2"
         onScroll={updateScrollButtons}
-        style={{ overflowX: "auto", whiteSpace: "nowrap", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+        style={{
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {songs.map((song) => (
-          <div 
-            key={song.id} 
-            className={`cursor-pointer p-3 border rounded-lg min-w-[150px] aspect-[4/5] flex flex-col items-center transition text-white`} 
+          <div
+            key={song.id}
+            className={`flex aspect-[4/5] min-w-[150px] cursor-pointer flex-col items-center rounded-lg border p-3 text-white transition ${
+              selectedSong?.id === song.id
+                ? "border-4 border-[#00E2FF]"
+                : "border-transparent"
+            }`}
             onClick={() => onSelectSong(song)}
             style={{ background: getBackgroundStyle(song.language) }} // ✅ Apply background gradient
           >
             {/* ✅ Square Image */}
-            <div className="w-full h-32 flex justify-center items-center">
+            <div className="flex h-32 w-full items-center justify-center">
               <Image
                 src={song.imageUrl || "/icons/Music.png"}
                 alt={song.title}
                 width={120}
                 height={120}
-                className="object-cover rounded-lg w-full h-full"
+                className="h-full w-full rounded-lg object-cover"
               />
             </div>
 
             {/* ✅ Title and Artist */}
-            <h3 className="text-md font-semibold mt-2 text-center">{song.title}</h3>
-            <p className="text-sm text-gray-200 text-center">{song.artist}</p>
+            <h3 className="text-md mt-2 text-center font-semibold">
+              {song.title}
+            </h3>
+            <p className="text-center text-sm text-gray-200">{song.artist}</p>
           </div>
         ))}
       </div>
 
       {canScrollRight && (
-        <button onClick={scrollRight} className="absolute right-[-40px] top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-md z-20">
+        <button
+          onClick={scrollRight}
+          className="absolute right-[-40px] top-1/2 z-20 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+        >
           ▶
         </button>
       )}
     </div>
   );
 }
-

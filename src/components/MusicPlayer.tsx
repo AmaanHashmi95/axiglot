@@ -31,7 +31,7 @@ export default function MusicPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(1); // ✅ Speed defaults to 1x
   const [bottomPadding, setBottomPadding] = useState(0);
 
   useEffect(() => {
@@ -39,8 +39,12 @@ export default function MusicPlayer({
       audioRef.current.load();
       setIsPlaying(false);
       setCurrentTime(0);
+
+      // ✅ Reset speed to 1x when changing the song
+      audioRef.current.playbackRate = 1;
+      setPlaybackRate(1);
     }
-  }, [song.audioUrl]);
+  }, [song.audioUrl]); // ✅ Trigger this when a new song is loaded
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -138,7 +142,7 @@ export default function MusicPlayer({
         onEnded={() => setIsPlaying(false)}
       />
 
-      {/* ✅ Player Controls with Everything on the Same Row */}
+      {/* ✅ Player Controls with Corrected Icons */}
       <div className="flex items-center justify-center w-full max-w-2xl gap-4">
         {/* Song Title & Artist (Left) */}
         <div className="flex flex-col text-xs text-gray-800 truncate w-1/4">
@@ -146,7 +150,7 @@ export default function MusicPlayer({
           <span className="truncate">{song.artist}</span>
         </div>
 
-        {/* Lyrics Button (Centered Left of Rewind) */}
+        {/* Lyrics Button (Left of Rewind) */}
         <Button
           className="bg-blue-600 text-white px-2 py-1 text-xs"
           onClick={() => setShowLyrics(!showLyrics)}
@@ -156,15 +160,49 @@ export default function MusicPlayer({
         </Button>
 
         {/* Music Controls (Perfectly Centered) */}
-        <div className="flex justify-center items-center gap-3">
-          <Button onClick={() => seek(-5)} className="p-1 text-lg">⏪</Button>
-          <Button onClick={togglePlay} className="p-2 text-lg">
-            {isPlaying ? "⏸️" : "▶️"}
-          </Button>
-          <Button onClick={() => seek(5)} className="p-1 text-lg">⏩</Button>
+        <div className="flex justify-center items-center gap-4">
+          {/* ✅ Corrected Rewind Button (Double Left Arrow) */}
+<button onClick={() => seek(-5)}>
+  <svg width="32" height="32" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#ff8a00" />
+        <stop offset="100%" stopColor="#ef2626" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#gradient)" d="M11 12L22 22V2zM2 12L13 22V2z"></path>
+  </svg>
+</button>
+
+{/* ✅ Play/Pause Button (Bigger Size) */}
+<button onClick={togglePlay}>
+  <svg width="50" height="50" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#ff8a00" />
+        <stop offset="100%" stopColor="#ef2626" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#gradient)" d={isPlaying ? "M6 19h4V5H6zm8-14v14h4V5z" : "M8 5v14l11-7z"}></path>
+  </svg>
+</button>
+
+{/* ✅ Corrected Fast Forward Button (Double Right Arrow) */}
+<button onClick={() => seek(5)}>
+  <svg width="32" height="32" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#ff8a00" />
+        <stop offset="100%" stopColor="#ef2626" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#gradient)" d="M13 12L2 22V2zM22 12L11 22V2z"></path>
+  </svg>
+</button>
+
         </div>
 
-        {/* Speed Toggle (Right Side) */}
+        {/* ✅ Speed Toggle (Resets on Song Change) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="px-3 py-1 text-xs">Speed: {playbackRate}x ⏷</Button>
@@ -188,7 +226,8 @@ export default function MusicPlayer({
       >
         <div
           className="absolute h-2 rounded-lg bg-blue-500"
-          style={{ width: `${(currentTime / duration) * 100}%` }}
+          style={{ width: `${(currentTime / duration) * 100}%`,
+          background: "linear-gradient(90deg, #ff8a00, #ef2626)",}}
         ></div>
       </div>
 

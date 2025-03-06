@@ -62,6 +62,9 @@ export default function Page() {
         />
       )}
 
+      {/* Add padding to ensure space for MusicPlayer */}
+     <div className="pb-24"></div>
+
       {selectedSong && (
         <MusicPlayer
           song={selectedSong}
