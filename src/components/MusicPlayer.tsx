@@ -160,7 +160,7 @@ export default function MusicPlayer({
         </Button>
 
         {/* Music Controls (Perfectly Centered) */}
-        <div className="flex justify-center items-center gap-4">
+        <div className="flex items-center gap-4 relative w-[300px] left-1/10">
           {/* ✅ Corrected Rewind Button (Double Left Arrow) */}
 <button onClick={() => seek(-5)}>
   <svg width="32" height="32" viewBox="0 0 24 24">
