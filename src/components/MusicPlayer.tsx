@@ -107,15 +107,34 @@ export default function MusicPlayer({
 
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
     if (!progressBarRef.current || !audioRef.current) return;
-
+  
     const bar = progressBarRef.current;
     const rect = bar.getBoundingClientRect();
-    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
-    const offsetX = clientX - rect.left;
-    const newTime = (offsetX / rect.width) * duration;
-
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
+  
+    const getClientX = (e: React.MouseEvent | React.TouchEvent) =>
+      "touches" in e ? e.touches[0].clientX : e.clientX;
+  
+    const updateSeek = (e: MouseEvent | TouchEvent) => {
+      if (!audioRef.current) return;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const offsetX = clientX - rect.left;
+      const newTime = Math.max(0, Math.min((offsetX / rect.width) * duration, duration));
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    };
+  
+    const stopSeek = () => {
+      document.removeEventListener("mousemove", updateSeek);
+      document.removeEventListener("mouseup", stopSeek);
+      document.removeEventListener("touchmove", updateSeek);
+      document.removeEventListener("touchend", stopSeek);
+    };
+  
+    updateSeek(event as unknown as MouseEvent); // Update on first click/touch
+    document.addEventListener("mousemove", updateSeek);
+    document.addEventListener("mouseup", stopSeek);
+    document.addEventListener("touchmove", updateSeek);
+    document.addEventListener("touchend", stopSeek);
   };
 
   const formatTime = (time: number) => {
