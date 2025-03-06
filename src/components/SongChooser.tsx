@@ -107,7 +107,7 @@ function SongCarousel({
       {canScrollLeft && (
         <button
           onClick={scrollLeft}
-          className="absolute left-[-40px] top-1/2 z-20 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="absolute left-[-40px] top-1/2 z-51 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
         </button>
@@ -158,7 +158,7 @@ function SongCarousel({
       {canScrollRight && (
         <button
           onClick={scrollRight}
-          className="absolute right-[-40px] top-1/2 z-20 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="absolute right-[-40px] top-1/2 z-49 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
         </button>
