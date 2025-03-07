@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import VideoChooser from "@/components/VideoChooser";
 import VideoPlayer from "@/components/VideoPlayer";
 import Subtitles from "@/components/Subtitles";
+import VideoScreen from "@/components/VideoScreen";
 import { Video } from "@/lib/video";
+import { Button } from "@/components/ui/button";
 
 export default function Page() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -13,6 +15,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showSubtitles, setShowSubtitles] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const API_URL =
     typeof window !== "undefined"
@@ -31,7 +34,6 @@ export default function Page() {
           throw new Error("No videos available in the database.");
 
         setVideos(fetchedVideos);
-        setSelectedVideo(fetchedVideos[0]); // ✅ Default to first video
       } catch (err: any) {
         setError(err.message);
         console.error("Fetch error:", err.message);
@@ -47,30 +49,53 @@ export default function Page() {
     setCurrentTime(time);
   }, []);
 
+  const handleSelectVideo = (video: Video) => {
+    setSelectedVideo(video);
+    setShowSubtitles(true);
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  };
+
+  const handleBackToChooser = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    setSelectedVideo(null);
+    setShowSubtitles(false);
+  };
+
   if (loading) return <p className="text-center text-lg">Loading...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="flex flex-col gap-4 p-4 w-full overflow-hidden">
-      {showSubtitles ? (
-        selectedVideo && <Subtitles video={selectedVideo} currentTime={currentTime} />
+    <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
+      {selectedVideo ? (
+        <>
+
+          <VideoScreen
+            videoUrl={selectedVideo.videoUrl}
+            showSubtitles={showSubtitles}
+            videoRef={videoRef}
+          />
+          <Subtitles video={selectedVideo} currentTime={currentTime} />
+
+          {/* VideoPlayer should only be visible when video screen is active */}
+          <VideoPlayer
+            video={selectedVideo}
+            onTimeUpdate={setCurrentTime}
+            showSubtitles={showSubtitles}
+            setShowSubtitles={setShowSubtitles}
+            videoRef={videoRef}
+            onBack={handleBackToChooser}
+          />
+        </>
       ) : (
         <VideoChooser
           videos={videos}
           selectedVideo={selectedVideo}
-          onSelectVideo={setSelectedVideo}
-        />
-      )}
-
-      {/* Add padding to ensure space for VideoPlayer */}
-     <div className="pb-24"></div>
-
-      {selectedVideo && (
-        <VideoPlayer
-          video={selectedVideo}
-          onTimeUpdate={setCurrentTime}
-          showSubtitles={showSubtitles}
-          setShowSubtitles={setShowSubtitles}
+          onSelectVideo={handleSelectVideo}
         />
       )}
     </div>

@@ -20,54 +20,60 @@ export default function VideoPlayer({
   onTimeUpdate,
   showSubtitles,
   setShowSubtitles,
+  videoRef,
+  onBack,
 }: {
   video: Video;
   onTimeUpdate: (time: number) => void;
   showSubtitles: boolean;
   setShowSubtitles: (state: boolean) => void;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  onBack: () => void;
 }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1); // ✅ Speed defaults to 1x
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
+    if (videoRef.current) {
+      videoRef.current.load();
       setIsPlaying(false);
       setCurrentTime(0);
-
-      // ✅ Reset speed to 1x when changing the video
-      audioRef.current.playbackRate = 1;
+      videoRef.current.playbackRate = 1;
       setPlaybackRate(1);
     }
-  }, [video.videoUrl]); // ✅ Trigger this when a new video is loaded
+  }, [video.videoUrl]);
 
   const togglePlay = () => {
-    if (audioRef.current) {
+    if (videoRef.current) {
       if (isPlaying) {
-        audioRef.current.pause();
+        videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
+        videoRef.current.play().catch(console.error);
+        setIsPlaying(true);
       }
     }
   };
 
   const seek = (seconds: number) => {
-    if (audioRef.current) {
-      const newTime = Math.max(0, Math.min(audioRef.current.currentTime + seconds, duration));
-      audioRef.current.currentTime = newTime;
+    if (videoRef.current) {
+      const newTime = Math.max(
+        0,
+        Math.min(videoRef.current.currentTime + seconds, duration),
+      );
+      videoRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
   };
 
   const changeSpeed = (rate: number) => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
+    if (videoRef.current) {
+      videoRef.current.playbackRate = rate;
       setPlaybackRate(rate);
     }
   };
@@ -85,51 +91,54 @@ export default function VideoPlayer({
 
   useEffect(() => {
     const updateTime = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-        setDuration(audioRef.current.duration || 0);
-        onTimeUpdate(audioRef.current.currentTime);
+      if (videoRef.current) {
+        setCurrentTime(videoRef.current.currentTime);
+        setDuration(videoRef.current.duration || 0);
+        onTimeUpdate(videoRef.current.currentTime);
       }
     };
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener("timeupdate", updateTime);
-      audioRef.current.addEventListener("loadedmetadata", updateTime);
+    if (videoRef.current) {
+      videoRef.current.addEventListener("timeupdate", updateTime);
+      videoRef.current.addEventListener("loadedmetadata", updateTime);
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("timeupdate", updateTime);
-        audioRef.current.removeEventListener("loadedmetadata", updateTime);
+      if (videoRef.current) {
+        videoRef.current.removeEventListener("timeupdate", updateTime);
+        videoRef.current.removeEventListener("loadedmetadata", updateTime);
       }
     };
   }, [onTimeUpdate]);
 
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
-    if (!progressBarRef.current || !audioRef.current) return;
-  
+    if (!progressBarRef.current || !videoRef.current) return;
+
     const bar = progressBarRef.current;
     const rect = bar.getBoundingClientRect();
-  
+
     const getClientX = (e: React.MouseEvent | React.TouchEvent) =>
       "touches" in e ? e.touches[0].clientX : e.clientX;
-  
+
     const updateSeek = (e: MouseEvent | TouchEvent) => {
-      if (!audioRef.current) return;
+      if (!videoRef.current) return;
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
       const offsetX = clientX - rect.left;
-      const newTime = Math.max(0, Math.min((offsetX / rect.width) * duration, duration));
-      audioRef.current.currentTime = newTime;
+      const newTime = Math.max(
+        0,
+        Math.min((offsetX / rect.width) * duration, duration),
+      );
+      videoRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     };
-  
+
     const stopSeek = () => {
       document.removeEventListener("mousemove", updateSeek);
       document.removeEventListener("mouseup", stopSeek);
       document.removeEventListener("touchmove", updateSeek);
       document.removeEventListener("touchend", stopSeek);
     };
-  
+
     updateSeek(event as unknown as MouseEvent); // Update on first click/touch
     document.addEventListener("mousemove", updateSeek);
     document.addEventListener("mouseup", stopSeek);
@@ -143,88 +152,112 @@ export default function VideoPlayer({
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  const handleBackToChooser = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    setSelectedVideo(null);
+    setShowSubtitles(false);
+  };
+
+
   return (
     <div
-      className="fixed bottom-0 left-0 w-full flex flex-col items-center border-t bg-white px-4 py-2 shadow-lg"
+      className="fixed bottom-0 left-0 flex w-full flex-col items-center border-t bg-white px-4 py-2 shadow-lg"
       style={{ bottom: `${bottomPadding}px` }}
     >
-      <audio
-        ref={audioRef}
-        src={video.videoUrl}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
-        onTimeUpdate={() => {
-          if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
-            onTimeUpdate(audioRef.current.currentTime);
-          }
-        }}
-        onEnded={() => setIsPlaying(false)}
-      />
-
       {/* ✅ Player Controls with Corrected Icons */}
-      <div className="flex items-center justify-center w-full max-w-2xl gap-4">
+      <div className="flex w-full max-w-2xl items-center justify-center gap-4">
         {/* Video Title & Genre (Left) */}
-        <div className="flex flex-col text-xs text-gray-800 truncate w-1/4">
-          <span className="font-semibold truncate">{video.title}</span>
+        <div className="flex w-1/4 flex-col truncate text-xs text-gray-800">
+          <span className="truncate font-semibold">{video.title}</span>
           <span className="truncate">{video.genre}</span>
         </div>
 
         {/* Subtitles Button (Left of Rewind) */}
         <Button
-          className="bg-blue-600 text-white px-2 py-1 text-xs"
-          onClick={() => setShowSubtitles(!showSubtitles)}
-          style={{ minWidth: "60px" }}
-        >
-          {showSubtitles ? "Videos" : "Subtitles"}
-        </Button>
+              onClick={onBack}
+              className="rounded-md bg-gray-700 px-3 py-2 text-white shadow"
+            >
+              ← Back
+            </Button>
 
         {/* Video Controls (Perfectly Centered) */}
-        <div className="flex items-center gap-4 relative w-[300px] left-1/10">
+        <div className="left-1/10 relative flex w-[300px] items-center gap-4">
           {/* ✅ Corrected Rewind Button (Double Left Arrow) */}
-<button onClick={() => seek(-5)}>
-  <svg width="32" height="32" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#ff8a00" />
-        <stop offset="100%" stopColor="#ef2626" />
-      </linearGradient>
-    </defs>
-    <path fill="url(#gradient)" d="M11 12L22 22V2zM2 12L13 22V2z"></path>
-  </svg>
-</button>
+          <button onClick={() => seek(-5)}>
+            <svg width="32" height="32" viewBox="0 0 24 24">
+              <defs>
+                <linearGradient
+                  id="gradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor="#ff8a00" />
+                  <stop offset="100%" stopColor="#ef2626" />
+                </linearGradient>
+              </defs>
+              <path
+                fill="url(#gradient)"
+                d="M11 12L22 22V2zM2 12L13 22V2z"
+              ></path>
+            </svg>
+          </button>
 
-{/* ✅ Play/Pause Button (Bigger Size) */}
-<button onClick={togglePlay}>
-  <svg width="50" height="50" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#ff8a00" />
-        <stop offset="100%" stopColor="#ef2626" />
-      </linearGradient>
-    </defs>
-    <path fill="url(#gradient)" d={isPlaying ? "M6 19h4V5H6zm8-14v14h4V5z" : "M8 5v14l11-7z"}></path>
-  </svg>
-</button>
+          {/* ✅ Play/Pause Button (Bigger Size) */}
+          <button onClick={togglePlay}>
+            <svg width="50" height="50" viewBox="0 0 24 24">
+              <defs>
+                <linearGradient
+                  id="gradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor="#ff8a00" />
+                  <stop offset="100%" stopColor="#ef2626" />
+                </linearGradient>
+              </defs>
+              <path
+                fill="url(#gradient)"
+                d={isPlaying ? "M6 19h4V5H6zm8-14v14h4V5z" : "M8 5v14l11-7z"}
+              ></path>
+            </svg>
+          </button>
 
-{/* ✅ Corrected Fast Forward Button (Double Right Arrow) */}
-<button onClick={() => seek(5)}>
-  <svg width="32" height="32" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#ff8a00" />
-        <stop offset="100%" stopColor="#ef2626" />
-      </linearGradient>
-    </defs>
-    <path fill="url(#gradient)" d="M13 12L2 22V2zM22 12L11 22V2z"></path>
-  </svg>
-</button>
-
+          {/* ✅ Corrected Fast Forward Button (Double Right Arrow) */}
+          <button onClick={() => seek(5)}>
+            <svg width="32" height="32" viewBox="0 0 24 24">
+              <defs>
+                <linearGradient
+                  id="gradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor="#ff8a00" />
+                  <stop offset="100%" stopColor="#ef2626" />
+                </linearGradient>
+              </defs>
+              <path
+                fill="url(#gradient)"
+                d="M13 12L2 22V2zM22 12L11 22V2z"
+              ></path>
+            </svg>
+          </button>
         </div>
 
         {/* ✅ Speed Toggle (Resets on Video Change) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="px-3 py-1 text-xs">Speed: {playbackRate}x ⏷</Button>
+            <Button className="px-3 py-1 text-xs">
+              Speed: {playbackRate}x ⏷
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {[1, 0.75, 0.5, 0.25].map((speed) => (
@@ -239,14 +272,16 @@ export default function VideoPlayer({
       {/* ✅ Progress Bar */}
       <div
         ref={progressBarRef}
-        className="relative mt-2 w-full h-2 cursor-pointer rounded-lg bg-gray-200 max-w-2xl"
+        className="relative mt-2 h-2 w-full max-w-2xl cursor-pointer rounded-lg bg-gray-200"
         onMouseDown={handleSeek}
         onTouchStart={handleSeek}
       >
         <div
           className="absolute h-2 rounded-lg bg-blue-500"
-          style={{ width: `${(currentTime / duration) * 100}%`,
-          background: "linear-gradient(90deg, #ff8a00, #ef2626)",}}
+          style={{
+            width: `${(currentTime / duration) * 100}%`,
+            background: "linear-gradient(90deg, #ff8a00, #ef2626)",
+          }}
         ></div>
       </div>
 

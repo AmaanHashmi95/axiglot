@@ -127,7 +127,7 @@ function VideoCarousel({
         {videos.map((video) => (
           <div
             key={video.id}
-            className={`flex aspect-[4/5] min-w-[150px] cursor-pointer flex-col items-center rounded-lg border p-3 text-white transition ${
+            className={`flex aspect-[5/4] min-w-[150px] cursor-pointer flex-col items-center rounded-lg border p-3 text-white transition ${
               selectedVideo?.id === video.id
                 ? "border-4 border-[#00E2FF]"
                 : "border-transparent"
@@ -140,7 +140,7 @@ function VideoCarousel({
               <Image
                 src={video.imageUrl || "/icons/Video.png"}
                 alt={video.title}
-                width={120}
+                width={130}
                 height={120}
                 className="h-full w-full rounded-lg object-cover"
               />
