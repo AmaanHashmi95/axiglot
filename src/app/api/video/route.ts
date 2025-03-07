@@ -1,38 +1,33 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // ✅ Fix: Use default import
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const videoId = searchParams.get('videoId');
-
-  if (videoId) {
-    // Fetch a single video by ID
-    try {
-      const video = await prisma.media.findUnique({
-        where: { id: videoId },
-        select: { id: true, url: true, subtitle: true },
-      });
-
-      if (!video) {
-        return NextResponse.json({ error: 'Video not found' }, { status: 404 });
-      }
-
-      return NextResponse.json(video);
-    } catch (error) {
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
-  }
-
-  // Fetch all videos if no videoId is provided
+export async function GET() {
   try {
-    const videos = await prisma.media.findMany({
-      where: { type: 'VIDEO' }, // Ensure only videos are fetched
-      select: { id: true, url: true,  subtitle: true },
-      orderBy: { createdAt: 'desc' }, // Sort newest first
+    console.log("Fetching videos from the database...");
+
+    const videos = await prisma.video.findMany({
+      include: {
+        englishSentences: { include: { words: true } },
+        targetSentences: { include: { words: true } },
+        transliterationSentences: { include: { words: true } },
+      },
     });
 
-    return NextResponse.json(videos);
+    const formattedVideos = videos.map((video) => ({
+      ...video,
+      audioUrl: video.videoUrl || "", // Ensure it's always a string
+      language: video.language || "Unknown",
+      imageUrl: video.imageUrl || "/icons/Video.png", // ✅ Set default image if missing
+    }));
+    
+
+    console.log("Videos found:", formattedVideos);
+    return NextResponse.json(formattedVideos);
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Error fetching videos:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch videos", details: error },
+      { status: 500 }
+    );
   }
 }

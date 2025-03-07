@@ -424,3 +424,97 @@ model LyricTransliterationWords {
 }
 
 
+
+
+
+
+
+
+model Video {
+  id        String   @id @default(uuid())
+  title     String
+  genre    String
+  videoUrl String?   // ✅ Store direct audio URL from Vercel Storage
+  imageUrl  String?   // ✅ New field to store the image URL
+  language  String?
+  createdAt DateTime @default(now())
+
+  englishSentences SubtitleEnglishSentence[] @relation("EnglishSubtitles")
+  targetSentences  SubtitleTargetSentence[]  @relation("TargetSubtitles")
+  transliterationSentences SubtitleTransliterationSentence[] @relation("TransliterationSubtitles")
+
+  @@map("tv_shows")
+}
+
+
+model SubtitleEnglishSentence {
+  id       String   @id @default(uuid())
+  videoId   String
+  video     Video     @relation("EnglishSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+  text     String
+  startTime Float  // When this sentence should appear
+  endTime   Float  // When this sentence should disappear
+  words    SubtitleEnglishWords[]
+
+  @@map("subtitle_english_sentences")
+}
+
+model SubtitleTargetSentence {
+  id       String   @id @default(uuid())
+  videoId   String
+  video     Video     @relation("TargetSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+  text     String
+  startTime Float
+  endTime   Float
+  words    SubtitleTargetWords[]
+
+  @@map("subtitle_target_sentences")
+}
+
+model SubtitleTransliterationSentence {
+  id       String   @id @default(uuid())
+  videoId   String
+  video     Video     @relation("TransliterationSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+  text     String
+  startTime Float
+  endTime   Float
+  words    SubtitleTransliterationWords[]
+
+  @@map("subtitle_transliteration_sentences")
+}
+
+model SubtitleEnglishWords {
+  id        String @id @default(uuid())
+  sentenceId String
+  sentence  SubtitleEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  word      String
+  order     Int    // Order of the word in the sentence
+  startTime Float  // When this word should be highlighted
+  endTime   Float  // When this word should unhighlight
+
+  @@map("subtitle_english_words")
+}
+
+model SubtitleTargetWords {
+  id        String @id @default(uuid())
+  sentenceId String
+  sentence  SubtitleTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  word      String
+  order     Int
+  startTime Float
+  endTime   Float
+
+  @@map("subtitle_target_words")
+}
+
+model SubtitleTransliterationWords {
+  id        String @id @default(uuid())
+  sentenceId String
+  sentence  SubtitleTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  word      String
+  order     Int
+  startTime Float
+  endTime   Float
+
+  @@map("subtitle_transliteration_words")
+}
