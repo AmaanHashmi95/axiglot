@@ -1,7 +1,8 @@
 export interface Word {
-  word: string;
+  word: { text: string };
   startTime: number;
   endTime: number;
+  order: number;
 }
 
 export interface Sentence {

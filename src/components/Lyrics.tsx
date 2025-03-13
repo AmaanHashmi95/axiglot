@@ -1,7 +1,9 @@
 "use client";
 
 interface Word {
-  word: string;
+  word: {
+    text: string; // ✅ Ensure word is an object with a text property
+  };
   startTime: number;
   endTime: number;
 }
@@ -30,7 +32,9 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
   };
 
   const getHighlightedWord = (sentence?: Sentence) =>
-    sentence?.words.find((word) => currentTime >= word.startTime && currentTime < word.endTime)?.word || null;
+    sentence?.words.find(
+      (word) => currentTime >= word.startTime && currentTime < word.endTime
+    )?.word.text || null; // ✅ Fetch text from the Word model
 
   return (
     <div className="w-full max-w-lg mx-auto mt-4">
@@ -43,12 +47,15 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
       </p>
 
       <p className="text-center text-gray-700">
-        {currentSentences.target?.text.split(" ").map((word, index) => (
-          <span key={index} className={word === getHighlightedWord(currentSentences.target) ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "(The Language Lyrics)"}
-      </p>
+  {currentSentences.target?.text
+    ? currentSentences.target.text.split(" ").map((word, index) => (
+        <span key={index} className={word === getHighlightedWord(currentSentences.target) ? "bg-yellow-300 px-1 rounded" : ""}>
+          {word}{" "}
+        </span>
+      ))
+    : "(The Language Lyrics)"} {/* ✅ This ensures fallback text is shown */}
+</p>
+
 
       <p className="text-center text-gray-500 italic">
         {currentSentences.transliteration?.text.split(" ").map((word, index) => (
