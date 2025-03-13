@@ -2,8 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 
+
+
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
 
 
 
@@ -13,11 +18,15 @@ previewFeatures = ["fullTextSearch"]
 }
 
 
+
+
 datasource db {
 provider  = "postgresql"
 url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
 directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
+
+
 
 
 model User {
@@ -41,11 +50,18 @@ issuedNotifications   Notification[]   @relation("Issuer")
 lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@map("users")
 }
+
+
+
 
 
 
@@ -56,8 +72,13 @@ expiresAt DateTime
 user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
 
+
+
 @@map("sessions")
 }
+
+
+
 
 
 
@@ -68,9 +89,15 @@ followingId String
 following   User   @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
 
 
+
+
 @@unique([followerId, followingId])
 @@map("follows")
 }
+
+
+
+
 
 
 
@@ -90,12 +117,19 @@ requiredLessonId    String?        // ✅ NEW: The lesson a user must complete t
 requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@index([language])  // ✅ Index for better query performance
 @@map("posts")
 }
+
+
+
 
 
 
@@ -108,7 +142,11 @@ url    String
 subtitle String?
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@map("post_media")
@@ -117,10 +155,17 @@ createdAt DateTime @default(now())
 
 
 
+
+
+
+
 enum MediaType {
 IMAGE
 VIDEO
 }
+
+
+
 
 
 
@@ -133,11 +178,17 @@ postId  String
 post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@map("comments")
 }
+
+
 
 
 model Like {
@@ -147,9 +198,13 @@ postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
 
+
+
 @@unique([userId, postId])
 @@map("likes")
 }
+
+
 
 
 model Bookmark {
@@ -160,12 +215,18 @@ postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@unique([userId, postId])
 @@map("bookmarks")
 }
+
+
 
 
 model Notification {
@@ -180,17 +241,24 @@ type        NotificationType
 read        Boolean          @default(false)
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@map("notifications")
 }
+
 
 enum NotificationType {
 LIKE
 FOLLOW
 COMMENT
 }
+
+
 
 
 model Course {
@@ -200,6 +268,8 @@ description String?
 lessons     Lesson[] // Relation to lessons
 createdAt   DateTime @default(now())
 }
+
+
 
 
 model Lesson {
@@ -214,6 +284,9 @@ progress    LessonProgress[] // Add this relation field
 createdAt   DateTime         @default(now())
 posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
 }
+
+
+
 
 
 
@@ -234,6 +307,9 @@ createdAt  DateTime @default(now())
 
 
 
+
+
+
 model Word {
 id       String  @id @default(cuid())
 text     String
@@ -246,16 +322,24 @@ transliteration String? // ✅ New optional transliteration field
 }
 
 
+
+
 model Translation {
- id        String @id @default(cuid())
- wordId    String
- word      Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
- text      String  // ✅ Possible translation for the word
- language  String  // ✅ Language of this translation
+id        String @id @default(cuid())
+wordId    String
+word      Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
+text      String  // ✅ Possible translation for the word
+language  String  // ✅ Language of this translation
 
 
- questions QuestionTranslation[] // ✅ Fix: Add inverse relation
+
+
+questions QuestionTranslation[] // ✅ Fix: Add inverse relation
 }
+
+
+
+
 
 
 
@@ -265,33 +349,50 @@ questionId String
 question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
 
+
+
 wordId String
 word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+
 
 
 order Int // ✅ The position of the word in the question
 color String? @default("#000000") // ✅ Optional with default black color
 
 
+
+
 @@id([questionId, wordId]) // ✅ Composite primary key to enforce uniqueness
 }
 
 
+
+
 model QuestionTranslation {
- questionId String
- question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+questionId String
+question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
 
- translationId String
- translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
 
- order Int // ✅ Position of the translated word in the sentence
- color String? @default("#000000") // ✅ Optional with default black color
+translationId String
+translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
 
- @@id([questionId, translationId]) // ✅ Composite primary key
+
+
+order Int // ✅ Position of the translated word in the sentence
+color String? @default("#000000") // ✅ Optional with default black color
+
+
+
+
+@@id([questionId, translationId]) // ✅ Composite primary key
 }
+
+
+
 
 
 
@@ -304,11 +405,18 @@ lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascad
 completed Boolean @default(false) // New field to indicate if the lesson is complete
 
 
+
+
 createdAt DateTime @default(now())
+
+
 
 
 @@unique([userId, lessonId]) // Add this unique constraint
 }
+
+
+
 
 
 
@@ -326,6 +434,8 @@ SPEAK_ANSWER
 }
 
 
+
+
 enum WordType {
 NOUN
 VERB
@@ -334,94 +444,119 @@ ADJECTIVE
 }
 
 
+
+
 model Song {
-  id        String   @id @default(uuid())
-  title     String
-  artist    String
-  audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
-  imageUrl  String?   // ✅ New field to store the image URL
-  language  String?
-  createdAt DateTime @default(now())
+ id        String   @id @default(uuid())
+ title     String
+ artist    String
+ audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
+ imageUrl  String?   // ✅ New field to store the image URL
+ language  String?
+ createdAt DateTime @default(now())
 
-  englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")
-  targetSentences  LyricTargetSentence[]  @relation("TargetLyrics")
-  transliterationSentences LyricTransliterationSentence[] @relation("TransliterationLyrics")
 
-  @@map("music_tracks")
+ englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")
+ targetSentences  LyricTargetSentence[]  @relation("TargetLyrics")
+ transliterationSentences LyricTransliterationSentence[] @relation("TransliterationLyrics")
+
+
+ @@map("music_tracks")
 }
+
+
 
 
 model LyricEnglishSentence {
-  id       String   @id @default(uuid())
-  songId   String
-  song     Song     @relation("EnglishLyrics", fields: [songId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float  // When this sentence should appear
-  endTime   Float  // When this sentence should disappear
-  words    LyricEnglishWords[]
+ id       String   @id @default(uuid())
+ songId   String
+ song     Song     @relation("EnglishLyrics", fields: [songId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float  // When this sentence should appear
+ endTime   Float  // When this sentence should disappear
+ words    LyricEnglishWords[]
 
-  @@map("lyric_english_sentences")
+
+ @@map("lyric_english_sentences")
 }
+
 
 model LyricTargetSentence {
-  id       String   @id @default(uuid())
-  songId   String
-  song     Song     @relation("TargetLyrics", fields: [songId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float
-  endTime   Float
-  words    LyricTargetWords[]
+ id       String   @id @default(uuid())
+ songId   String
+ song     Song     @relation("TargetLyrics", fields: [songId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float
+ endTime   Float
+ words    LyricTargetWords[]
 
-  @@map("lyric_target_sentences")
+
+ @@map("lyric_target_sentences")
 }
+
 
 model LyricTransliterationSentence {
-  id       String   @id @default(uuid())
-  songId   String
-  song     Song     @relation("TransliterationLyrics", fields: [songId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float
-  endTime   Float
-  words    LyricTransliterationWords[]
+ id       String   @id @default(uuid())
+ songId   String
+ song     Song     @relation("TransliterationLyrics", fields: [songId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float
+ endTime   Float
+ words    LyricTransliterationWords[]
 
-  @@map("lyric_transliteration_sentences")
+
+ @@map("lyric_transliteration_sentences")
 }
+
 
 model LyricEnglishWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  LyricEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int    // Order of the word in the sentence
-  startTime Float  // When this word should be highlighted
-  endTime   Float  // When this word should unhighlight
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  LyricEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int    // Order of the word in the sentence
+ startTime Float  // When this word should be highlighted
+ endTime   Float  // When this word should unhighlight
 
-  @@map("lyric_english_words")
+
+ @@map("lyric_english_words")
 }
+
 
 model LyricTargetWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  LyricTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int
-  startTime Float
-  endTime   Float
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  LyricTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int
+ startTime Float
+ endTime   Float
 
-  @@map("lyric_target_words")
+
+ @@map("lyric_target_words")
 }
+
 
 model LyricTransliterationWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  LyricTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int
-  startTime Float
-  endTime   Float
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  LyricTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int
+ startTime Float
+ endTime   Float
 
-  @@map("lyric_transliteration_words")
+
+ @@map("lyric_transliteration_words")
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -431,90 +566,105 @@ model LyricTransliterationWords {
 
 
 model Video {
-  id        String   @id @default(uuid())
-  title     String
-  genre    String
-  videoUrl String?   // ✅ Store direct audio URL from Vercel Storage
-  imageUrl  String?   // ✅ New field to store the image URL
-  language  String?
-  createdAt DateTime @default(now())
+ id        String   @id @default(uuid())
+ title     String
+ genre    String
+ videoUrl String?   // ✅ Store direct audio URL from Vercel Storage
+ imageUrl  String?   // ✅ New field to store the image URL
+ language  String?
+ createdAt DateTime @default(now())
 
-  englishSentences SubtitleEnglishSentence[] @relation("EnglishSubtitles")
-  targetSentences  SubtitleTargetSentence[]  @relation("TargetSubtitles")
-  transliterationSentences SubtitleTransliterationSentence[] @relation("TransliterationSubtitles")
 
-  @@map("tv_shows")
+ englishSentences SubtitleEnglishSentence[] @relation("EnglishSubtitles")
+ targetSentences  SubtitleTargetSentence[]  @relation("TargetSubtitles")
+ transliterationSentences SubtitleTransliterationSentence[] @relation("TransliterationSubtitles")
+
+
+ @@map("tv_shows")
 }
+
+
 
 
 model SubtitleEnglishSentence {
-  id       String   @id @default(uuid())
-  videoId   String
-  video     Video     @relation("EnglishSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float  // When this sentence should appear
-  endTime   Float  // When this sentence should disappear
-  words    SubtitleEnglishWords[]
+ id       String   @id @default(uuid())
+ videoId   String
+ video     Video     @relation("EnglishSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float  // When this sentence should appear
+ endTime   Float  // When this sentence should disappear
+ words    SubtitleEnglishWords[]
 
-  @@map("subtitle_english_sentences")
+
+ @@map("subtitle_english_sentences")
 }
+
 
 model SubtitleTargetSentence {
-  id       String   @id @default(uuid())
-  videoId   String
-  video     Video     @relation("TargetSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float
-  endTime   Float
-  words    SubtitleTargetWords[]
+ id       String   @id @default(uuid())
+ videoId   String
+ video     Video     @relation("TargetSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float
+ endTime   Float
+ words    SubtitleTargetWords[]
 
-  @@map("subtitle_target_sentences")
+
+ @@map("subtitle_target_sentences")
 }
+
 
 model SubtitleTransliterationSentence {
-  id       String   @id @default(uuid())
-  videoId   String
-  video     Video     @relation("TransliterationSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
-  text     String
-  startTime Float
-  endTime   Float
-  words    SubtitleTransliterationWords[]
+ id       String   @id @default(uuid())
+ videoId   String
+ video     Video     @relation("TransliterationSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+ text     String
+ startTime Float
+ endTime   Float
+ words    SubtitleTransliterationWords[]
 
-  @@map("subtitle_transliteration_sentences")
+
+ @@map("subtitle_transliteration_sentences")
 }
+
 
 model SubtitleEnglishWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  SubtitleEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int    // Order of the word in the sentence
-  startTime Float  // When this word should be highlighted
-  endTime   Float  // When this word should unhighlight
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  SubtitleEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int    // Order of the word in the sentence
+ startTime Float  // When this word should be highlighted
+ endTime   Float  // When this word should unhighlight
 
-  @@map("subtitle_english_words")
+
+ @@map("subtitle_english_words")
 }
+
 
 model SubtitleTargetWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  SubtitleTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int
-  startTime Float
-  endTime   Float
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  SubtitleTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int
+ startTime Float
+ endTime   Float
 
-  @@map("subtitle_target_words")
+
+ @@map("subtitle_target_words")
 }
 
-model SubtitleTransliterationWords {
-  id        String @id @default(uuid())
-  sentenceId String
-  sentence  SubtitleTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-  word      String
-  order     Int
-  startTime Float
-  endTime   Float
 
-  @@map("subtitle_transliteration_words")
+model SubtitleTransliterationWords {
+ id        String @id @default(uuid())
+ sentenceId String
+ sentence  SubtitleTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+ word      String
+ order     Int
+ startTime Float
+ endTime   Float
+
+
+ @@map("subtitle_transliteration_words")
 }

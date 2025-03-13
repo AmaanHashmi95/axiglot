@@ -19,7 +19,6 @@ export async function GET() {
       language: song.language || "Unknown",
       imageUrl: song.imageUrl || "/icons/Music.png", // ✅ Set default image if missing
     }));
-    
 
     console.log("Songs found:", formattedSongs);
     return NextResponse.json(formattedSongs);
@@ -27,7 +26,7 @@ export async function GET() {
     console.error("Error fetching music:", error);
     return NextResponse.json(
       { error: "Failed to fetch songs", details: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

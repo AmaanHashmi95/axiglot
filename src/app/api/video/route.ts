@@ -19,7 +19,6 @@ export async function GET() {
       language: video.language || "Unknown",
       imageUrl: video.imageUrl || "/icons/Video.png", // ✅ Set default image if missing
     }));
-    
 
     console.log("Videos found:", formattedVideos);
     return NextResponse.json(formattedVideos);
@@ -27,7 +26,7 @@ export async function GET() {
     console.error("Error fetching videos:", error);
     return NextResponse.json(
       { error: "Failed to fetch videos", details: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

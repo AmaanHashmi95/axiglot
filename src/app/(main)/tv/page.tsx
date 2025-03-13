@@ -73,7 +73,6 @@ export default function Page() {
     <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
       {selectedVideo ? (
         <>
-
           <VideoScreen
             videoUrl={selectedVideo.videoUrl}
             showSubtitles={showSubtitles}

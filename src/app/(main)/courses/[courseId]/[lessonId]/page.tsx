@@ -1,9 +1,13 @@
-import { getLesson } from '@/lib/lesson';
-import LessonComponent from '@/components/lessons/LessonComponent';
-import { notFound } from 'next/navigation';
-import { validateRequest } from '@/auth'; // Import validateRequest for session validation
+import { getLesson } from "@/lib/lesson";
+import LessonComponent from "@/components/lessons/LessonComponent";
+import { notFound } from "next/navigation";
+import { validateRequest } from "@/auth"; // Import validateRequest for session validation
 
-export default async function LessonPage({ params }: { params: { lessonId: string } }) {
+export default async function LessonPage({
+  params,
+}: {
+  params: { lessonId: string };
+}) {
   // Validate the user session and get the userId
   const { user } = await validateRequest();
 
