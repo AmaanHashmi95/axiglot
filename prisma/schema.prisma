@@ -49,13 +49,7 @@ receivedNotifications Notification[]   @relation("Recipient")
 issuedNotifications   Notification[]   @relation("Issuer")
 lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
 
-
-
-
 createdAt DateTime @default(now())
-
-
-
 
 @@map("users")
 }
@@ -70,8 +64,6 @@ id        String   @id
 userId    String
 expiresAt DateTime
 user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-
 
 
 @@map("sessions")
@@ -322,8 +314,10 @@ lyricsTransliteration LyricTransliterationWords[] // ✅ New relation to LyricTr
 subtitles      SubtitleTargetWords[] // ✅ New relation to SubtitleTargetWords
 subtitlesEnglish SubtitleEnglishWords[] // ✅ New relation to SubtitleEnglishWords
 subtitlesTransliteration SubtitleTransliterationWords[] // ✅ New relation to SubtitleTransliterationWords
+bookWords      BookWords[] // ✅ New relation to BookWords
 audioUrl   String? // ✅ Add optional audio URL field
 transliteration String? // ✅ New optional transliteration field
+translation String? // ✅ New optional translation field
 }
 
 
@@ -667,4 +661,68 @@ model SubtitleTransliterationWords {
   endTime   Float
 
   @@id([sentenceId, wordId]) // ✅ Composite primary key
+}
+
+
+
+
+
+model Book {
+ id        String   @id @default(uuid())
+ title     String
+ author    String
+ genre    String
+ imageUrl  String?   // ✅ New field to store the image URL
+ language  String?
+ createdAt DateTime @default(now())
+ bookPages BookPage[] @relation("BookPage")
+ 
+ @@map("reading_books")
+}
+
+
+model BookPage {
+ id       String   @id @default(uuid())
+ order    Int
+ bookId   String
+ book     Book     @relation("BookPage", fields: [bookId], references: [id], onDelete: Cascade)
+ bookSentences BookSentence[] @relation("BookSentence")
+ createdAt DateTime @default(now())
+
+ @@map("book_pages")
+}
+
+
+
+model BookSentence {
+ id       String   @id @default(uuid())
+ bookPageId   String
+ bookPage     BookPage     @relation("BookSentence", fields: [bookPageId], references: [id], onDelete: Cascade)
+ text     String
+ translation String
+ transliteration String
+ order    Int
+ words    BookWords[] @relation("BookWords")
+ createdAt DateTime @default(now())
+
+ @@map("book_sentences")
+}
+
+
+
+model BookWords {
+ id       String   @id @default(uuid())
+ bookSentenceId   String
+ bookSentences     BookSentence     @relation("BookWords", fields: [bookSentenceId], references: [id], onDelete: Cascade)
+ wordId   String
+ word     Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+ translation String?  // ✅ Store per-word translation
+ transliteration String?  // ✅ Store per-word transliteration
+ color String? @default("#000000") // ✅ Optional with default black color
+ order    Int
+ translationOrder Int? // ✅ Separate order for translation
+ transliterationOrder Int? // ✅ Separate order for transliteration
+ createdAt DateTime @default(now())
+
+ @@map("book_words")
 }
