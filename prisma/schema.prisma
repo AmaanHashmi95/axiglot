@@ -317,6 +317,11 @@ type     WordType
 questions QuestionWord[] // ✅ Many-to-many relation with Question
 translations Translation[] // ✅ New relation to translations
 lyrics         LyricTargetWords[] // ✅ New relation to LyricTargetWords
+lyricsEnglish  LyricEnglishWords[] // ✅ New relation to LyricEnglishWords
+lyricsTransliteration LyricTransliterationWords[] // ✅ New relation to LyricTransliterationWords
+subtitles      SubtitleTargetWords[] // ✅ New relation to SubtitleTargetWords
+subtitlesEnglish SubtitleEnglishWords[] // ✅ New relation to SubtitleEnglishWords
+subtitlesTransliteration SubtitleTransliterationWords[] // ✅ New relation to SubtitleTransliterationWords
 audioUrl   String? // ✅ Add optional audio URL field
 transliteration String? // ✅ New optional transliteration field
 }
@@ -501,16 +506,17 @@ model LyricTransliterationSentence {
 
 
 model LyricEnglishWords {
- id        String @id @default(uuid())
- sentenceId String
- sentence  LyricEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
- word      String
- order     Int    // Order of the word in the sentence
- startTime Float  // When this word should be highlighted
- endTime   Float  // When this word should unhighlight
+  sentenceId String
+  sentence   LyricEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
 
+  wordId String
+  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade) // ✅ Add relation to Word
 
- @@map("lyric_english_words")
+  order     Int    // Order of the word in the sentence
+  startTime Float  // When this word should be highlighted
+  endTime   Float  // When this word should unhighlight
+
+  @@id([sentenceId, wordId]) // ✅ Composite primary key for uniqueness
 }
 
 
@@ -531,16 +537,17 @@ model LyricTargetWords {
 
 
 model LyricTransliterationWords {
- id        String @id @default(uuid())
- sentenceId String
- sentence  LyricTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
- word      String
- order     Int
- startTime Float
- endTime   Float
+  sentenceId String
+  sentence   LyricTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
 
+  wordId String
+  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade) // ✅ Add relation to Word
 
- @@map("lyric_transliteration_words")
+  order     Int
+  startTime Float
+  endTime   Float
+
+  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }
 
 
@@ -622,42 +629,42 @@ model SubtitleTransliterationSentence {
 
 
 model SubtitleEnglishWords {
- id        String @id @default(uuid())
  sentenceId String
  sentence  SubtitleEnglishSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
- word      String
- order     Int    // Order of the word in the sentence
- startTime Float  // When this word should be highlighted
- endTime   Float  // When this word should unhighlight
+ wordId String
+  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade) // ✅ Add relation to Word
 
+  order     Int
+  startTime Float
+  endTime   Float
 
- @@map("subtitle_english_words")
+  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }
 
 
 model SubtitleTargetWords {
- id        String @id @default(uuid())
  sentenceId String
  sentence  SubtitleTargetSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
- word      String
+ wordId String
+ word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
  order     Int
  startTime Float
  endTime   Float
 
 
- @@map("subtitle_target_words")
+ @@id([sentenceId, wordId]) // ✅ Composite primary key for uniqueness
 }
 
 
 model SubtitleTransliterationWords {
- id        String @id @default(uuid())
  sentenceId String
  sentence  SubtitleTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
- word      String
- order     Int
- startTime Float
- endTime   Float
+ wordId String
+  word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade) // ✅ Add relation to Word
 
+  order     Int
+  startTime Float
+  endTime   Float
 
- @@map("subtitle_transliteration_words")
+  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }

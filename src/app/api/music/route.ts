@@ -7,18 +7,33 @@ export async function GET() {
  
     const songs = await prisma.song.findMany({
       include: {
-        englishSentences: { include: { words: true } },
-        targetSentences: {
+        englishSentences: {
           include: {
             words: {
-              include: { word: true }, // ✅ Fetch the actual Word model
+              include: { word: true }, // ✅ Now this works for English
               orderBy: { order: "asc" }
             },
           },
         },
-        transliterationSentences: { include: { words: true } },
+        targetSentences: {
+          include: {
+            words: {
+              include: { word: true }, // ✅ Already working fine for Target
+              orderBy: { order: "asc" }
+            },
+          },
+        },
+        transliterationSentences: {
+          include: {
+            words: {
+              include: { word: true }, // ✅ Now this works for Transliteration
+              orderBy: { order: "asc" }
+            },
+          },
+        },
       },
     });
+    
  
     const formattedSongs = songs.map((song) => ({
       ...song,
