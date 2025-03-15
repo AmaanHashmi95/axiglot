@@ -48,6 +48,9 @@ comments              Comment[]
 receivedNotifications Notification[]   @relation("Recipient")
 issuedNotifications   Notification[]   @relation("Issuer")
 lessonProgress        LessonProgress[] // Add this line for the relation to LessonProgress
+videoProgress         VideoProgress[] // ✅ Add relation to VideoProgress
+musicProgress  MusicProgress[]  // ✅ New: Track music progress
+bookProgress  BookProgress[]  // ✅ Track user reading progress
 
 createdAt DateTime @default(now())
 
@@ -257,6 +260,8 @@ model Course {
 id          String   @id @default(cuid())
 title       String
 description String?
+language    String?   // ✅ New: Defines which language this course belongs to
+order       Int      @default(1) // ✅ Provide a default value
 lessons     Lesson[] // Relation to lessons
 createdAt   DateTime @default(now())
 }
@@ -271,6 +276,7 @@ language    String
 description String?
 courseId    String?
 course      Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+order       Int              @default(1) // ✅ Provide a default value
 questions   Question[]
 progress    LessonProgress[] // Add this relation field
 createdAt   DateTime         @default(now())
@@ -291,6 +297,7 @@ content    String
 words      QuestionWord[] // ✅ New many-to-many relation for ordered words
 translations  QuestionTranslation[] // ✅ Translated sentence words in order
 audioUrl   String?
+options       String[]
 correctAnswer String
 language   String?
 hasTimer   Boolean @default(false)
@@ -443,6 +450,7 @@ model Song {
  audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
  imageUrl  String?   // ✅ New field to store the image URL
  language  String?
+ musicProgress  MusicProgress[]  // ✅ New: Track user listening progress
  createdAt DateTime @default(now())
 
 
@@ -455,6 +463,16 @@ model Song {
 }
 
 
+model MusicProgress {
+  id        String  @id @default(cuid())
+  userId    String
+  songId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song      Song    @relation(fields: [songId], references: [id], onDelete: Cascade)
+  listenedAt DateTime @default(now())
+
+  @@unique([userId, songId]) // Ensure each user has a unique progress per song
+}
 
 
 model LyricEnglishSentence {
@@ -567,16 +585,26 @@ model Video {
  imageUrl  String?   // ✅ New field to store the image URL
  language  String?
  createdAt DateTime @default(now())
-
-
  englishSentences SubtitleEnglishSentence[] @relation("EnglishSubtitles")
  targetSentences  SubtitleTargetSentence[]  @relation("TargetSubtitles")
  transliterationSentences SubtitleTransliterationSentence[] @relation("TransliterationSubtitles")
+ videoProgress VideoProgress[] // ✅ Add relation to VideoProgress
 
 
  @@map("tv_shows")
 }
 
+
+model VideoProgress {
+  id        String  @id @default(cuid())
+  userId    String
+  videoId   String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  watchedAt DateTime @default(now())
+
+  @@unique([userId, videoId]) // Ensure each user has unique video progress per video
+}
 
 
 
@@ -676,8 +704,21 @@ model Book {
  language  String?
  createdAt DateTime @default(now())
  bookPages BookPage[] @relation("BookPage")
+ bookProgress  BookProgress[]  // ✅ Track progress for each book
  
  @@map("reading_books")
+}
+
+model BookProgress {
+  id        String  @id @default(cuid())
+  userId    String
+  bookId    String
+  pageNumber Int    @default(0) // ✅ Track last page read
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime @default(now())
+
+  @@unique([userId, bookId]) // Ensure each user has a unique progress per book
 }
 
 

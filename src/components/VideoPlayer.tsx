@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Video {
+  id: string; // ✅ Add this field
   title: string;
   genre: string;
   videoUrl: string;
@@ -161,6 +162,23 @@ export default function VideoPlayer({
     setShowSubtitles(false);
   };
 
+  useEffect(() => {
+    async function saveVideoProgress() {
+      if (!video.id) return;
+      try {
+        await fetch("/api/video/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId: video.id }),
+        });
+      } catch (error) {
+        console.error("Failed to save video progress:", error);
+      }
+    }
+  
+    saveVideoProgress();
+  }, [video.id]);
+  
 
   return (
     <div

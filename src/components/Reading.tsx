@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Book, BookSentence, BookWord } from "@/lib/book";
 
 interface ReadingProps {
@@ -24,6 +24,23 @@ export default function Reading({ book }: ReadingProps) {
 
   // ✅ Function to check if punctuation is sentence-ending
   const isSentenceEndingPunctuation = (text: string) => /[.!?]+$/.test(text);
+
+  // ✅ Track progress when the user navigates pages
+  useEffect(() => {
+    async function saveBookProgress() {
+      try {
+        await fetch("/api/reading/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookId: book.id, pageNumber: currentPage }),
+        });
+      } catch (error) {
+        console.error("Failed to save book progress:", error);
+      }
+    }
+
+    saveBookProgress();
+  }, [book.id, currentPage]); // ✅ Runs every time the page changes
 
   return (
     <div className="w-full p-4">
@@ -79,7 +96,7 @@ export default function Reading({ book }: ReadingProps) {
             {pageData.bookSentences[selectedSentenceIndex]?.words
               .slice()
               .sort((a, b) => (a.translationOrder ?? a.order) - (b.translationOrder ?? b.order))
-              .map((word: BookWord, wordIndex, array) => (
+              .map((word: BookWord, wordIndex) => (
                 <span key={word.id} style={{ color: word.color }}>
                   {wordIndex > 0 ? " " : ""}
                   {word.translation}
@@ -91,7 +108,7 @@ export default function Reading({ book }: ReadingProps) {
             {pageData.bookSentences[selectedSentenceIndex]?.words
               .slice()
               .sort((a, b) => (a.transliterationOrder ?? a.order) - (b.transliterationOrder ?? b.order))
-              .map((word: BookWord, wordIndex, array) => (
+              .map((word: BookWord, wordIndex) => (
                 <span key={word.id} style={{ color: word.color }}>
                   {wordIndex > 0 ? " " : ""}
                   {word.transliteration}

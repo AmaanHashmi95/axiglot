@@ -1,11 +1,11 @@
-import TrendsSidebar from "@/components/TrendsSidebar";
-import Feeds from "./Feeds"; // ✅ Import Feeds (Client Component)
+import LessonProgressSidebar from "@/components/LessonProgressSidebar";
+import Feeds from "./Feeds";
 
 export default function Home() {
   return (
     <main className="flex w-full min-w-0 gap-5">
-      <Feeds /> {/* ✅ Only this client component manages state */}
-      <TrendsSidebar />
+      <Feeds />
+      <LessonProgressSidebar />
     </main>
   );
 }

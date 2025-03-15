@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Song {
+  id: string; // ✅ Add this field
   title: string;
   artist: string;
   audioUrl: string;
@@ -142,6 +143,25 @@ export default function MusicPlayer({
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
+
+
+  useEffect(() => {
+    async function saveMusicProgress() {
+      if (!song.id) return;
+      try {
+        await fetch("/api/music/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ songId: song.id }),
+        });
+      } catch (error) {
+        console.error("Failed to save music progress:", error);
+      }
+    }
+  
+    saveMusicProgress();
+  }, [song.id]);
+
 
   return (
     <div
