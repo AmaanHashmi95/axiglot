@@ -12,6 +12,7 @@ export default function Reading({ book }: ReadingProps) {
 
   // Ensure bookPages is available
   const bookPages = book.bookPages || [];
+  const totalPages = bookPages.length;
   const pageData = bookPages[currentPage] || { bookSentences: [] };
 
   const toggleSentence = (index: number) => {
@@ -100,21 +101,38 @@ export default function Reading({ book }: ReadingProps) {
         </div>
       )}
 
-      <div className="flex justify-between mt-4">
-        <button
-          disabled={currentPage === 0}
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          disabled={currentPage >= bookPages.length - 1}
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, bookPages.length - 1))}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Next
-        </button>
+      {/* ✅ Page Navigation */}
+      <div className="flex flex-col items-center mt-4 space-y-2">
+        {/* Quick Page Scroller (Slider) */}
+        <input
+          type="range"
+          min="0"
+          max={totalPages - 1}
+          value={currentPage}
+          onChange={(e) => setCurrentPage(Number(e.target.value))}
+          className="w-3/4 cursor-pointer"
+        />
+        <p className="text-gray-600 text-sm">
+          Page {currentPage + 1} of {totalPages}
+        </p>
+
+        {/* Previous & Next Buttons */}
+        <div className="flex justify-between w-full max-w-xs">
+          <button
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            disabled={currentPage >= totalPages - 1}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
