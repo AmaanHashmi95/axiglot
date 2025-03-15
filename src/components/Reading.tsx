@@ -18,38 +18,52 @@ export default function Reading({ book }: ReadingProps) {
     setSelectedSentenceIndex(selectedSentenceIndex === index ? null : index);
   };
 
+  // ✅ Function to check if a word is punctuation
+  const isPunctuation = (text: string) => /^[.,!?;:"'()\-—]+$/.test(text);
+
+  // ✅ Function to check if punctuation is sentence-ending
+  const isSentenceEndingPunctuation = (text: string) => /[.!?]+$/.test(text);
+
   return (
     <div className="w-full p-4">
       <h2 className="text-xl font-bold text-center">{book.title}</h2>
       <p className="text-center text-gray-600">{book.author}</p>
 
+      {/* ✅ Main Content Area */}
       <div className="border p-4 rounded-lg mt-4 text-justify leading-relaxed">
         {pageData.bookSentences.length > 0 ? (
           <p className="cursor-pointer transition duration-200">
-            {pageData.bookSentences.map((sentence: BookSentence, index: number) => {
-              // ✅ Join words with a space, then remove space before punctuation and ensure space after punctuation
-              const formattedSentence = sentence.words
-                .sort((a, b) => a.order - b.order)
-                .map((word: BookWord) => word.word.text)
-                .join(" ") // ✅ Add spaces between words
-                .replace(/\s([.,!?;:])/g, "$1") // ✅ Remove space before punctuation
-                .replace(/([.,!?;:])(\S)/g, "$1 $2") // ✅ Ensure space *after* punctuation
-                .trim() + ". "; // ✅ Add a full stop manually if missing
+            {pageData.bookSentences.map((sentence: BookSentence, index: number) => (
+              <span
+                key={index}
+                onClick={() => toggleSentence(index)}
+                onMouseEnter={() => setHoveredSentenceIndex(index)}
+                onMouseLeave={() => setHoveredSentenceIndex(null)}
+                className={`transition duration-200 ${
+                  hoveredSentenceIndex === index ? "text-blue-600" : ""
+                }`}
+              >
+                {sentence.words.map((word: BookWord, wordIndex, array) => {
+                  const nextWord = array[wordIndex + 1]?.word.text || "";
+                  const isNextPunctuation = isPunctuation(nextWord);
+                  const isCurrentPunctuation = isPunctuation(word.word.text);
+                  const isEndOfSentence = isSentenceEndingPunctuation(word.word.text);
 
-              return (
-                <span
-                  key={index}
-                  onClick={() => toggleSentence(index)}
-                  onMouseEnter={() => setHoveredSentenceIndex(index)}
-                  onMouseLeave={() => setHoveredSentenceIndex(null)}
-                  className={`transition duration-200 ${
-                    hoveredSentenceIndex === index ? "text-blue-600" : ""
-                  }`}
-                >
-                  {formattedSentence}
-                </span>
-              );
-            })}
+                  return (
+                    <span
+                      key={word.id}
+                      style={{ color: selectedSentenceIndex === index ? word.color : "inherit" }}
+                    >
+                      {/* ✅ Add space between words but NOT before punctuation */}
+                      {wordIndex > 0 && !isCurrentPunctuation ? " " : ""}
+                      {word.word.text}
+                      {/* ✅ Add space *after* sentence-ending punctuation */}
+                      {isEndOfSentence ? " " : ""}
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
           </p>
         ) : (
           <p className="text-center text-gray-500">No sentences available.</p>
@@ -64,9 +78,10 @@ export default function Reading({ book }: ReadingProps) {
             {pageData.bookSentences[selectedSentenceIndex]?.words
               .slice()
               .sort((a, b) => (a.translationOrder ?? a.order) - (b.translationOrder ?? b.order))
-              .map((word: BookWord) => (
+              .map((word: BookWord, wordIndex, array) => (
                 <span key={word.id} style={{ color: word.color }}>
-                  {word.translation}{" "}
+                  {wordIndex > 0 ? " " : ""}
+                  {word.translation}
                 </span>
               ))}
           </p>
@@ -75,9 +90,10 @@ export default function Reading({ book }: ReadingProps) {
             {pageData.bookSentences[selectedSentenceIndex]?.words
               .slice()
               .sort((a, b) => (a.transliterationOrder ?? a.order) - (b.transliterationOrder ?? b.order))
-              .map((word: BookWord) => (
+              .map((word: BookWord, wordIndex, array) => (
                 <span key={word.id} style={{ color: word.color }}>
-                  {word.transliteration}{" "}
+                  {wordIndex > 0 ? " " : ""}
+                  {word.transliteration}
                 </span>
               ))}
           </p>
