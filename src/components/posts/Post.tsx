@@ -13,7 +13,6 @@ import UserAvatar from "../UserAvatar";
 import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";
 import PostMoreButton from "./PostMoreButton";
-import HoverTranslate from "@/components/HoverTranslate";
 
 
 interface PostProps {
