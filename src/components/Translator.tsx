@@ -12,6 +12,7 @@ export default function Translator() {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [transliteratedText, setTransliteratedText] = useState("");
+  const [wordBreakdown, setWordBreakdown] = useState<any[]>([]);
   const [from, setFrom] = useState("en");
   const [to, setTo] = useState("pa");
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ export default function Translator() {
     setLoading(true);
     setTranslatedText("");
     setTransliteratedText("");
+    setWordBreakdown([]);
 
     try {
       const response = await fetch("/api/translator-section", {
@@ -33,7 +35,9 @@ export default function Translator() {
       console.log("API Response:", data);
 
       if (data.translation) setTranslatedText(data.translation);
-      if (data.transliteration) setTransliteratedText(data.transliteration || "No transliteration available");
+      if (data.transliteration) setTransliteratedText(data.transliteration);
+      if (data.wordTranslations) setWordBreakdown(data.wordTranslations);
+
     } catch (error) {
       console.error("Translation error", error);
     }
@@ -80,10 +84,23 @@ export default function Translator() {
         </div>
       )}
 
-      {transliteratedText && transliteratedText !== "No transliteration available" && (
+      {transliteratedText && (
         <div className="mt-2 p-3 border rounded-md bg-gray-100">
           <strong>Transliteration:</strong>
           <p>{transliteratedText}</p>
+        </div>
+      )}
+
+      {wordBreakdown.length > 0 && (
+        <div className="mt-2 p-3 border rounded-md bg-gray-100">
+          <strong>Word Breakdown:</strong>
+          <ul className="list-disc pl-5">
+            {wordBreakdown.map((word, idx) => (
+              <li key={idx}>
+                <strong>{word.original}</strong>: {word.translation}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
