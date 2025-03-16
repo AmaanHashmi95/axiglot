@@ -96,7 +96,7 @@ async function LessonProgress() {
       {lastWatchedVideo && (
         <div className="border-t pt-3">
           <p className="font-semibold">Last Watched Video</p>
-          <Link href={`/tv/${lastWatchedVideo.video.id}`} className="block">
+          <Link href={`/tv?videoId=${lastWatchedVideo.video.id}`} className="block">
             <p className="line-clamp-1 break-all font-semibold hover:underline">{lastWatchedVideo.video.title}</p>
             <p className="text-sm text-muted-foreground">Continue watching</p>
           </Link>

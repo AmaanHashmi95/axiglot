@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import VideoChooser from "@/components/VideoChooser";
 import VideoPlayer from "@/components/VideoPlayer";
 import Subtitles from "@/components/Subtitles";
@@ -9,6 +10,8 @@ import { Video } from "@/lib/video";
 import { Button } from "@/components/ui/button";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const videoId = searchParams.get("videoId");
   const [videos, setVideos] = useState<Video[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -34,6 +37,16 @@ export default function Page() {
           throw new Error("No videos available in the database.");
 
         setVideos(fetchedVideos);
+
+        // Auto-select video if videoId exists in URL
+        if (videoId) {
+          const autoSelectedVideo = fetchedVideos.find((v) => v.id === videoId);
+          if (autoSelectedVideo) {
+            setSelectedVideo(autoSelectedVideo);
+            setShowSubtitles(true);
+          }
+        }
+
       } catch (err: any) {
         setError(err.message);
         console.error("Fetch error:", err.message);
@@ -43,7 +56,7 @@ export default function Page() {
     }
 
     fetchVideos();
-  }, [API_URL]);
+  }, [videoId]);
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);

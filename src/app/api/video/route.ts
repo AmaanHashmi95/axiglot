@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest, { params }: { params: { videoId: string } }) {
   try {
     console.log("Fetching videos from the database...");
 
