@@ -107,7 +107,7 @@ async function LessonProgress() {
       {lastListenedSong && (
         <div className="border-t pt-3">
           <p className="font-semibold">Last Played Song</p>
-          <Link href={`/music-lyrics/${lastListenedSong.song.id}`} className="block">
+          <Link href={`/music-lyrics?songId=${lastListenedSong.song.id}`} className="block">
             <p className="line-clamp-1 break-all font-semibold hover:underline">{lastListenedSong.song.title}</p>
             <p className="text-sm text-muted-foreground">Continue listening</p>
           </Link>

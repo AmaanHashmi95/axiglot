@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import SongChooser from "@/components/SongChooser";
 import MusicPlayer from "@/components/MusicPlayer";
 import Lyrics from "@/components/Lyrics";
 import { Song } from "@/lib/song";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const songId = searchParams.get("songId");
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -31,7 +34,14 @@ export default function Page() {
           throw new Error("No songs available in the database.");
 
         setSongs(fetchedSongs);
-        setSelectedSong(fetchedSongs[0]); // ✅ Default to first song
+        // Auto-select song if `songId` exists in the URL
+        if (songId) {
+          const autoSelectedSong = fetchedSongs.find((s) => s.id === songId);
+          if (autoSelectedSong) {
+            setSelectedSong(autoSelectedSong);
+            setShowLyrics(true);
+          }
+        }
       } catch (err: any) {
         setError(err.message);
         console.error("Fetch error:", err.message);
@@ -41,7 +51,7 @@ export default function Page() {
     }
 
     fetchSongs();
-  }, [API_URL]);
+  }, [songId]);
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
