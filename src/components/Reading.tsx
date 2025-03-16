@@ -3,12 +3,18 @@ import { Book, BookSentence, BookWord } from "@/lib/book";
 
 interface ReadingProps {
   book: Book;
+  initialPage?: number; // ✅ Accept initialPage for auto-loading
 }
 
-export default function Reading({ book }: ReadingProps) {
-  const [currentPage, setCurrentPage] = useState(0);
+export default function Reading({ book, initialPage = 0 }: ReadingProps) {
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [selectedSentenceIndex, setSelectedSentenceIndex] = useState<number | null>(null);
   const [hoveredSentenceIndex, setHoveredSentenceIndex] = useState<number | null>(null);
+
+  // ✅ Sync currentPage when `initialPage` changes (Fixes issue!)
+  useEffect(() => {
+    setCurrentPage(initialPage);
+  }, [initialPage]);
 
   // Ensure bookPages is available
   const bookPages = book.bookPages || [];
@@ -51,7 +57,7 @@ export default function Reading({ book }: ReadingProps) {
       <div className="border p-4 rounded-lg mt-4 text-justify leading-relaxed">
         {pageData.bookSentences.length > 0 ? (
           <p className="cursor-pointer transition duration-200">
-            {pageData.bookSentences.map((sentence: BookSentence, index: number) => (
+            {book.bookPages[currentPage]?.bookSentences.map((sentence, index) => (
               <span
                 key={index}
                 onClick={() => toggleSentence(index)}
@@ -130,21 +136,19 @@ export default function Reading({ book }: ReadingProps) {
           className="w-3/4 cursor-pointer"
         />
         <p className="text-gray-600 text-sm">
-          Page {currentPage + 1} of {totalPages}
+          Page {currentPage + 1} of {book.bookPages.length}
         </p>
 
         {/* Previous & Next Buttons */}
         <div className="flex justify-between w-full max-w-xs">
           <button
-            disabled={currentPage === 0}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0} onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
             className="px-4 py-2 border rounded disabled:opacity-50"
           >
             Previous
           </button>
           <button
-            disabled={currentPage >= totalPages - 1}
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= book.bookPages.length - 1} onClick={() => setCurrentPage((prev) => Math.min(prev + 1, book.bookPages.length - 1))}
             className="px-4 py-2 border rounded disabled:opacity-50"
           >
             Next

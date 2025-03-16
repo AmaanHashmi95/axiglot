@@ -118,7 +118,7 @@ async function LessonProgress() {
       {lastReadBook && (
         <div className="border-t pt-3">
           <p className="font-semibold">Last Read Book</p>
-          <Link href={`/reading/${lastReadBook.book.id}?page=${lastReadBook.pageNumber}`} className="block">
+          <Link href={`/reading?bookId=${lastReadBook.book.id}&page=${lastReadBook.pageNumber}`} className="block">
             <p className="line-clamp-1 break-all font-semibold hover:underline">{lastReadBook.book.title}</p>
             <p className="text-sm text-muted-foreground">Continue reading (Page {lastReadBook.pageNumber + 1})</p>
           </Link>

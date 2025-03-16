@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import ReadingChooser from "@/components/ReadingChooser";
 import Reading from "@/components/Reading";
 import { Book } from "@/lib/book";
 import { Button } from "@/components/ui/button";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const bookId = searchParams.get("bookId");
+  const pageNumber = searchParams.get("page") ? parseInt(searchParams.get("page")!, 10) : 0;
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [currentPage, setCurrentPage] = useState(pageNumber);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -29,6 +34,16 @@ export default function Page() {
           throw new Error("No books available in the database.");
 
         setBooks(fetchedBooks);
+
+       // ✅ Ensure book is selected with correct page
+       if (bookId) {
+        const autoSelectedBook = fetchedBooks.find((b) => b.id === bookId);
+        if (autoSelectedBook) {
+          setSelectedBook(autoSelectedBook);
+        }
+      }
+
+
       } catch (err: any) {
         setError(err.message);
         console.error("Fetch error:", err.message);
@@ -38,7 +53,7 @@ export default function Page() {
     }
 
     fetchBooks();
-  }, [API_URL]);
+  }, [bookId, pageNumber]);
 
   const handleSelectBook = (book: Book) => {
     setSelectedBook(book);
