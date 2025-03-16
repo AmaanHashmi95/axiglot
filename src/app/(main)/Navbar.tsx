@@ -1,6 +1,5 @@
 import Link from "next/link";
 import UserButton from "@/components/UserButton";
-import SearchField from "@/components/SearchField";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
 
@@ -11,7 +10,6 @@ export default function Navbar() {
         <Link href="/">
         <Image src={logo} alt="" width={150} height={50}/>
         </Link>
-        <SearchField />
         <UserButton className="sm:ms-auto" />
         </div>
       </header>
