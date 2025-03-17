@@ -78,16 +78,6 @@ createdAt DateTime @default(now())
 }
 
 
-
-
-
-
-
-
-
-
-
-
 model Session {
 id        String   @id
 userId    String
@@ -95,19 +85,8 @@ expiresAt DateTime
 user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
 
-
-
 @@map("sessions")
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -119,27 +98,9 @@ following   User   @relation("Followers", fields: [followingId], references: [id
 
 
 
-
-
-
-
-
 @@unique([followerId, followingId])
 @@map("follows")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -157,35 +118,11 @@ language            String?        // Add this field to store the post's languag
 requiredLessonId    String?        // ✅ NEW: The lesson a user must complete to see this post
 requiredLesson      Lesson?        @relation("LessonToPost", fields: [requiredLessonId], references: [id], onDelete: Cascade) // ✅ Define relation name
 
-
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
-
 
 @@index([language])  // ✅ Index for better query performance
 @@map("posts")
 }
-
-
-
-
-
-
-
-
-
-
 
 
 model Media {
@@ -196,20 +133,7 @@ type   MediaType
 url    String
 subtitle String?
 
-
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
 
 
 @@map("post_media")
@@ -217,33 +141,10 @@ createdAt DateTime @default(now())
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 enum MediaType {
 IMAGE
 VIDEO
 }
-
-
-
-
-
-
-
-
-
-
 
 
 model Comment {
@@ -255,30 +156,10 @@ postId  String
 post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
 
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
-
 
 @@map("comments")
 }
-
-
-
-
-
-
-
 
 model Like {
 userId String
@@ -286,23 +167,9 @@ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-
-
-
-
-
-
-
 @@unique([userId, postId])
 @@map("likes")
 }
-
-
-
-
-
-
-
 
 model Bookmark {
 id     String @id @default(cuid())
@@ -311,31 +178,11 @@ user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 postId String
 post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
-
 
 @@unique([userId, postId])
 @@map("bookmarks")
 }
-
-
-
-
-
-
 
 
 model Notification {
@@ -349,25 +196,10 @@ post        Post?            @relation(fields: [postId], references: [id], onDel
 type        NotificationType
 read        Boolean          @default(false)
 
-
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
-
 
 @@map("notifications")
 }
-
 
 
 
@@ -376,12 +208,6 @@ LIKE
 FOLLOW
 COMMENT
 }
-
-
-
-
-
-
 
 
 model Course {
@@ -393,12 +219,6 @@ order       Int      @default(1) // ✅ Provide a default value
 lessons     Lesson[] // Relation to lessons
 createdAt   DateTime @default(now())
 }
-
-
-
-
-
-
 
 
 model Lesson {
@@ -417,15 +237,6 @@ posts       Post[]           @relation("LessonToPost") // ✅ Add this back-refe
 
 
 
-
-
-
-
-
-
-
-
-
 model Question {
 id         String    @id @default(cuid())
 lessonId   String
@@ -441,15 +252,6 @@ language   String?
 hasTimer   Boolean @default(false)
 createdAt  DateTime @default(now())
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -472,12 +274,6 @@ translation String? // ✅ New optional translation field
 }
 
 
-
-
-
-
-
-
 model Translation {
 id        String @id @default(cuid())
 wordId    String
@@ -485,28 +281,8 @@ word      Word   @relation(fields: [wordId], references: [id], onDelete: Cascade
 text      String  // ✅ Possible translation for the word
 language  String  // ✅ Language of this translation
 
-
-
-
-
-
-
-
 questions QuestionTranslation[] // ✅ Fix: Add inverse relation
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -514,10 +290,8 @@ model QuestionWord {
 questionId String
 question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-
 wordId String
 word   Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
-
 
 order Int // ✅ The position of the word in the question
 color String? @default("#000000") // ✅ Optional with default black color
@@ -527,55 +301,18 @@ color String? @default("#000000") // ✅ Optional with default black color
 }
 
 
-
-
-
-
-
-
 model QuestionTranslation {
 questionId String
 question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-
-
-
-
-
-
-
 translationId String
 translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
-
-
-
-
-
-
-
 
 order Int // ✅ Position of the translated word in the sentence
 color String? @default("#000000") // ✅ Optional with default black color
 
-
-
-
-
-
-
-
 @@id([questionId, translationId]) // ✅ Composite primary key
 }
-
-
-
-
-
-
-
-
-
-
 
 
 model LessonProgress {
@@ -586,34 +323,10 @@ user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 completed Boolean @default(false) // New field to indicate if the lesson is complete
 
-
-
-
-
-
-
-
 createdAt DateTime @default(now())
-
-
-
-
-
-
-
 
 @@unique([userId, lessonId]) // Add this unique constraint
 }
-
-
-
-
-
-
-
-
-
-
 
 
 enum QuestionType {
@@ -630,24 +343,12 @@ SPEAK_ANSWER
 }
 
 
-
-
-
-
-
-
 enum WordType {
 NOUN
 VERB
 PRONOUN
 ADJECTIVE
 }
-
-
-
-
-
-
 
 
 model Song {
@@ -660,19 +361,12 @@ language  String?
 musicProgress  MusicProgress[]  // ✅ New: Track user listening progress
 createdAt DateTime @default(now())
 
-
-
-
 englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")
 targetSentences  LyricTargetSentence[]  @relation("TargetLyrics")
 transliterationSentences LyricTransliterationSentence[] @relation("TransliterationLyrics")
 
-
-
-
 @@map("music_tracks")
 }
-
 
 
 
@@ -803,33 +497,6 @@ model LyricTransliterationWords {
 
  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
