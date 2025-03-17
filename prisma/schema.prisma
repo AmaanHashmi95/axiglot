@@ -384,7 +384,6 @@ model MusicProgress {
 
 
 
-
 model LyricEnglishSentence {
 id       String   @id @default(uuid())
 songId   String
@@ -394,12 +393,8 @@ startTime Float  // When this sentence should appear
 endTime   Float  // When this sentence should disappear
 words    LyricEnglishWords[]
 
-
-
-
 @@map("lyric_english_sentences")
 }
-
 
 
 
@@ -412,13 +407,8 @@ startTime Float
 endTime   Float
 words    LyricTargetWords[]
 
-
-
-
 @@map("lyric_target_sentences")
 }
-
-
 
 
 model LyricTransliterationSentence {
@@ -477,10 +467,6 @@ model LyricTargetWords {
 }
 
 
-
-
-
-
 model LyricTransliterationWords {
  sentenceId String
  sentence   LyricTransliterationSentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
@@ -497,7 +483,6 @@ model LyricTransliterationWords {
 
  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }
-
 
 
 
@@ -522,8 +507,6 @@ videoProgress VideoProgress[] // ✅ Add relation to VideoProgress
 }
 
 
-
-
 model VideoProgress {
  id        String  @id @default(cuid())
  userId    String
@@ -535,9 +518,6 @@ model VideoProgress {
 
  @@unique([userId, videoId]) // Ensure each user has unique video progress per video
 }
-
-
-
 
 
 
@@ -645,12 +625,6 @@ wordId String
 
  @@id([sentenceId, wordId]) // ✅ Composite primary key
 }
-
-
-
-
-
-
 
 
 
