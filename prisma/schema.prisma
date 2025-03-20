@@ -42,7 +42,7 @@ lessonProgress        LessonProgress[] // Add this line for the relation to Less
 videoProgress         VideoProgress[] // ✅ Add relation to VideoProgress
 musicProgress  MusicProgress[]  // ✅ New: Track music progress
 bookProgress  BookProgress[]  // ✅ Track user reading progress
-
+lessonBookmarks       LessonBookmark[] // ✅ Add inverse relation
 
 createdAt DateTime @default(now())
 
@@ -206,8 +206,24 @@ questions   Question[]
 progress    LessonProgress[] // Add this relation field
 createdAt   DateTime         @default(now())
 posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
+lessonBookmarks LessonBookmark[]  // ✅ Add inverse relation
 }
 
+model LessonBookmark {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId   String
+  lesson     Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  words        Json // ✅ Store words as JSON
+  translations Json // ✅ Store translations as JSON
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, lessonId, questionId])
+  @@map("lesson_bookmarks")
+}
 
 
 model Question {
@@ -223,6 +239,7 @@ options       String[]
 correctAnswer String
 language   String?
 hasTimer   Boolean @default(false)
+lessonBookmarks LessonBookmark[]  // ✅ Add inverse relation
 createdAt  DateTime @default(now())
 }
 
