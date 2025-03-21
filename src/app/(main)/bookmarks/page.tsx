@@ -29,7 +29,7 @@ export default function Page() {
 
        {/* Bookmarks List */}
        <Bookmarks selectedType={selectedType} selectedLanguage={selectedLanguage} />
-       {selectedType === "Lessons" && <LessonBookmarks />}
+       {selectedType === "Lessons" && (<LessonBookmarks selectedLanguage={selectedLanguage}/>)}
      </div>
    </main>
  );
