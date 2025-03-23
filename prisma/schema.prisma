@@ -43,6 +43,7 @@ videoProgress         VideoProgress[] // ✅ Add relation to VideoProgress
 musicProgress  MusicProgress[]  // ✅ New: Track music progress
 bookProgress  BookProgress[]  // ✅ Track user reading progress
 lessonBookmarks       LessonBookmark[] // ✅ Add inverse relation
+subtitleBookmarks     SubtitleBookmark[] // ✅ Add inverse relation
 
 createdAt DateTime @default(now())
 
@@ -489,7 +490,7 @@ englishSentences SubtitleEnglishSentence[] @relation("EnglishSubtitles")
 targetSentences  SubtitleTargetSentence[]  @relation("TargetSubtitles")
 transliterationSentences SubtitleTransliterationSentence[] @relation("TransliterationSubtitles")
 videoProgress VideoProgress[] // ✅ Add relation to VideoProgress
-
+subtitleBookmarks SubtitleBookmark[] // ✅ Add inverse relation
 
 
 
@@ -530,21 +531,34 @@ words    SubtitleEnglishWords[]
 
 
 model SubtitleTargetSentence {
-id       String   @id @default(uuid())
-videoId   String
-video     Video     @relation("TargetSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
-text     String
-startTime Float
-endTime   Float
-words    SubtitleTargetWords[]
+  id       String   @id @default(uuid())
+  videoId  String
+  video    Video     @relation("TargetSubtitles", fields: [videoId], references: [id], onDelete: Cascade)
+  text     String
+  startTime Float
+  endTime   Float
+  words    SubtitleTargetWords[]
+  audioUrl String?
 
+  // ✅ NEW FIELDS to replace cross-reference to English/Transliteration
+  bookmarkedEnglish        String?  // Text version to display in bookmarks
+  bookmarkedTransliteration String?  // Optional transliteration
 
-
-
-@@map("subtitle_target_sentences")
+  @@map("subtitle_target_sentences")
 }
 
+model SubtitleBookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId    String
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade) // ✅ Add this
+  sentenceIds String[]  // IDs of target sentences bookmarked together
+  audioUrl   String?
+  createdAt  DateTime @default(now())
 
+  @@map("subtitle_bookmarks")
+}
 
 
 model SubtitleTransliterationSentence {

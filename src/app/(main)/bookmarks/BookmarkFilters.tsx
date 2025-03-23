@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
 
-const itemTypes = ["Posts", "Lessons"];
+const itemTypes = ["Posts", "Lessons", "Subtitles"];
 const languages = ["All Languages", "Punjabi", "Urdu"];
 
 
