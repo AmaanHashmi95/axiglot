@@ -44,6 +44,7 @@ musicProgress  MusicProgress[]  // ✅ New: Track music progress
 bookProgress  BookProgress[]  // ✅ Track user reading progress
 lessonBookmarks       LessonBookmark[] // ✅ Add inverse relation
 subtitleBookmarks     SubtitleBookmark[] // ✅ Add inverse relation
+lyricBookmarks LyricBookmark[] // ✅ Add inverse relation
 
 createdAt DateTime @default(now())
 
@@ -350,6 +351,7 @@ audioUrl String?   // ✅ Store direct audio URL from Vercel Storage
 imageUrl  String?   // ✅ New field to store the image URL
 language  String?
 musicProgress  MusicProgress[]  // ✅ New: Track user listening progress
+lyricBookmarks LyricBookmark[] // ✅ Add inverse relation
 createdAt DateTime @default(now())
 
 englishSentences LyricEnglishSentence[] @relation("EnglishLyrics")
@@ -397,10 +399,25 @@ text     String
 startTime Float
 endTime   Float
 words    LyricTargetWords[]
+audioUrl String?
+bookmarkedEnglish        String?
+bookmarkedTransliteration String?
 
 @@map("lyric_target_sentences")
 }
 
+model LyricBookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  songId     String
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  sentenceIds String[]
+  audioUrl   String?
+  createdAt  DateTime @default(now())
+
+  @@map("lyric_bookmarks")
+}
 
 model LyricTransliterationSentence {
 id       String   @id @default(uuid())

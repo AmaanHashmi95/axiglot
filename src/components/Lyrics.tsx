@@ -1,21 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import LyricBookmarkButton from "./music/LyricBookmarkButton";
+
 interface Word {
-  word?: { text: string }; // ✅ Ensure word object exists
+  word?: {
+    id?: string;
+    text: string;
+    transliteration?: string;
+    audioUrl?: string;
+  };
   startTime: number;
   endTime: number;
   order: number;
 }
 
 interface Sentence {
+  id?: string;
   text: string;
   startTime: number;
   endTime: number;
-  words?: Word[]; // ✅ Ensure words can be undefined
+  words?: Word[];
 }
 
 interface LyricsProps {
   song: {
+    id: string;
+    audioUrl: string;
     englishSentences: Sentence[];
     targetSentences: Sentence[];
     transliterationSentences: Sentence[];
@@ -24,6 +35,8 @@ interface LyricsProps {
 }
 
 export default function Lyrics({ song, currentTime }: LyricsProps) {
+  const [showBookmark, setShowBookmark] = useState(false);
+
   const currentSentences = {
     english: song.englishSentences.find(
       (s) => currentTime >= s.startTime && currentTime < s.endTime
@@ -39,11 +52,57 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
   const getHighlightedWord = (sentence?: Sentence) =>
     sentence?.words?.find(
       (word) => currentTime >= word.startTime && currentTime < word.endTime
-    )?.word?.text || null; // ✅ Ensure fallback to `null`
+    )?.word?.text || null;
+
+  const words =
+    currentSentences.target?.words?.map((w) => ({
+      id: w.word?.id || "",
+      text: w.word?.text || "",
+      transliteration: w.word?.transliteration,
+      audioUrl: w.word?.audioUrl,
+    })) || [];
+
+  const translations =
+    currentSentences.english?.words?.map((w) => ({
+      id: w.word?.id || "",
+      text: w.word?.text || "",
+    })) || [];
+
+  const sentenceIds = [
+    currentSentences.target?.id,
+    currentSentences.english?.id,
+    currentSentences.transliteration?.id,
+  ].filter(Boolean) as string[];
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".bookmark-group")) {
+        setShowBookmark(false);
+      }
+    };
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
 
   return (
-    <div className="w-full max-w-lg mx-auto mt-4">
-      {/* ✅ English Translation */}
+    <div
+      className="bookmark-group w-full max-w-lg mx-auto mt-4 p-2 border rounded relative cursor-pointer"
+      onClick={() => setShowBookmark(true)}
+    >
+      {/* ✅ Bookmark Button */}
+      {showBookmark && currentSentences.target && (
+        <div className="absolute top-2 right-2 z-10">
+          <LyricBookmarkButton
+            songId={song.id}
+            sentenceIds={sentenceIds}
+            words={words}
+            translations={translations}
+            audioUrl={song.audioUrl}
+          />
+        </div>
+      )}
+
+      {/* ✅ English */}
       <p className="text-center font-semibold">
         {currentSentences.english
           ? currentSentences.english.text.split(" ").map((word, index) => {

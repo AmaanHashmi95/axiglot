@@ -5,6 +5,7 @@ import BookmarkFilters from "./BookmarkFilters";
 import Bookmarks from "./Bookmarks";
 import LessonBookmarks from "@/app/(main)/bookmarks/LessonBookmarks";
 import SubtitleBookmarks from "@/app/(main)/bookmarks/SubtitleBookmarks";
+import LyricBookmarks from "@/app/(main)/bookmarks/LyricBookmarks";
 
 export default function Page() {
  const [selectedType, setSelectedType] = useState("Posts");
@@ -32,6 +33,7 @@ export default function Page() {
        <Bookmarks selectedType={selectedType} selectedLanguage={selectedLanguage} />
        {selectedType === "Lessons" && (<LessonBookmarks selectedLanguage={selectedLanguage}/>)}
        {selectedType === "Subtitles" && (<SubtitleBookmarks selectedLanguage={selectedLanguage} />)}
+       {selectedType === "Lyrics" && (<LyricBookmarks selectedLanguage={selectedLanguage} />)}
      </div>
    </main>
  );
