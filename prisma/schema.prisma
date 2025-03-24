@@ -45,6 +45,7 @@ bookProgress  BookProgress[]  // ✅ Track user reading progress
 lessonBookmarks       LessonBookmark[] // ✅ Add inverse relation
 subtitleBookmarks     SubtitleBookmark[] // ✅ Add inverse relation
 lyricBookmarks LyricBookmark[] // ✅ Add inverse relation
+readingBookmarks ReadingBookmark[] // ✅ Add inverse relation
 
 createdAt DateTime @default(now())
 
@@ -660,6 +661,7 @@ language  String?
 createdAt DateTime @default(now())
 bookPages BookPage[] @relation("BookPage")
 bookProgress  BookProgress[]  // ✅ Track progress for each book
+readingBookmarks ReadingBookmark[] // ✅ Add inverse relation
 @@map("reading_books")
 }
 
@@ -741,6 +743,21 @@ createdAt DateTime @default(now())
 
 
 
+model ReadingBookmark {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId           String
+  book             Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  sentenceId       String
+  text             String
+  translation      String
+  transliteration  String
+  language         String?
+  createdAt        DateTime @default(now())
+
+  @@map("reading_bookmarks")
+}
 
 
 

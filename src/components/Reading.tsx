@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Book, BookSentence, BookWord } from "@/lib/book";
+import ReadingBookmarkButton from "./ReadingBookmarkButton";
 
 interface ReadingProps {
   book: Book;
@@ -121,6 +122,14 @@ export default function Reading({ book, initialPage = 0 }: ReadingProps) {
                 </span>
               ))}
           </p>
+          <ReadingBookmarkButton
+  bookId={book.id}
+  sentenceId={pageData.bookSentences[selectedSentenceIndex].text}
+  text={pageData.bookSentences[selectedSentenceIndex].text}
+  translation={pageData.bookSentences[selectedSentenceIndex].translation}
+  transliteration={pageData.bookSentences[selectedSentenceIndex].transliteration}
+  language={book.language}
+/>
         </div>
       )}
 
