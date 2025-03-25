@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import TranslatorBookmarkButton from "./TranslatorBookmarkButton";
 
 const languages = [
   { code: "en", name: "English" },
@@ -37,40 +38,48 @@ export default function Translator() {
       if (data.translation) setTranslatedText(data.translation);
       if (data.transliteration) setTransliteratedText(data.transliteration);
       if (data.wordTranslations) setWordBreakdown(data.wordTranslations);
-
     } catch (error) {
       console.error("Translation error", error);
     }
     setLoading(false);
   };
 
+  useEffect(() => {
+    setTranslatedText("");
+    setTransliteratedText("");
+    setWordBreakdown([]);
+  }, [to]);
+  
+
   return (
-    <div className="p-6 max-w-xl mx-auto bg-white shadow-lg rounded-lg">
-      <h2 className="text-xl font-bold mb-4">Text Translator</h2>
+    <div className="mx-auto max-w-xl rounded-lg bg-white p-6 shadow-lg">
+      <h2 className="mb-4 text-xl font-bold">Text Translator</h2>
 
       <textarea
-        className="w-full p-2 border rounded-md"
+        className="w-full rounded-md border p-2"
         placeholder="Enter text"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
 
-      <div className="flex gap-2 my-3">
-        <select className="p-2 border rounded-md" value={from} onChange={(e) => setFrom(e.target.value)}>
-          {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>{lang.name}</option>
-          ))}
-        </select>
+      <div className="my-3 flex gap-2">
+        
 
-        <select className="p-2 border rounded-md" value={to} onChange={(e) => setTo(e.target.value)}>
+        <select
+          className="rounded-md border p-2"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+        >
           {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>{lang.name}</option>
+            <option key={lang.code} value={lang.code}>
+              {lang.name}
+            </option>
           ))}
         </select>
       </div>
 
       <button
-        className="bg-blue-500 text-white p-2 rounded-md w-full"
+        className="w-full rounded-md bg-blue-500 p-2 text-white"
         onClick={translateText}
         disabled={loading}
       >
@@ -78,21 +87,28 @@ export default function Translator() {
       </button>
 
       {translatedText && (
-        <div className="mt-4 p-3 border rounded-md bg-gray-100">
+        <div className="mt-4 rounded-md border bg-gray-100 p-3">
           <strong>Translation:</strong>
           <p>{translatedText}</p>
+          <TranslatorBookmarkButton
+            sourceText={text}
+            translatedText={translatedText}
+            transliteration={transliteratedText}
+            language={to}
+            words={wordBreakdown}
+          />
         </div>
       )}
 
       {transliteratedText && (
-        <div className="mt-2 p-3 border rounded-md bg-gray-100">
+        <div className="mt-2 rounded-md border bg-gray-100 p-3">
           <strong>Transliteration:</strong>
           <p>{transliteratedText}</p>
         </div>
       )}
 
       {wordBreakdown.length > 0 && (
-        <div className="mt-2 p-3 border rounded-md bg-gray-100">
+        <div className="mt-2 rounded-md border bg-gray-100 p-3">
           <strong>Word Breakdown:</strong>
           <ul className="list-disc pl-5">
             {wordBreakdown.map((word, idx) => (

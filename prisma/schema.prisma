@@ -46,6 +46,7 @@ lessonBookmarks       LessonBookmark[] // ✅ Add inverse relation
 subtitleBookmarks     SubtitleBookmark[] // ✅ Add inverse relation
 lyricBookmarks LyricBookmark[] // ✅ Add inverse relation
 readingBookmarks ReadingBookmark[] // ✅ Add inverse relation
+translatorBookmarks TranslatorBookmark[] // ✅ Add inverse relation
 
 createdAt DateTime @default(now())
 
@@ -761,3 +762,20 @@ model ReadingBookmark {
 
 
 
+
+
+model TranslatorBookmark {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceText      String
+  translatedText  String
+  transliteration String
+  words           Json
+  language        String?
+  createdAt       DateTime @default(now())
+
+  @@map("translator_bookmarks")
+  @@unique([userId, sourceText, language])
+
+}
