@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import EditProfileButton from "./EditProfileButton";
 import UserPosts from "./UserPosts";
+import UserFollowing from "./UserFollowing";
 
 interface PageProps {
   params: { username: string };
@@ -60,16 +61,17 @@ export default async function Page({ params: { username } }: PageProps) {
 
   const user = await getUser(username, loggedInUser.id);
 
+  const isOwnProfile = user.id === loggedInUser.id;
+
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
-          <h2 className="text-center text-2xl font-bold">
-            {user.displayName}&apos;s posts
-          </h2>
-        </div>
-        <UserPosts userId={user.id} />
+        {isOwnProfile ? (
+          <UserFollowing userId={user.id} />
+        ) : (
+          <UserPosts userId={user.id} />
+        )}
       </div>
     </main>
   );
@@ -102,15 +104,6 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <div>Member since {formatDate(user.createdAt, "MMM d, yyyy")}</div>
-          <div className="flex items-center gap-3">
-            <span>
-              Posts:{" "}
-              <span className="font-semibold">
-                {formatNumber(user._count.posts)}
-              </span>
-            </span>
-            <FollowerCount userId={user.id} initialState={followerInfo} />
-          </div>
         </div>
         {user.id === loggedInUserId ? (
           <EditProfileButton user={user} />
