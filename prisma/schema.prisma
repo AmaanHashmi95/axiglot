@@ -779,3 +779,18 @@ model TranslatorBookmark {
   @@unique([userId, sourceText, language])
 
 }
+
+
+
+
+model AudioLesson {
+  id        String   @id @default(uuid())
+  title     String
+  speaker   String
+  audioUrl  String?
+  imageUrl  String?
+  language  String?
+  createdAt DateTime @default(now())
+
+  @@map("audio_lessons")
+}
