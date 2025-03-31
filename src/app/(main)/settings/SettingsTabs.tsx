@@ -1,54 +1,52 @@
-"use client";
+// src/app/(main)/settings/SettingsTabs.tsx
+import Account from "./Account";
+import Subscription from "./Subscription";
+import Help from "./Help";
 
-import { useState } from "react";
-import dynamic from "next/dynamic";
+interface Props {
+  currentTab: "account" | "subscription" | "help";
+}
 
-const Account = dynamic(() => import("./Account"));
-const Subscription = dynamic(() => import("./Subscription"));
-const Help = dynamic(() => import("./Help")); // ← import Help tab
-
-export default function SettingsTabs() {
-  const [tab, setTab] = useState<"account" | "subscription" | "help">("account");
-
+export default function SettingsTabs({ currentTab }: Props) {
   return (
     <div>
       <div className="flex gap-2 border-b pb-2">
-        <button
+        <a
+          href="?tab=account"
           className={`px-4 py-2 font-medium ${
-            tab === "account"
+            currentTab === "account"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground"
           }`}
-          onClick={() => setTab("account")}
         >
           Account
-        </button>
-        <button
+        </a>
+        <a
+          href="?tab=subscription"
           className={`px-4 py-2 font-medium ${
-            tab === "subscription"
+            currentTab === "subscription"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground"
           }`}
-          onClick={() => setTab("subscription")}
         >
           Subscription
-        </button>
-        <button
+        </a>
+        <a
+          href="?tab=help"
           className={`px-4 py-2 font-medium ${
-            tab === "help"
+            currentTab === "help"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground"
           }`}
-          onClick={() => setTab("help")}
         >
           Help
-        </button>
+        </a>
       </div>
 
       <div className="mt-4">
-        {tab === "account" && <Account />}
-        {tab === "subscription" && <Subscription />}
-        {tab === "help" && <Help />}
+        {currentTab === "account" && <Account />}
+        {currentTab === "subscription" && <Subscription />}
+        {currentTab === "help" && <Help />}
       </div>
     </div>
   );
