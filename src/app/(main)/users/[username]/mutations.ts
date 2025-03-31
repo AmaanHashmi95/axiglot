@@ -36,6 +36,15 @@ export function useUpdateProfileMutation() {
     onSuccess: async ([updatedUser, uploadResult]) => {
       const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl;
 
+      // PATCH user avatar URL if new avatar was uploaded
+  if (newAvatarUrl) {
+    await fetch("/api/users/update-avatar", {
+      method: "POST",
+      body: JSON.stringify({ avatarUrl: newAvatarUrl }),
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
       const queryFilter: QueryFilters = {
         queryKey: ["post-feed"],
       };

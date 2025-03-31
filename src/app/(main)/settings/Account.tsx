@@ -1,7 +1,9 @@
-// src/app/(main)/settings/Account.tsx
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { formatDate } from "date-fns";
+import EditProfileForm from "./EditProfileForm";
+import ThemeSelector from "@/components/ThemeSelector";
+import LogoutButton from "@/components/LogoutButton";
 
 export default async function Account() {
   const { user } = await validateRequest();
@@ -17,7 +19,12 @@ export default async function Account() {
   const userData = await prisma.user.findUnique({
     where: { id: user.id },
     select: {
+      id: true,
+      displayName: true,
+      bio: true,
+      avatarUrl: true,
       createdAt: true,
+      username: true,
     },
   });
 
@@ -28,9 +35,15 @@ export default async function Account() {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2">Account Overview</h2>
-      <p className="text-muted-foreground">
+
+      <EditProfileForm user={userData} />
+
+      <p className="text-muted-foreground mt-4">
         Member since {formatDate(userData.createdAt, "MMM d, yyyy")}
       </p>
+
+      <ThemeSelector />
+      <LogoutButton />
     </div>
   );
 }

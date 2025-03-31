@@ -13,6 +13,8 @@ import { cache } from "react";
 import EditProfileButton from "./EditProfileButton";
 import UserPosts from "./UserPosts";
 import UserFollowing from "./UserFollowing";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: { username: string };
@@ -105,10 +107,12 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-          <EditProfileButton user={user} />
-        ) : (
-          <FollowButton userId={user.id} initialState={followerInfo} />
-        )}
+  <Link href="/settings?tab=account">
+    <Button variant="outline">Account</Button>
+  </Link>
+) : (
+  <FollowButton userId={user.id} initialState={followerInfo} />
+)}
       </div>
       {user.bio && (
         <>

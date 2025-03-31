@@ -15,6 +15,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "**.ufs.sh", // Allow all ufs.sh subdomains (UploadThing)
+      },
+      {
+        protocol: "https",
         hostname: "u8ombuwywmnulg03.public.blob.vercel-storage.com", // ✅ Allow images from this host
         pathname: "/*",
       },
