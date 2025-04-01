@@ -26,6 +26,12 @@ export default function Page() {
             <Link href="/signup" className="block text-center hover:underline">
               Don&apos;t have an account? Sign up
             </Link>
+            <Link
+              href="/forgot-password"
+              className="block text-center text-sm text-muted-foreground hover:underline"
+            >
+              Forgot your password?
+            </Link>
           </div>
         </div>
         <Image

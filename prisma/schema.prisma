@@ -26,6 +26,7 @@ username              String           @unique
 displayName           String
 email                 String?          @unique
 passwordHash          String?
+passwordResetToken    PasswordResetToken[]
 googleId              String?          @unique
 avatarUrl             String?
 bio                   String?
@@ -794,3 +795,15 @@ model AudioLesson {
 
   @@map("audio_lessons")
 }
+
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+
