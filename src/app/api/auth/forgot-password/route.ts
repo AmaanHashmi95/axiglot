@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { randomBytes } from "crypto";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json();
@@ -26,8 +27,8 @@ export async function POST(req: NextRequest) {
 
   const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
-  // TODO: Replace with your mail service (SendGrid, Resend, etc.)
-  console.log("🔗 Reset Link:", resetUrl);
+  await sendPasswordResetEmail(email, resetUrl);
 
-  return NextResponse.json({ message: "If email exists, reset link was sent. Please close this screen." });
+  return NextResponse.json({ message: "If email exists, reset link was sent." });
 }
+
