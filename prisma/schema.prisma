@@ -27,6 +27,8 @@ displayName           String
 email                 String?          @unique
 passwordHash          String?
 passwordResetToken    PasswordResetToken[]
+emailVerified       Boolean           @default(false) // 👈 ADD THIS
+emailVerificationTokens EmailVerificationToken[] // 👈 RELATION
 googleId              String?          @unique
 avatarUrl             String?
 bio                   String?
@@ -807,3 +809,14 @@ model PasswordResetToken {
 }
 
 
+
+
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

@@ -1,3 +1,4 @@
+// src/app/(auth)/signup/actions.ts
 "use server";
 
 import { lucia } from "@/auth";
@@ -8,7 +9,10 @@ import { hash } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { randomBytes } from "crypto";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function signUp(
   credentials: SignUpValues,
@@ -55,6 +59,9 @@ export async function signUp(
       };
     }
 
+    const emailToken = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+
     await prisma.$transaction(async (tx) => {
       await tx.user.create({
         data: {
@@ -65,6 +72,15 @@ export async function signUp(
           passwordHash,
         },
       });
+
+      await tx.emailVerificationToken.create({
+        data: {
+          userId,
+          token: emailToken,
+          expiresAt,
+        },
+      });
+
       await streamServerClient.upsertUser({
         id: userId,
         username,
@@ -72,15 +88,17 @@ export async function signUp(
       });
     });
 
-    const session = await lucia.createSession(userId, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    cookies().set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
+    const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email?token=${emailToken}`;
 
-    return redirect("/");
+    await resend.emails.send({
+      from: "info@axiglot.com",
+      to: email,
+      subject: "Verify your email",
+      html: `<p>Thanks for signing up! Click below to verify your email address:</p>
+             <p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    });
+
+    return { error: "" };
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);

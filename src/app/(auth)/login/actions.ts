@@ -1,3 +1,4 @@
+// src/app/(auth)/login/actions.ts
 "use server";
 
 import { lucia } from "@/auth";
@@ -14,7 +15,7 @@ export async function login(
   try {
     const { username, password } = loginSchema.parse(credentials);
 
-    const existingUser = await prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         username: {
           equals: username,
@@ -23,27 +24,28 @@ export async function login(
       },
     });
 
-    if (!existingUser || !existingUser.passwordHash) {
-      return {
-        error: "Incorrect username or password",
-      };
+    if (!user || !user.passwordHash) {
+      return { error: "Incorrect username or password" };
     }
 
-    const validPassword = await verify(existingUser.passwordHash, password, {
+    const isValid = await verify(user.passwordHash, password, {
       memoryCost: 19456,
       timeCost: 2,
       outputLen: 32,
       parallelism: 1,
     });
 
-    if (!validPassword) {
-      return {
-        error: "Incorrect username or password",
-      };
+    if (!isValid) {
+      return { error: "Incorrect username or password" };
     }
 
-    const session = await lucia.createSession(existingUser.id, {});
+    if (!user.emailVerified) {
+      return { error: "Please verify your email before logging in." };
+    }
+
+    const session = await lucia.createSession(user.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
+
     cookies().set(
       sessionCookie.name,
       sessionCookie.value,
@@ -54,8 +56,6 @@ export async function login(
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);
-    return {
-      error: "Something went wrong. Please try again.",
-    };
+    return { error: "Something went wrong. Please try again." };
   }
 }
