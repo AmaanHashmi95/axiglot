@@ -16,9 +16,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Token invalid or expired" }, { status: 400 });
   }
 
+  const user = found.user;
+
+  // ❌ Don't verify if not subscribed
+  if (!user?.hasSubscription) {
+    return NextResponse.json(
+      { message: "You must subscribe first before verifying your email." },
+      { status: 400 }
+    );
+  }
+
+  // ✅ Now mark as verified and delete token
   await prisma.user.update({
-    where: { id: found.userId },
-    data: { emailVerified: true },
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+    },
   });
 
   await prisma.emailVerificationToken.delete({ where: { token } });

@@ -29,6 +29,10 @@ passwordHash          String?
 passwordResetToken    PasswordResetToken[]
 emailVerified       Boolean           @default(false) // 👈 ADD THIS
 emailVerificationTokens EmailVerificationToken[] // 👈 RELATION
+stripeCustomerId        String?  // ID of customer in Stripe
+stripeSubscriptionId    String?  // ID of subscription
+stripeCheckoutSessionId String?  // ID of checkout session
+hasSubscription         Boolean  @default(false) // Toggle access
 googleId              String?          @unique
 avatarUrl             String?
 bio                   String?

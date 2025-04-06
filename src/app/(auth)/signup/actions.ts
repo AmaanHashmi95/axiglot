@@ -1,4 +1,3 @@
-// src/app/(auth)/signup/actions.ts
 "use server";
 
 import { lucia } from "@/auth";
@@ -9,10 +8,7 @@ import { hash } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { cookies } from "next/headers";
-import { randomBytes } from "crypto";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
+import { redirect } from "next/navigation";
 
 export async function signUp(
   credentials: SignUpValues,
@@ -59,46 +55,33 @@ export async function signUp(
       };
     }
 
-    const emailToken = randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
-
-    await prisma.$transaction(async (tx) => {
-      await tx.user.create({
-        data: {
-          id: userId,
-          username,
-          displayName: username,
-          email,
-          passwordHash,
-        },
-      });
-
-      await tx.emailVerificationToken.create({
-        data: {
-          userId,
-          token: emailToken,
-          expiresAt,
-        },
-      });
-
-      await streamServerClient.upsertUser({
+    // ✅ Just create the user here — no email logic
+    await prisma.user.create({
+      data: {
         id: userId,
         username,
-        name: username,
-      });
+        displayName: username,
+        email,
+        passwordHash,
+      },
     });
 
-    const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email?token=${emailToken}`;
-
-    await resend.emails.send({
-      from: "info@axiglot.com",
-      to: email,
-      subject: "Verify your email",
-      html: `<p>Thanks for signing up! Click below to verify your email address:</p>
-             <p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    await streamServerClient.upsertUser({
+      id: userId,
+      username,
+      name: username,
     });
 
-    return { error: "" };
+    // 🔁 Redirect to Stripe
+    const checkoutRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/stripe/create-checkout-session`, {
+      method: "POST",
+      body: JSON.stringify({ userId, email }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const { url } = await checkoutRes.json();
+    return redirect(url);
+
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);
