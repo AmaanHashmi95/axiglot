@@ -1,3 +1,4 @@
+// src/app/(main)/layout.tsx
 import { validateRequest } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
@@ -16,13 +17,18 @@ export default async function Layout({
     redirect("/login");
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      hasSubscription: true,
-      emailVerified: true,
-    },
-  });
+  // ✅ Fetch FRESH data from DB to avoid stale caching
+  const [dbUser] = await prisma.$transaction([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        hasSubscription: true,
+        emailVerified: true,
+      },
+    }),
+  ]);
+
+  console.log("🔒 Access Check — Subscription:", dbUser?.hasSubscription, "Email Verified:", dbUser?.emailVerified);
 
   if (!dbUser?.hasSubscription || !dbUser?.emailVerified) {
     redirect("/login");

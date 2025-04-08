@@ -15,15 +15,13 @@ export async function POST(req: NextRequest) {
     return new Response(`Webhook Error: ${(err as Error).message}`, { status: 400 });
   }
 
+  // 🎯 1. New subscription = success
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.userId;
 
-    if (!userId) {
-      return new Response("Missing userId metadata", { status: 400 });
-    }
+    if (!userId) return new Response("Missing userId metadata", { status: 400 });
 
-    // Expand session to get subscription ID
     const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
       expand: ["subscription"],
     });
@@ -38,6 +36,37 @@ export async function POST(req: NextRequest) {
         stripeSubscriptionId: subscription?.id ?? null,
       },
     });
+  }
+
+  // 🛑 2. Cancel or expire = revoke access
+  if (
+    event.type === "customer.subscription.updated" ||
+    event.type === "customer.subscription.deleted"
+  ) {
+    const subscription = event.data.object as Stripe.Subscription;
+
+    const customerId = subscription.customer.toString();
+    const status = subscription.status; // "active", "canceled", "incomplete", etc.
+
+    // Lookup user by stripeCustomerId
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: customerId },
+    });
+
+    if (user) {
+      const shouldRevoke =
+        status === "canceled" ||
+        status === "unpaid" ||
+        status === "incomplete_expired" ||
+        status === "past_due";
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          hasSubscription: !shouldRevoke,
+        },
+      });
+    }
   }
 
   return new Response("ok", { status: 200 });
