@@ -1,10 +1,10 @@
-// src/app/(main)/layout.tsx
-import { validateRequest } from "@/auth";
+import { validateRequest, lucia } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import SessionProvider from "./SessionProvider";
 import Navbar from "./Navbar";
 import MenuBar from "./MenuBar";
+import { cookies } from "next/headers";
 
 export default async function Layout({
   children,
@@ -17,20 +17,19 @@ export default async function Layout({
     redirect("/login");
   }
 
-  // ✅ Fetch FRESH data from DB to avoid stale caching
-  const [dbUser] = await prisma.$transaction([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        hasSubscription: true,
-        emailVerified: true,
-      },
-    }),
-  ]);
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      hasSubscription: true,
+      emailVerified: true,
+    },
+  });
 
-  console.log("🔒 Access Check — Subscription:", dbUser?.hasSubscription, "Email Verified:", dbUser?.emailVerified);
-
+  // ❌ Invalidate session if subscription/email is invalid
   if (!dbUser?.hasSubscription || !dbUser?.emailVerified) {
+    await lucia.invalidateSession(session.session.id);
+    const blank = lucia.createBlankSessionCookie();
+    cookies().set(blank.name, blank.value, blank.attributes);
     redirect("/login");
   }
 
