@@ -7,12 +7,14 @@ export default function BrowserWarning() {
 
   useEffect(() => {
     const ua = navigator.userAgent;
-    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
-    const isMac = /Macintosh/.test(ua);
-    const isiOS = /iPhone|iPad|iPod/.test(ua);
+    const platform = navigator.platform;
 
-    // Show only on Safari desktop (macOS), not iOS/iPadOS
-    if (isSafari && isMac && !isiOS) {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+    const isMac = /MacIntel/.test(platform); // Includes iPads in desktop mode
+    const isTouch = "ontouchend" in document; // True for iPads, not Macs
+
+    // Show only if it's real macOS (not iPad pretending to be Mac)
+    if (isSafari && isMac && !isTouch) {
       setShowWarning(true);
     }
   }, []);
