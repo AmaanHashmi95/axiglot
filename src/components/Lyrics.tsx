@@ -102,8 +102,11 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
         </div>
       )}
 
+      {/* Lyrics Block with Spacing */}
+  <div className="flex flex-col items-center gap-10">
+
       {/* ✅ English */}
-      <p className="text-center font-semibold">
+      <p className="text-center font-semibold text-[28px]">
         {currentSentences.english
           ? currentSentences.english.text.split(" ").map((word, index) => {
               const highlightedWord = getHighlightedWord(currentSentences.english);
@@ -120,7 +123,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
       </p>
 
       {/* ✅ Target Language */}
-      <p className="text-center text-gray-700">
+      <p className="text-center font-semibold text-[28px]">
         {currentSentences.target
           ? currentSentences.target.text.split(" ").map((word, index) => {
               const highlightedWord = getHighlightedWord(currentSentences.target);
@@ -137,7 +140,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
       </p>
 
       {/* ✅ Transliteration */}
-      <p className="text-center text-gray-500 italic">
+      <p className="text-center font-semibold text-[28px]">
         {currentSentences.transliteration
           ? currentSentences.transliteration.text.split(" ").map((word, index) => {
               const highlightedWord = getHighlightedWord(currentSentences.transliteration);
@@ -152,6 +155,7 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
             })
           : "(The Transliteration)"}
       </p>
+      </div>
     </div>
   );
 }
