@@ -8,6 +8,7 @@ import Subtitles from "@/components/Subtitles";
 import VideoScreen from "@/components/VideoScreen";
 import { Video } from "@/lib/video";
 import { Button } from "@/components/ui/button";
+import BrowserWarning from "@/components/BrowserWarning";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -84,6 +85,7 @@ export default function Page() {
 
   return (
     <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
+      <BrowserWarning />
       {selectedVideo ? (
         <>
           <VideoScreen
