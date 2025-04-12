@@ -242,6 +242,7 @@ id         String    @id @default(cuid())
 lessonId   String
 lesson     Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 type       QuestionType
+questionOrder Int  @default(0)
 content    String
 words      QuestionWord[] // ✅ New many-to-many relation for ordered words
 translations  QuestionTranslation[] // ✅ Translated sentence words in order
@@ -252,6 +253,8 @@ language   String?
 hasTimer   Boolean @default(false)
 lessonBookmarks LessonBookmark[]  // ✅ Add inverse relation
 createdAt  DateTime @default(now())
+
+@@index([lessonId, questionOrder]) // ✅ Optional index
 }
 
 

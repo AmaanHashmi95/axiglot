@@ -6,6 +6,7 @@ export async function getLesson(lessonId: string) {
       where: { id: lessonId },
       include: {
         questions: {
+          orderBy: { questionOrder: "asc" },
           include: {
             words: {
               orderBy: { order: "asc" },

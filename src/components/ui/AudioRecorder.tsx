@@ -10,6 +10,7 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const userAudioRef = useRef<HTMLAudioElement | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // ✅ Timeout reference
 
   // ✅ Detect the best format for the browser
   const getSupportedMimeType = () => {
@@ -71,21 +72,26 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
 
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
-    } catch (error) {
-      console.error("❌ Error accessing microphone:", error);
-    }
-  };
+    // ✅ Auto-stop after 10s
+    timeoutRef.current = setTimeout(() => {
+      if (mediaRecorder.state === "recording") stopRecording();
+    }, 10_000);
+  } catch (error) {
+    console.error("Error accessing microphone:", error);
+  }
+};
 
   // ✅ Stop recording and save audio
   const stopRecording = () => {
-    if (!mediaRecorderRef.current) {
-      console.warn("⚠️ No active recording found.");
-      return;
-    }
-
-    console.log("⏹️ Stopping recording...");
+    if (!mediaRecorderRef.current) return;
     mediaRecorderRef.current.stop();
     setRecording(false);
+
+    // ✅ Clear timeout if user stopped manually
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   };
 
   // ✅ Play the recorded audio
