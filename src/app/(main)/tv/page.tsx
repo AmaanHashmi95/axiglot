@@ -84,16 +84,21 @@ export default function Page() {
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
+    <div className="relative flex h-screen w-full flex-col gap-4 overflow-hidden p-4">
       <BrowserWarning />
       {selectedVideo ? (
         <>
+        <div className="flex flex-col overflow-y-auto" style={{ height: "calc(100vh - 120px)"}}>
           <VideoScreen
             videoUrl={selectedVideo.videoUrl}
             showSubtitles={showSubtitles}
             videoRef={videoRef}
           />
+          <div className="mt-2 px-2">
           <Subtitles video={selectedVideo} currentTime={currentTime} />
+          </div>
+          </div>
+
 
           {/* VideoPlayer should only be visible when video screen is active */}
           <VideoPlayer
