@@ -9,8 +9,10 @@ export default function BrowserWarning() {
     const ua = navigator.userAgent;
     const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
     const isMac = /Macintosh/.test(ua);
+    const isiOS = /iPhone|iPad|iPod/.test(ua);
 
-    if (isSafari && isMac) {
+    // Show only on Safari desktop (macOS), not iOS/iPadOS
+    if (isSafari && isMac && !isiOS) {
       setShowWarning(true);
     }
   }, []);
