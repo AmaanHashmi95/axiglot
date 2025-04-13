@@ -39,19 +39,19 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
 
   const currentSentences = {
     english: song.englishSentences.find(
-      (s) => currentTime >= s.startTime && currentTime < s.endTime
+      (s) => currentTime >= s.startTime && currentTime < s.endTime,
     ),
     target: song.targetSentences.find(
-      (s) => currentTime >= s.startTime && currentTime < s.endTime
+      (s) => currentTime >= s.startTime && currentTime < s.endTime,
     ),
     transliteration: song.transliterationSentences.find(
-      (s) => currentTime >= s.startTime && currentTime < s.endTime
+      (s) => currentTime >= s.startTime && currentTime < s.endTime,
     ),
   };
 
   const getHighlightedWord = (sentence?: Sentence) =>
     sentence?.words?.find(
-      (word) => currentTime >= word.startTime && currentTime < word.endTime
+      (word) => currentTime >= word.startTime && currentTime < word.endTime,
     )?.word?.text || null;
 
   const words =
@@ -86,12 +86,12 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
 
   return (
     <div
-      className="bookmark-group w-full max-w-lg mx-auto mt-4 p-2 border rounded relative cursor-pointer"
+      className="bookmark-group relative mx-auto mt-4 w-full max-w-lg cursor-pointer rounded p-2"
       onClick={() => setShowBookmark(true)}
     >
       {/* ✅ Bookmark Button */}
       {showBookmark && currentSentences.target && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute left-10 bottom-[-40px] z-10">
           <LyricBookmarkButton
             songId={song.id}
             sentenceIds={sentenceIds}
@@ -103,58 +103,83 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
       )}
 
       {/* Lyrics Block with Spacing */}
-  <div className="flex flex-col items-center gap-10">
+      <div className="flex flex-col items-center gap-10">
+        {/* ✅ English */}
+        <p className="text-center text-[28px] font-semibold">
+          {currentSentences.english
+            ? currentSentences.english.text.split(" ").map((word, index) => {
+                const highlightedWord = getHighlightedWord(
+                  currentSentences.english,
+                );
+                const isHighlighted = word === highlightedWord;
+                return (
+                  <span key={index}>
+                    <span
+                      className={
+                        isHighlighted
+                          ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
+                          : ""
+                      }
+                    >
+                      {word}
+                    </span>{" "}
+                  </span>
+                );
+              })
+            : "(The English Translation)"}
+        </p>
 
-      {/* ✅ English */}
-      <p className="text-center font-semibold text-[28px]">
-        {currentSentences.english
-          ? currentSentences.english.text.split(" ").map((word, index) => {
-              const highlightedWord = getHighlightedWord(currentSentences.english);
-              return (
-                <span
-                  key={index}
-                  className={word === highlightedWord ? "bg-yellow-300 px-1 rounded" : ""}
-                >
-                  {word}{" "}
-                </span>
-              );
-            })
-          : "(The English Translation)"}
-      </p>
+        {/* ✅ Target Language */}
+        <p className="text-center text-[28px] font-semibold">
+          {currentSentences.target
+            ? currentSentences.target.text.split(" ").map((word, index) => {
+                const highlightedWord = getHighlightedWord(
+                  currentSentences.target,
+                );
+                const isHighlighted = word === highlightedWord;
+                return (
+                  <span key={index}>
+                    <span
+                      className={
+                        isHighlighted
+                          ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
+                          : ""
+                      }
+                    >
+                      {word}
+                    </span>{" "}
+                  </span>
+                );
+              })
+            : "(The Language Lyrics)"}
+        </p>
 
-      {/* ✅ Target Language */}
-      <p className="text-center font-semibold text-[28px]">
-        {currentSentences.target
-          ? currentSentences.target.text.split(" ").map((word, index) => {
-              const highlightedWord = getHighlightedWord(currentSentences.target);
-              return (
-                <span
-                  key={index}
-                  className={word === highlightedWord ? "bg-yellow-300 px-1 rounded" : ""}
-                >
-                  {word}{" "}
-                </span>
-              );
-            })
-          : "(The Language Lyrics)"}
-      </p>
-
-      {/* ✅ Transliteration */}
-      <p className="text-center font-semibold text-[28px]">
-        {currentSentences.transliteration
-          ? currentSentences.transliteration.text.split(" ").map((word, index) => {
-              const highlightedWord = getHighlightedWord(currentSentences.transliteration);
-              return (
-                <span
-                  key={index}
-                  className={word === highlightedWord ? "bg-yellow-300 px-1 rounded" : ""}
-                >
-                  {word}{" "}
-                </span>
-              );
-            })
-          : "(The Transliteration)"}
-      </p>
+        {/* ✅ Transliteration */}
+        <p className="text-center text-[28px] font-semibold">
+          {currentSentences.transliteration
+            ? currentSentences.transliteration.text
+                .split(" ")
+                .map((word, index) => {
+                  const highlightedWord = getHighlightedWord(
+                    currentSentences.transliteration,
+                  );
+                  const isHighlighted = word === highlightedWord;
+                  return (
+                    <span key={index}>
+                      <span
+                        className={
+                          isHighlighted
+                            ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
+                            : ""
+                        }
+                      >
+                        {word}
+                      </span>{" "}
+                    </span>
+                  );
+                })
+            : "(The Transliteration)"}
+        </p>
       </div>
     </div>
   );

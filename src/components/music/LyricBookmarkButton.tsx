@@ -90,7 +90,13 @@ export default function LyricBookmarkButton({
 
   return (
     <button onClick={() => mutate()} className="flex items-center gap-2">
-      <Bookmark className={`size-5 ${isBookmarked ? "fill-primary text-primary" : ""}`} />
+      <Bookmark
+  className="size-5"
+  style={{
+    fill: isBookmarked ? "#00E2FF" : "none",
+    color: "#00E2FF",
+  }}
+/>
     </button>
   );
 }
