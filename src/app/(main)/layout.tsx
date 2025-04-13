@@ -42,7 +42,10 @@ export default async function Layout({
           <MenuBar className="xl:w-50 sticky top-[5.25rem] hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 shadow-sm sm:block lg:px-5" />
           {children}
         </div>
-        <div className="sticky bottom-0 z-40 flex w-full items-center justify-center border-t bg-card p-3 sm:hidden">
+        <div
+          id="mobile-bottom-menu"
+          className="sticky bottom-0 z-40 flex w-full items-center justify-center border-t bg-card p-3 sm:hidden"
+        >
           <MobileMenu />
         </div>
       </div>
