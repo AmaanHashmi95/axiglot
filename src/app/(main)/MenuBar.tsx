@@ -9,7 +9,13 @@ import NotificationsButton from "./NotificationsButton";
 import Image from "next/image";
 import home from "@/assets/home.png";
 import lessons from "@/assets/lessons.png";
-import library from "@/assets/library.png";
+import library from "@/assets/My Library.png";
+import tv from "@/assets/TV.png";
+import music from "@/assets/Music.png";
+import reading from "@/assets/Reading.png";
+import learngo from "@/assets/Learn on the go.png";
+import translator from "@/assets/Translator.png";
+import settings from "@/assets/Settings.png";
 import UserButton from "@/components/UserButton";
 
 interface MenuBarProps {
@@ -69,6 +75,89 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
+        title="Learn on the Go"
+        asChild
+      >
+        <Link href="/audio-lessons">
+          <Image
+            src={learngo} // Add your image in the public/icons directory
+            alt="Learn on the Go"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">Learn Go</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="TV"
+        asChild
+      >
+        <Link href="/tv">
+          <Image
+            src={tv} // Add your image in the public/icons directory
+            alt="TV"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">TV</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Music"
+        asChild
+      >
+        <Link href="/music-lyrics">
+          <Image
+            src={music} // Add your image in the public/icons directory
+            alt="Music"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">Music</span>
+        </Link>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Reading"
+        asChild
+      >
+        <Link href="/reading">
+          <Image
+            src={reading} // Add your image in the public/icons directory
+            alt="Reading"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">Reading</span>
+        </Link>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Translator"
+        asChild
+      >
+        <Link href="/translator">
+          <Image
+            src={translator} // Add your image in the public/icons directory
+            alt="Translator"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">Translator</span>
+        </Link>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
         title="Bookmarks"
         asChild
       >
@@ -80,6 +169,23 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
             height={32}
           />
           <span className="hidden lg:inline">Bookmarks</span>
+        </Link>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Settings"
+        asChild
+      >
+        <Link href="/settings">
+          <Image
+            src={settings} // Add your image in the public/icons directory
+            alt="Home"
+            width={32}
+            height={32}
+          />
+          <span className="hidden lg:inline">Settings</span>
         </Link>
       </Button>
 

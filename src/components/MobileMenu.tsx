@@ -6,9 +6,16 @@ import Link from "next/link";
 import Image from "next/image";
 import home from "@/assets/home.png";
 import lessons from "@/assets/lessons.png";
-import library from "@/assets/library.png";
+import library from "@/assets/My Library.png";
 import UserButton from "./UserButton";
 import menuIcon from "@/assets/Mobile Menu.png";
+import tv from "@/assets/TV.png";
+import music from "@/assets/Music.png";
+import reading from "@/assets/Reading.png";
+import learngo from "@/assets/Learn on the go.png";
+import translator from "@/assets/Translator.png";
+import settings from "@/assets/Settings.png";
+
 
 export default function MobileMenu() {
   return (
@@ -44,9 +51,39 @@ export default function MobileMenu() {
               <span className="text-sm">Courses</span>
             </Link>
 
+            <Link href="/audio-lessons" className="flex flex-col items-center justify-center gap-1">
+              <Image src={learngo} alt="Learn on the Go" width={40} height={40} />
+              <span className="text-sm">Learn Go</span>
+            </Link>
+
+            <Link href="/tv" className="flex flex-col items-center justify-center gap-1">
+              <Image src={tv} alt="TV" width={40} height={40} />
+              <span className="text-sm">TV</span>
+            </Link>
+
+            <Link href="/music" className="flex flex-col items-center justify-center gap-1">
+              <Image src={music} alt="Music" width={40} height={40} />
+              <span className="text-sm">Music</span>
+            </Link>
+
+            <Link href="/reading" className="flex flex-col items-center justify-center gap-1">
+              <Image src={reading} alt="Reading" width={40} height={40} />
+              <span className="text-sm">Reading</span>
+            </Link>
+
+            <Link href="/translator" className="flex flex-col items-center justify-center gap-1">
+              <Image src={translator} alt="Translator" width={40} height={40} />
+              <span className="text-sm">Translator</span>
+            </Link>
+
             <Link href="/bookmarks" className="flex flex-col items-center justify-center gap-1">
               <Image src={library} alt="Bookmarks" width={40} height={40} />
               <span className="text-sm">Bookmarks</span>
+            </Link>
+
+            <Link href="/settings" className="flex flex-col items-center justify-center gap-1">
+              <Image src={settings} alt="Settings" width={40} height={40} />
+              <span className="text-sm">Settings</span>
             </Link>
 
             <Link href="/profile" className="flex flex-col items-center justify-center gap-1">
