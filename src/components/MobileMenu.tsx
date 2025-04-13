@@ -61,7 +61,7 @@ export default function MobileMenu() {
               <span className="text-sm">TV</span>
             </Link>
 
-            <Link href="/music" className="flex flex-col items-center justify-center gap-1">
+            <Link href="/music-lyrics" className="flex flex-col items-center justify-center gap-1">
               <Image src={music} alt="Music" width={40} height={40} />
               <span className="text-sm">Music</span>
             </Link>
