@@ -2,7 +2,6 @@ import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { formatDate } from "date-fns";
 import EditProfileForm from "./EditProfileForm";
-import ThemeSelector from "@/components/ThemeSelector";
 import LogoutButton from "@/components/LogoutButton";
 
 export default async function Account() {
@@ -42,7 +41,6 @@ export default async function Account() {
         Member since {formatDate(userData.createdAt, "MMM d, yyyy")}
       </p>
 
-      <ThemeSelector />
       <LogoutButton />
     </div>
   );
