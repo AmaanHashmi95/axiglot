@@ -17,7 +17,7 @@ export default function UserButton({ className }: UserButtonProps) {
       href={`/users/${user.username}`}
       className={cn("flex-none rounded-full", className)}
     >
-      <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+      <UserAvatar avatarUrl={user.avatarUrl} size={32} />
     </Link>
   );
 }

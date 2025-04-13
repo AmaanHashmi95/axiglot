@@ -10,6 +10,7 @@ import Image from "next/image";
 import home from "@/assets/home.png";
 import lessons from "@/assets/lessons.png";
 import library from "@/assets/library.png";
+import UserButton from "@/components/UserButton";
 
 interface MenuBarProps {
   className?: string;
@@ -40,11 +41,11 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
         asChild
       >
         <Link href="/">
-        <Image
+          <Image
             src={home} // Add your image in the public/icons directory
             alt="Home"
-            width={30}
-            height={30}
+            width={32}
+            height={32}
           />
           <span className="hidden lg:inline">Home</span>
         </Link>
@@ -56,16 +57,15 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
         asChild
       >
         <Link href="/courses">
-        <Image
+          <Image
             src={lessons} // Add your image in the public/icons directory
             alt="Courses"
-            width={30}
-            height={30}
+            width={32}
+            height={32}
           />
           <span className="hidden lg:inline">Courses</span>
         </Link>
       </Button>
-      <MessagesButton initialState={{ unreadCount: unreadMessagesCount }} />
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
@@ -73,15 +73,20 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
         asChild
       >
         <Link href="/bookmarks">
-        <Image
+          <Image
             src={library} // Add your image in the public/icons directory
             alt="Home"
-            width={30}
-            height={30}
+            width={32}
+            height={32}
           />
           <span className="hidden lg:inline">Bookmarks</span>
         </Link>
       </Button>
+
+      <div className="flex items-center justify-start gap-3 rounded-md px-4 py-2 hover:bg-muted">
+        <UserButton />
+        <span className="hidden lg:inline">Profile</span>
+      </div>
     </div>
   );
 }

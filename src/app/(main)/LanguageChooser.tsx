@@ -28,7 +28,7 @@ export default function LanguageChooser({ className, selectedLanguage, setSelect
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-white dark:bg-gray-900", className)}>
+        <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-gray-900", className)}>
           <Image src={selectedLanguage.flag} alt={selectedLanguage.name} width={24} height={24} />
           <span>{selectedLanguage.name}</span>
           <ChevronDown className="w-4 h-4" />
