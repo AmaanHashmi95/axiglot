@@ -76,35 +76,68 @@ export default function Subtitles({ video, currentTime }: SubtitlesProps) {
 
   return (
     <div
-      className="bookmark-group w-full max-w-lg mx-auto mt-4 p-2 border rounded relative cursor-pointer"
+      className="bookmark-group w-full max-w-lg mx-auto mt-4 p-2 rounded relative cursor-pointer"
       onClick={() => setShowBookmark(true)}
     >
       <p className="text-center font-semibold">
-        {currentSentences.english?.text.split(" ").map((word, i) => (
-          <span key={i} className={word === getHighlightedWord(currentSentences.english) ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "(The English Translation)"}
+      {currentSentences.english?.text.split(" ").map((word, i) => {
+  const highlighted = word === getHighlightedWord(currentSentences.english);
+  return (
+    <span key={i}>
+      <span
+        className={
+          highlighted
+            ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
+            : ""
+        }
+      >
+        {word}
+      </span>{" "}
+    </span>
+  );
+}) || "(The English Translation)"}
       </p>
 
-      <p className="text-center text-gray-700">
-        {currentSentences.target?.text.split(" ").map((word, i) => (
-          <span key={i} className={word === getHighlightedWord(currentSentences.target) ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "(The Language Subtitles)"}
+      <p className="text-center font-semibold">
+      {currentSentences.target?.text.split(" ").map((word, i) => {
+    const highlighted = word === getHighlightedWord(currentSentences.target);
+    return (
+      <span key={i}>
+        <span
+          className={
+            highlighted
+              ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
+              : ""
+          }
+        >
+          {word}
+        </span>{" "}
+      </span>
+    );
+  }) || "(The Language Subtitles)"}
       </p>
 
-      <p className="text-center text-gray-500 italic">
-        {currentSentences.transliteration?.text.split(" ").map((word, i) => (
-          <span key={i} className={word === getHighlightedWord(currentSentences.transliteration) ? "bg-yellow-300 px-1 rounded" : ""}>
-            {word}{" "}
-          </span>
-        )) || "(The Transliteration)"}
+      <p className="text-center font-semibold">
+      {currentSentences.transliteration?.text.split(" ").map((word, i) => {
+    const highlighted = word === getHighlightedWord(currentSentences.transliteration);
+    return (
+      <span key={i}>
+        <span
+          className={
+            highlighted
+              ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
+              : ""
+          }
+        >
+          {word}
+        </span>{" "}
+      </span>
+    );
+  }) || "(The Transliteration Subtitles)"}
       </p>
 
       {showBookmark && currentSentences.target && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 left-2 z-10">
           <SubtitleBookmarkButton
             videoId={video.id}
             sentenceIds={sentenceIds}

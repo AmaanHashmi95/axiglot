@@ -48,7 +48,7 @@ export default function LyricBookmarkButton({
   });
 
   const bookmarkMatch = bookmarks.find((b) =>
-    sentenceIds.every((id) => b.sentenceIds.includes(id))
+    sentenceIds.every((id) => b.sentenceIds.includes(id)),
   );
   const isBookmarked = !!bookmarkMatch;
 
@@ -82,7 +82,7 @@ export default function LyricBookmarkButton({
                   sentenceIds,
                 },
               ]
-          : []
+          : [],
       );
     },
     onSuccess: () => refetch(),
@@ -91,12 +91,12 @@ export default function LyricBookmarkButton({
   return (
     <button onClick={() => mutate()} className="flex items-center gap-2">
       <Bookmark
-  className="size-5"
-  style={{
-    fill: isBookmarked ? "#00E2FF" : "none",
-    color: "#00E2FF",
-  }}
-/>
+        className="size-5"
+        style={{
+          fill: isBookmarked ? "#00E2FF" : "none",
+          color: "#00E2FF",
+        }}
+      />
     </button>
   );
 }

@@ -36,7 +36,13 @@ interface Props {
   audioUrl: string;
 }
 
-export default function SubtitleBookmarkButton({ videoId, sentenceIds, words, translations, audioUrl }: Props) {
+export default function SubtitleBookmarkButton({
+  videoId,
+  sentenceIds,
+  words,
+  translations,
+  audioUrl,
+}: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const queryKey = ["subtitle-bookmarks"];
@@ -47,47 +53,59 @@ export default function SubtitleBookmarkButton({ videoId, sentenceIds, words, tr
   });
 
   const bookmarkMatch = bookmarks.find((b) =>
-    sentenceIds.every((id) => b.sentenceIds.includes(id))
+    sentenceIds.every((id) => b.sentenceIds.includes(id)),
   );
-  
+
   const isBookmarked = Boolean(bookmarkMatch);
-  
 
   const { mutate } = useMutation({
     mutationFn: async () => {
-        if (isBookmarked && bookmarkMatch) {
-          await kyInstance.delete("/api/subtitle-bookmarks", { json: { id: bookmarkMatch.id } });
-        } else {
-          await kyInstance.post("/api/subtitle-bookmarks", {
-            json: { videoId, sentenceIds, words, translations, audioUrl },
-          });
-        }
-      },
-      onMutate: async () => {
-        toast({ description: `Subtitle ${isBookmarked ? "un" : ""}bookmarked` });
-        await queryClient.cancelQueries({ queryKey });
-      
-        queryClient.setQueryData(queryKey, (old: SubtitleBookmark[] | undefined) =>
+      if (isBookmarked && bookmarkMatch) {
+        await kyInstance.delete("/api/subtitle-bookmarks", {
+          json: { id: bookmarkMatch.id },
+        });
+      } else {
+        await kyInstance.post("/api/subtitle-bookmarks", {
+          json: { videoId, sentenceIds, words, translations, audioUrl },
+        });
+      }
+    },
+    onMutate: async () => {
+      toast({ description: `Subtitle ${isBookmarked ? "un" : ""}bookmarked` });
+      await queryClient.cancelQueries({ queryKey });
+
+      queryClient.setQueryData(
+        queryKey,
+        (old: SubtitleBookmark[] | undefined) =>
           old
             ? isBookmarked
               ? old.filter((b) => b.id !== bookmarkMatch?.id)
-              : [...old, {
-                  id: crypto.randomUUID(), // Fake ID for optimistic update
-                  videoId,
-                  sentenceIds,
-                  words,
-                  translations,
-                  audioUrl
-                }]
-            : []
-        );
-      },
+              : [
+                  ...old,
+                  {
+                    id: crypto.randomUUID(), // Fake ID for optimistic update
+                    videoId,
+                    sentenceIds,
+                    words,
+                    translations,
+                    audioUrl,
+                  },
+                ]
+            : [],
+      );
+    },
     onSuccess: () => refetch(),
   });
 
   return (
     <button onClick={() => mutate()} className="flex items-center gap-2">
-      <Bookmark className={`size-5 ${isBookmarked ? "fill-primary text-primary" : ""}`} />
+      <Bookmark
+        className="size-5"
+        style={{
+          fill: isBookmarked ? "#00E2FF" : "none",
+          color: "#00E2FF",
+        }}
+      />
     </button>
   );
 }
