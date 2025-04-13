@@ -7,6 +7,7 @@ import Image, { StaticImageData } from "next/image";
 import { ChevronDown } from "lucide-react";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import global from "@/assets/Global.png";
 
 interface Language {
   name: string;
@@ -14,6 +15,7 @@ interface Language {
 }
 
 const languages: Language[] = [
+  { name: "Global", flag: global },
   { name: "Punjabi", flag: india },
   { name: "Urdu", flag: pakistan },
 ];
