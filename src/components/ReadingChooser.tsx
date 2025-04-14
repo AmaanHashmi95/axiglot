@@ -1,5 +1,5 @@
 // src/components/ReadingChooser.tsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Book } from "@/lib/book";
 import Image from "next/image";
 
@@ -67,29 +67,57 @@ function BookCarousel({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(books.length > 3);
 
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
-      updateScrollButtons();
-    }
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const dragStartScrollLeft = useRef(0);
+
+  const scrollLeftBy = () => {
+    scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" });
+    updateScrollButtons();
   };
 
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-      updateScrollButtons();
-    }
+  const scrollRightBy = () => {
+    scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" });
+    updateScrollButtons();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    dragStartScrollLeft.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = x - startX.current;
+    scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
   };
 
   const updateScrollButtons = () => {
-    if (scrollRef.current) {
-      setCanScrollLeft(scrollRef.current.scrollLeft > 0);
-      setCanScrollRight(
-        scrollRef.current.scrollLeft <
-          scrollRef.current.scrollWidth - scrollRef.current.clientWidth
-      );
-    }
+    if (!scrollRef.current) return;
+    setCanScrollLeft(scrollRef.current.scrollLeft > 0);
+    setCanScrollRight(
+      scrollRef.current.scrollLeft <
+        scrollRef.current.scrollWidth - scrollRef.current.clientWidth
+    );
   };
+
+  useEffect(() => {
+    updateScrollButtons();
+    window.addEventListener("resize", updateScrollButtons);
+    return () => window.removeEventListener("resize", updateScrollButtons);
+  }, [books.length]);
 
   const getBackgroundStyle = (language: string | undefined) => {
     switch (language) {
@@ -106,7 +134,7 @@ function BookCarousel({
     <div className="relative flex w-full items-center">
       {canScrollLeft && (
         <button
-          onClick={scrollLeft}
+          onClick={scrollLeftBy}
           className="absolute left-[-40px] top-1/2 z-51 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
@@ -115,12 +143,15 @@ function BookCarousel({
 
       <div
         ref={scrollRef}
-        className="no-scrollbar flex w-full gap-4 overflow-x-auto p-2"
         onScroll={updateScrollButtons}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        className="no-scrollbar flex w-full cursor-grab gap-4 overflow-x-auto p-2 active:cursor-grabbing"
         style={{
           overflowX: "auto",
           whiteSpace: "nowrap",
-          scrollbarWidth: "none",
           WebkitOverflowScrolling: "touch",
         }}
       >
@@ -154,7 +185,7 @@ function BookCarousel({
 
       {canScrollRight && (
         <button
-          onClick={scrollRight}
+          onClick={scrollRightBy}
           className="absolute right-[-40px] top-1/2 z-49 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
