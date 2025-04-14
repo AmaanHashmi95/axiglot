@@ -14,13 +14,13 @@ interface Props {
 }
 
 interface TranslatorBookmark {
-    id: string;
-    sourceText: string;
-    translatedText: string;
-    transliteration: string;
-    language?: string;
-    words: any[];
-  }
+  id: string;
+  sourceText: string;
+  translatedText: string;
+  transliteration: string;
+  language?: string;
+  words: any[];
+}
 
 export default function TranslatorBookmarkButton({
   sourceText,
@@ -39,16 +39,24 @@ export default function TranslatorBookmarkButton({
   });
 
   const existing = bookmarks.find(
-    (b: any) => b.sourceText === sourceText && b.language === language
+    (b: any) => b.sourceText === sourceText && b.language === language,
   );
 
   const { mutate } = useMutation({
     mutationFn: async () => {
       if (existing) {
-        await ky.delete("/api/translator-bookmarks", { json: { id: existing.id } });
+        await ky.delete("/api/translator-bookmarks", {
+          json: { id: existing.id },
+        });
       } else {
         await ky.post("/api/translator-bookmarks", {
-          json: { sourceText, translatedText, transliteration, language, words },
+          json: {
+            sourceText,
+            translatedText,
+            transliteration,
+            language,
+            words,
+          },
         });
       }
     },
@@ -60,7 +68,9 @@ export default function TranslatorBookmarkButton({
 
   return (
     <button onClick={() => mutate()} className="flex items-center gap-2">
-      <Bookmark className={`size-5 ${existing ? "fill-primary text-primary" : ""}`} />
+      <Bookmark
+        className={`size-5 ${existing ? "fill-[#00E2FF] text-[#00E2FF]" : "text-[#00E2FF]"}`}
+      />
     </button>
   );
 }

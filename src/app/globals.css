@@ -107,3 +107,27 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Safari & Chrome */
 }
+
+
+/* Normalize input fields for all browsers */
+input,
+textarea,
+select,
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+/* Ensure consistent input box look */
+input, textarea, select {
+  background-color: black !important;
+  color: white !important;
+}
