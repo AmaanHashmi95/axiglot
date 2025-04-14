@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Song } from "@/lib/song";
 import Image from "next/image";
 
@@ -66,31 +66,58 @@ function SongCarousel({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(songs.length > 3);
 
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
-      updateScrollButtons();
-    }
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const dragStartScrollLeft = useRef(0);
+
+  const scrollLeftBy = () => {
+    scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" });
+    updateScrollButtons();
   };
 
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-      updateScrollButtons();
-    }
+  const scrollRightBy = () => {
+    scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" });
+    updateScrollButtons();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    dragStartScrollLeft.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = x - startX.current;
+    scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
   };
 
   const updateScrollButtons = () => {
-    if (scrollRef.current) {
-      setCanScrollLeft(scrollRef.current.scrollLeft > 0);
-      setCanScrollRight(
-        scrollRef.current.scrollLeft <
-          scrollRef.current.scrollWidth - scrollRef.current.clientWidth,
-      );
-    }
+    if (!scrollRef.current) return;
+    setCanScrollLeft(scrollRef.current.scrollLeft > 0);
+    setCanScrollRight(
+      scrollRef.current.scrollLeft <
+        scrollRef.current.scrollWidth - scrollRef.current.clientWidth
+    );
   };
 
-  // ✅ Define background gradients for each language
+  useEffect(() => {
+    updateScrollButtons();
+    window.addEventListener("resize", updateScrollButtons);
+    return () => window.removeEventListener("resize", updateScrollButtons);
+  }, [songs.length]);
+
   const getBackgroundStyle = (language: string | undefined) => {
     switch (language) {
       case "Punjabi":
@@ -98,7 +125,7 @@ function SongCarousel({
       case "Urdu":
         return "linear-gradient(135deg, #00650b, #adadad)";
       default:
-        return "linear-gradient(135deg, #cccccc, #999999)"; // Default gray for unknown languages
+        return "linear-gradient(135deg, #cccccc, #999999)";
     }
   };
 
@@ -106,7 +133,7 @@ function SongCarousel({
     <div className="relative flex w-full items-center">
       {canScrollLeft && (
         <button
-          onClick={scrollLeft}
+          onClick={scrollLeftBy}
           className="absolute left-[-40px] top-1/2 z-51 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
@@ -115,12 +142,15 @@ function SongCarousel({
 
       <div
         ref={scrollRef}
-        className="no-scrollbar flex w-full gap-4 overflow-x-auto p-2"
         onScroll={updateScrollButtons}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        className="no-scrollbar flex w-full cursor-grab gap-4 overflow-x-auto p-2 active:cursor-grabbing"
         style={{
           overflowX: "auto",
           whiteSpace: "nowrap",
-          scrollbarWidth: "none",
           WebkitOverflowScrolling: "touch",
         }}
       >
@@ -133,9 +163,8 @@ function SongCarousel({
                 : "border-transparent"
             }`}
             onClick={() => onSelectSong(song)}
-            style={{ background: getBackgroundStyle(song.language) }} // ✅ Apply background gradient
+            style={{ background: getBackgroundStyle(song.language) }}
           >
-            {/* ✅ Square Image */}
             <div className="flex h-32 w-full items-center justify-center">
               <Image
                 src={song.imageUrl || "/icons/Music.png"}
@@ -145,8 +174,6 @@ function SongCarousel({
                 className="h-full w-full rounded-lg object-cover"
               />
             </div>
-
-            {/* ✅ Title and Artist */}
             <h3 className="text-md mt-2 text-center font-semibold">
               {song.title}
             </h3>
@@ -157,7 +184,7 @@ function SongCarousel({
 
       {canScrollRight && (
         <button
-          onClick={scrollRight}
+          onClick={scrollRightBy}
           className="absolute right-[-40px] top-1/2 z-49 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
