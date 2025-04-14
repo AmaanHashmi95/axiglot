@@ -34,7 +34,6 @@ export default function EditProfileForm({ user }: Props) {
 
   return (
     <div className="space-y-5">
-      <Label className="block">Avatar</Label>
       <UserAvatar avatarUrl={user.avatarUrl} size={96} className="rounded-full" />
 
       <Form {...form}>

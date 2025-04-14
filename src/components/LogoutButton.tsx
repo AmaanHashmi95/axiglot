@@ -1,4 +1,3 @@
-// src/components/LogoutButton.tsx
 "use client";
 
 import { logout } from "@/app/(auth)/actions";
@@ -15,7 +14,10 @@ export default function LogoutButton() {
   }
 
   return (
-    <Button variant="destructive" onClick={handleLogout} className="mt-6 w-full">
+    <Button
+      onClick={handleLogout}
+      className="mt-6 w-full bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white hover:opacity-90 transition-opacity"
+    >
       <LogOutIcon className="mr-2 size-4" />
       Logout
     </Button>

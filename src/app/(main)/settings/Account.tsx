@@ -33,8 +33,6 @@ export default async function Account() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">Account Overview</h2>
-
       <EditProfileForm user={userData} />
 
       <p className="text-muted-foreground mt-4">

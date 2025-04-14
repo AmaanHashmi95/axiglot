@@ -29,23 +29,8 @@ export default function Subscription() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Manage Subscription</h2>
-
-      {subscriptionStatus ? (
-        <div className="space-y-2">
-          <p>
-            <strong>Status:</strong> {subscriptionStatus.status}
-          </p>
-          <p>
-            <strong>Renews on:</strong> {subscriptionStatus.renewal}
-          </p>
-        </div>
-      ) : (
-        <p>Loading subscription info...</p>
-      )}
-
       <Button onClick={openStripePortal} disabled={loading}>
-        {loading ? "Redirecting..." : "Manage Billing in Stripe"}
+        {loading ? "Redirecting..." : "Manage Subscription"}
       </Button>
     </div>
   );
