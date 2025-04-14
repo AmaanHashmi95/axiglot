@@ -19,7 +19,9 @@ export default function Page() {
   const lessonId = searchParams.get("lessonId");
 
   const [lessons, setLessons] = useState<AudioLesson[]>([]);
-  const [selectedLesson, setSelectedLesson] = useState<AudioLesson | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<AudioLesson | null>(
+    null,
+  );
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

@@ -800,6 +800,7 @@ model AudioLesson {
   audioUrl  String?
   imageUrl  String?
   language  String?
+  order     Int      @default(0) // ✅ NEW FIELD
   createdAt DateTime @default(now())
 
   @@map("audio_lessons")
