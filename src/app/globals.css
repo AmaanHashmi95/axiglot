@@ -131,3 +131,52 @@ input, textarea, select {
   background-color: black !important;
   color: white !important;
 }
+
+
+
+/* === Custom Range Slider (Full Support) === */
+input[type="range"] {
+  height: 4px;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track (the bar itself) */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background-color: hsl(0, 0%, 40%); /* gray-600 */
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background-color: hsl(0, 0%, 40%);
+  border-radius: 9999px;
+}
+
+input[type="range"]::-ms-track {
+  height: 4px;
+  background-color: hsl(0, 0%, 40%);
+  border-radius: 9999px;
+  border: none;
+  color: transparent;
+}
+
+/* Thumb (the draggable circle) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  background-color: #00E2FF;
+  border-radius: 9999px;
+  margin-top: -6px; /* align thumb with track */
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  background-color: #00E2FF;
+  border-radius: 9999px;
+  border: none;
+}

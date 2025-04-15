@@ -70,10 +70,7 @@ export default function Page() {
     <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
       {selectedBook ? (
         <>
-          <Reading book={selectedBook} />
-          <Button onClick={handleBackToChooser} className="mt-4">
-            Back to Book Selection
-          </Button>
+          <Reading book={selectedBook} onBack={handleBackToChooser} />
         </>
       ) : (
         <ReadingChooser
