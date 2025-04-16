@@ -5,6 +5,8 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import Image from "next/image";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import blueTick from "@/assets/Blue Tick.png";
+import LessonGroupAccordion from "@/components/lessons/LessonGroupAccordion";
 
 function getGradientClass(language?: string | null) {
   switch (language?.toLowerCase()) {
@@ -70,34 +72,12 @@ export default async function CoursePage({
 
         {/* Render grouped lessons */}
         {course.lessonGroups.map((group) => (
-          <div
+          <LessonGroupAccordion
             key={group.id}
-            className={`rounded-2xl p-5 shadow-sm ${gradientClass}`}
-          >
-            <div className="mb-5 flex items-center">
-              <h2 className="text-left text-2xl font-bold">{group.title}</h2>
-            </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {group.lessons.map((lesson) => (
-                <Link
-                  key={lesson.id}
-                  href={`/courses/${course.id}/${lesson.id}`}
-                >
-                  <div
-                    className={`w-full cursor-pointer rounded-2xl p-5 shadow-sm ${
-                      lesson.completed
-                        ? "border-2 border-blue-500 bg-white text-black"
-                        : "bg-white text-black"
-                    }`}
-                  >
-                    <h3 className="text-left text-xl font-bold">
-                      {lesson.title}
-                    </h3>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+            group={group}
+            courseId={course.id}
+            gradientClass={gradientClass}
+          />
         ))}
 
         {/* Render ungrouped lessons */}
@@ -115,15 +95,24 @@ export default async function CoursePage({
                   href={`/courses/${course.id}/${lesson.id}`}
                 >
                   <div
-                    className={`w-full cursor-pointer rounded-2xl p-5 shadow-sm ${
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-2xl p-5 shadow-sm ${
                       lesson.completed
-                        ? "border-6 border-[#00E2FF] bg-white text-black"
+                        ? "border-4 border-[#00E2FF] bg-white text-black"
                         : "bg-white text-black"
                     }`}
                   >
                     <h3 className="text-left text-xl font-bold">
                       {lesson.title}
                     </h3>
+                    {lesson.completed && (
+                      <Image
+                        src={blueTick}
+                        alt="Completed"
+                        width={20}
+                        height={20}
+                        className="ml-2"
+                      />
+                    )}
                   </div>
                 </Link>
               ))}

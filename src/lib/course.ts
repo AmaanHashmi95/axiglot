@@ -44,26 +44,33 @@ export async function getCourseWithLessons(courseId: string, userId: string) {
   const courseProgress =
     totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
-  return {
-    id: course.id,
-    title: course.title,
-    description: course.description,
-    language: course.language,
-    courseProgress,
-    lessonGroups: course.lessonGroups.map((group) => ({
-      id: group.id,
-      title: group.title,
-      order: group.order,
-      lessons: group.lessons.map((lesson) => ({
+    return {
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      language: course.language,
+      courseProgress,
+      lessonGroups: course.lessonGroups.map((group) => {
+        const lessons = group.lessons.map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          completed: lesson.progress.length > 0 && lesson.progress[0].completed,
+        }));
+  
+        const completed = lessons.every((lesson) => lesson.completed);
+  
+        return {
+          id: group.id,
+          title: group.title,
+          order: group.order,
+          completed,
+          lessons,
+        };
+      }),
+      ungroupedLessons: course.lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
         completed: lesson.progress.length > 0 && lesson.progress[0].completed,
       })),
-    })),
-    ungroupedLessons: course.lessons.map((lesson) => ({
-      id: lesson.id,
-      title: lesson.title,
-      completed: lesson.progress.length > 0 && lesson.progress[0].completed,
-    })),
-  };
-}
+    };
+  }
