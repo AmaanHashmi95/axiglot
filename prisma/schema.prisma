@@ -201,6 +201,7 @@ description String?
 language    String?   // ✅ New: Defines which language this course belongs to
 order       Int      @default(1) // ✅ Provide a default value
 lessons     Lesson[] // Relation to lessons
+lessonGroups  LessonGroup[] // ✅ Add this reverse relation
 createdAt   DateTime @default(now())
 }
 
@@ -212,6 +213,8 @@ language    String
 description String?
 courseId    String?
 course      Course?          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+lessonGroupId  String?          // ✅ New foreign key
+lessonGroup    LessonGroup?     @relation(fields: [lessonGroupId], references: [id], onDelete: Cascade)
 order       Int              @default(1) // ✅ Provide a default value
 questions   Question[]
 progress    LessonProgress[] // Add this relation field
@@ -219,6 +222,20 @@ createdAt   DateTime         @default(now())
 posts       Post[]           @relation("LessonToPost") // ✅ Add this back-reference
 lessonBookmarks LessonBookmark[]  // ✅ Add inverse relation
 }
+
+
+model LessonGroup {
+  id        String   @id @default(cuid())
+  title     String
+  order     Int      @default(0)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+  createdAt DateTime @default(now())
+
+  @@map("lesson_groups")
+}
+
 
 model LessonBookmark {
   id         String  @id @default(cuid())
