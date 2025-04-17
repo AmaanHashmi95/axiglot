@@ -26,9 +26,10 @@ export default function Timer({ timeLeft, onTimeout, timerRunning }: TimerProps)
   }, [time, onTimeout, timerRunning]);
 
   return (
-    <div className="timer text-center text-lg font-bold text-red-500">
-      Time Left: {time} seconds
-    </div>
+    <span className="rounded bg-white px-2 py-1 text-lg font-bold text-[hsl(24,9.8%,10%)]">
+    {time}s
+    </span>
   );
 }
+
 

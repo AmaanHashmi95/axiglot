@@ -4,11 +4,13 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import DrawCanvas from "@/components/ui/DrawCanvas";
 import DragDropAudio from "@/components/ui/DragDropAudio";
 import ListenAndType from "@/components/ui/ListenAndType";
-import SpeakAndAnswer from "@/components/ui/SpeakAndAnswer";
 import AudioRecorder from "@/components/ui/AudioRecorder";
 import Timer from "@/components/ui/Timer";
-import LessonBookmarkButton from "./LessonBookmarkButton";
 import useAudioCache from "@/hooks/useAudioCache";
+import AudioPreviewQuestion from "./questions/AudioPreviewQuestion";
+import TrueFalseQuestion from "./questions/TrueFalseQuestion";
+import MultipleChoiceQuestion from "./questions/MultipleChoiceQuestion";
+import QuestionTextBlock from "./questions/QuestionTextBlock";
 
 interface Word {
   id: string;
@@ -69,35 +71,9 @@ export default function LessonComponent({
 
   const question = lesson.questions[currentQuestion];
   const isSkippable = ["AUDIO_PREVIEW", "DRAW_INPUT"].includes(question.type);
-  
-
 
   const [activeWordId, setActiveWordId] = useState<string | null>(null);
   const [lastClickedWord, setLastClickedWord] = useState<string | null>(null);
-
-  const handleMouseEnter = (wordId: string) => {
-    // Only show on hover if it was not clicked before
-    if (!lastClickedWord) {
-      setActiveWordId(wordId);
-    }
-  };
-
-  const handleMouseLeave = (wordId: string) => {
-    // Only hide if it was NOT clicked
-    if (lastClickedWord !== wordId) {
-      setActiveWordId(null);
-    }
-  };
-
-  const handleWordClick = (wordId: string) => {
-    if (activeWordId === wordId) {
-      // If clicking the same word, do nothing (keep tooltip open)
-      return;
-    }
-
-    setLastClickedWord(wordId);
-    setActiveWordId(wordId);
-  };
 
   useEffect(() => {
     const preloadSounds = ["correct.mp3", "incorrect.mp3", "complete.mp3"];
@@ -105,25 +81,6 @@ export default function LessonComponent({
       const audio = new Audio(`/sounds/${file}`);
       audio.load();
     });
-  }, []);
-  
-
-  // Close transliteration when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (!(event.target as HTMLElement).closest(".word-container")) {
-        setActiveWordId(null);
-        setLastClickedWord(null);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
   }, []);
 
   async function saveProgress(lessonId: string, progress: number) {
@@ -197,7 +154,7 @@ export default function LessonComponent({
     } else {
       setFeedback("Try again.");
       playSound("incorrect");
-    }    
+    }
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
@@ -210,7 +167,7 @@ export default function LessonComponent({
     } else {
       setFeedback("Try again.");
       playSound("incorrect");
-    }    
+    }
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
@@ -223,7 +180,7 @@ export default function LessonComponent({
     } else {
       setFeedback("Try again.");
       playSound("incorrect");
-    }    
+    }
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
@@ -235,9 +192,11 @@ export default function LessonComponent({
       setFeedback("Correct!");
       playSound("correct");
     } else {
-      setFeedback(`Incorrect! The correct answer is: ${question.correctAnswer}`);
+      setFeedback(
+        `Incorrect! The correct answer is: ${question.correctAnswer}`,
+      );
       playSound("incorrect");
-    }    
+    }
     setSelectedAnswer(option);
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false); // Stop the timer
@@ -265,7 +224,6 @@ export default function LessonComponent({
   };
 
   const handleNext = () => {
-    
     if (!isAnswerCorrect && !isSkippable && !lessonComplete) {
       setFeedback("Please answer the question correctly before proceeding.");
       return;
@@ -329,80 +287,34 @@ export default function LessonComponent({
         }
       />
 
-      <h1 className="text-3xl font-bold">{lesson.title}</h1>
-      <p>{lesson.description || "No description available."}</p>
-
       {lessonComplete ? (
         <div className="mt-6 text-2xl font-bold text-green-500">
           Congratulations! You have completed the lesson.
         </div>
       ) : (
         <div className="question-section my-6">
-          {question.hasTimer && timeLeft !== null && (
-            <Timer
-              timeLeft={timeLeft}
-              onTimeout={handleTimeout}
-              timerRunning={timerRunning}
-            />
-          )}
-
-          <p className="text-xl">{question.content}</p>
-
-          <div className="mt-2 text-lg">
-            {/* Original sentence with colors */}
-            {question.words.length > 0 ? (
-              <div>
-                {question.words.map((word) => (
-                  <span
-                    key={word.id}
-                    style={{ color: word.color }}
-                    className="word-container relative mx-1 cursor-pointer"
-                    onMouseEnter={() => handleMouseEnter(word.id)}
-                    onMouseLeave={() => handleMouseLeave(word.id)}
-                    onClick={() => {
-                      handleWordClick(word.id);
-                      playWordAudio(word.audioUrl ?? undefined); // ✅ Play audio on click
-                    }}
-                  >
-                    {/* Transliteration Popup (Shows above word) */}
-                    {activeWordId === word.id && word.transliteration && (
-                      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm text-white shadow-lg transition-opacity duration-200 ease-in-out">
-                        {word.transliteration}
-                      </span>
-                    )}
-
-                    {word.text}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className="text-gray-500">No words available.</span>
+          <p className="text-xl">
+            {question.content}{" "}
+            {question.hasTimer && timeLeft !== null && (
+              <Timer
+                timeLeft={timeLeft}
+                onTimeout={handleTimeout}
+                timerRunning={timerRunning}
+              />
             )}
+          </p>
 
-            {/* Translated sentence with colors */}
-            {question.translations.length > 0 ? (
-              <div className="mt-2 text-gray-800">
-                {question.translations.map((translation) => (
-                  <div key={translation.id} className="flex items-center">
-                    <span style={{ color: translation.color }} className="mx-1">
-                      {translation.text}
-                    </span>
-                    <LessonBookmarkButton
-                      lessonId={lesson.id}
-                      questionId={question.id}
-                      words={question.words}
-                      translations={question.translations}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span className="text-gray-500">No translation available.</span>
-            )}
-          </div>
-
-          {/* Audio Recorder Section */}
-          {question.audioUrl && <AudioRecorder audioUrl={question.audioUrl} />}
+          <QuestionTextBlock
+            words={question.words}
+            translations={question.translations}
+            lessonId={lesson.id}
+            questionId={question.id}
+            activeWordId={activeWordId}
+            lastClickedWord={lastClickedWord}
+            setActiveWordId={setActiveWordId}
+            setLastClickedWord={setLastClickedWord}
+            playWordAudio={playWordAudio}
+          />
 
           {/* Render Drag and Drop Audio for DRAG_DROP_AUDIO Question Type */}
           {question.type === "DRAG_DROP_AUDIO" && question.options && (
@@ -426,80 +338,26 @@ export default function LessonComponent({
 
           {/* Audio Preview Question */}
           {question.type === "AUDIO_PREVIEW" && question.options && (
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {question.options.map((option, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <button
-                    onClick={() => playAudio(question.audioUrl)}
-                    className="btn btn-primary"
-                  >
-                    {option}
-                  </button>
-                </div>
-              ))}
-              <audio ref={audioRef} />
-            </div>
+            <AudioPreviewQuestion
+              options={question.options}
+              audioUrl={question.audioUrl}
+              playAudio={playAudio}
+            />
           )}
 
           {/* True/False Question */}
           {question.type === "TRUE_FALSE" && (
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => handleAnswer("true")}
-                className={`btn ${selectedAnswer === "true" ? "btn-primary" : "btn-secondary"}`}
-              >
-                True
-              </button>
-              <button
-                onClick={() => handleAnswer("false")}
-                className={`btn ${selectedAnswer === "false" ? "btn-primary" : "btn-secondary"}`}
-              >
-                False
-              </button>
-            </div>
+            <TrueFalseQuestion
+              selectedAnswer={selectedAnswer}
+              handleAnswer={handleAnswer}
+            />
           )}
 
-          {/* Multiple Choice Question */}
           {question.type === "MULTIPLE_CHOICE" && question.options && (
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(option)}
-                  className={`btn ${
-                    selectedAnswer === option ? "btn-primary" : "btn-secondary"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Text Input Question */}
-          {question.type === "TEXT_INPUT" && (
-            <div className="mt-4 flex flex-col">
-              <input
-                type="text"
-                value={typedAnswer}
-                onChange={(e) => setTypedAnswer(e.target.value)}
-                className="input input-bordered w-full"
-                placeholder="Type your answer here"
-              />
-              <button
-                onClick={handleSubmitTextAnswer}
-                className="btn btn-primary mt-4"
-              >
-                Submit
-              </button>
-            </div>
-          )}
-
-          {/* Render Speak and Answer for SPEAK_ANSWER Question Type */}
-          {question.type === "SPEAK_ANSWER" && (
-            <SpeakAndAnswer
-              correctAnswer={question.correctAnswer}
-              onSubmit={handleSpeakSubmit}
+            <MultipleChoiceQuestion
+              options={question.options}
+              selectedAnswer={selectedAnswer}
+              handleAnswer={handleAnswer}
             />
           )}
 
@@ -507,6 +365,9 @@ export default function LessonComponent({
           {question.type === "DRAW_INPUT" && (
             <DrawCanvas onSubmit={handleDrawingSubmit} />
           )}
+
+          {/* Audio Recorder Section */}
+          {question.audioUrl && <AudioRecorder audioUrl={question.audioUrl} />}
 
           {feedback && (
             <p
@@ -528,12 +389,14 @@ export default function LessonComponent({
         )}
         {!lessonComplete && (
           <button
-          onClick={handleNext}
-          className={`btn btn-primary ${
-            !isAnswerCorrect && !isSkippable ? "cursor-not-allowed opacity-50" : ""
-          }`}
-          disabled={!isAnswerCorrect && !isSkippable}
-        >
+            onClick={handleNext}
+            className={`btn btn-primary ${
+              !isAnswerCorrect && !isSkippable
+                ? "cursor-not-allowed opacity-50"
+                : ""
+            }`}
+            disabled={!isAnswerCorrect && !isSkippable}
+          >
             {currentQuestion < lesson.questions.length - 1 ? "Next" : "Finish"}
           </button>
         )}
