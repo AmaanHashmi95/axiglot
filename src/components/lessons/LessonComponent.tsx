@@ -12,6 +12,7 @@ import TrueFalseQuestion from "./questions/TrueFalseQuestion";
 import MultipleChoiceQuestion from "./questions/MultipleChoiceQuestion";
 import QuestionTextBlock from "./questions/QuestionTextBlock";
 import Image from "next/image";
+import confetti from "canvas-confetti";
 
 interface Word {
   id: string;
@@ -244,6 +245,12 @@ export default function LessonComponent({
       setLessonComplete(isLessonCompleted);
       if (isLessonCompleted) playSound("complete");
       saveCompletion(lesson.id, isLessonCompleted);
+      // 🎉 Fire confetti
+      confetti({
+        particleCount: 150,
+        spread: 90,
+        origin: { y: 0.6 },
+      });
     }
   };
 
@@ -289,7 +296,7 @@ export default function LessonComponent({
       />
 
       {lessonComplete ? (
-        <div className="mt-6 text-center text-2xl font-bold text-green-500">
+        <div className="mt-6 flex items-center justify-center gap-3 rounded-lg bg-green-600 px-6 py-4 text-center text-2xl font-bold text-white">
           Congratulations! You have completed the lesson.
         </div>
       ) : (
@@ -400,16 +407,19 @@ export default function LessonComponent({
       )}
 
       <div className="mt-8 flex w-full items-center justify-between">
-        <div>
-          {currentQuestion > 0 && (
-            <button
-              onClick={handleBack}
-              className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600"
-            >
-              Back
-            </button>
-          )}
-        </div>
+        {!lessonComplete && (
+          <div>
+            {currentQuestion > 0 && (
+              <button
+                onClick={handleBack}
+                className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600"
+              >
+                Back
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="ml-auto">
           {!lessonComplete && (
             <button
