@@ -128,7 +128,7 @@ button {
 
 /* Ensure consistent input box look */
 input, textarea, select {
-  background-color: black !important;
+  background-color: black;
   color: white !important;
 }
 

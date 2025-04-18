@@ -51,15 +51,6 @@ export default function DrawCanvas({ onSubmit }: DrawCanvasProps) {
     ctx!.stroke();
   };
 
-  // Submit the drawing as an image (data URL)
-  const handleSubmit = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const dataUrl = canvas.toDataURL('image/png');
-      onSubmit(dataUrl);
-    }
-  };
-
   // Clear the canvas
   const handleClear = () => {
     ctxRef.current?.clearRect(0, 0, 400, 300);
@@ -71,7 +62,7 @@ export default function DrawCanvas({ onSubmit }: DrawCanvasProps) {
         ref={canvasRef}
         width={400}
         height={300}
-        className="border border-gray-400 touch-none"
+        className="border border-gray-400 bg-white touch-none rounded-lg"
         onMouseDown={startDrawing}
         onMouseUp={stopDrawing}
         onMouseMove={draw}
@@ -80,9 +71,6 @@ export default function DrawCanvas({ onSubmit }: DrawCanvasProps) {
         onTouchMove={draw}
       />
       <div className="flex gap-4 mt-4">
-        <button onClick={handleSubmit} className="btn btn-primary">
-          Submit
-        </button>
         <button onClick={handleClear} className="btn btn-secondary">
           Clear
         </button>

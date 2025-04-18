@@ -11,6 +11,7 @@ import AudioPreviewQuestion from "./questions/AudioPreviewQuestion";
 import TrueFalseQuestion from "./questions/TrueFalseQuestion";
 import MultipleChoiceQuestion from "./questions/MultipleChoiceQuestion";
 import QuestionTextBlock from "./questions/QuestionTextBlock";
+import Image from "next/image";
 
 interface Word {
   id: string;
@@ -320,16 +321,20 @@ export default function LessonComponent({
             {feedback && (
               <div className="mt-6 flex justify-center">
                 {feedback === "Correct!" ? (
-                  <img
+                  <Image
                     src="/icons/Correct.png"
                     alt="Correct"
-                    className="h-17 w-103 sm:h-17 sm:w-103"
+                    width={412}
+                    height={68}
+                    className="h-68 w-412 sm:h-68 sm:w-412"
                   />
                 ) : (
-                  <img
+                  <Image
                     src="/icons/TryAgain.png"
                     alt="Incorrect"
-                    className="h-17 w-103 sm:h-17 sm:w-103"
+                    width={412}
+                    height={68}
+                    className="h-34 w-206 sm:h-34 sm:w-206"
                   />
                 )}
               </div>
@@ -376,6 +381,7 @@ export default function LessonComponent({
               <MultipleChoiceQuestion
                 options={question.options}
                 selectedAnswer={selectedAnswer}
+                correctAnswer={question.correctAnswer}
                 handleAnswer={handleAnswer}
               />
             )}
