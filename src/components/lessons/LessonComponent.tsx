@@ -288,118 +288,139 @@ export default function LessonComponent({
       />
 
       {lessonComplete ? (
-        <div className="mt-6 text-2xl font-bold text-green-500">
+        <div className="mt-6 text-center text-2xl font-bold text-green-500">
           Congratulations! You have completed the lesson.
         </div>
       ) : (
-        <div className="question-section my-6">
-          <p className="text-xl">
-            {question.content}{" "}
-            {question.hasTimer && timeLeft !== null && (
-              <Timer
-                timeLeft={timeLeft}
-                onTimeout={handleTimeout}
-                timerRunning={timerRunning}
+        <div className="question-section my-6 flex justify-center">
+          <div className="w-full max-w-3xl text-center">
+            <p className="text-xl font-semibold sm:text-2xl md:text-3xl">
+              {question.content}{" "}
+              {question.hasTimer && timeLeft !== null && (
+                <Timer
+                  timeLeft={timeLeft}
+                  onTimeout={handleTimeout}
+                  timerRunning={timerRunning}
+                />
+              )}
+            </p>
+
+            <QuestionTextBlock
+              words={question.words}
+              translations={question.translations}
+              lessonId={lesson.id}
+              questionId={question.id}
+              activeWordId={activeWordId}
+              lastClickedWord={lastClickedWord}
+              setActiveWordId={setActiveWordId}
+              setLastClickedWord={setLastClickedWord}
+              playWordAudio={playWordAudio}
+            />
+
+            {feedback && (
+              <div className="mt-6 flex justify-center">
+                {feedback === "Correct!" ? (
+                  <img
+                    src="/icons/Correct.png"
+                    alt="Correct"
+                    className="h-17 w-103 sm:h-17 sm:w-103"
+                  />
+                ) : (
+                  <img
+                    src="/icons/TryAgain.png"
+                    alt="Incorrect"
+                    className="h-17 w-103 sm:h-17 sm:w-103"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Render Drag and Drop Audio for DRAG_DROP_AUDIO Question Type */}
+            {question.type === "DRAG_DROP_AUDIO" && question.options && (
+              <DragDropAudio
+                audioUrl={question.audioUrl!}
+                words={question.options}
+                correctOrder={question.correctAnswer.split(" ")}
+                onSubmit={handleDropSubmit}
               />
             )}
-          </p>
 
-          <QuestionTextBlock
-            words={question.words}
-            translations={question.translations}
-            lessonId={lesson.id}
-            questionId={question.id}
-            activeWordId={activeWordId}
-            lastClickedWord={lastClickedWord}
-            setActiveWordId={setActiveWordId}
-            setLastClickedWord={setLastClickedWord}
-            playWordAudio={playWordAudio}
-          />
+            {/* Render Listen and Type for LISTEN_AND_TYPE Question Type */}
+            {question.type === "LISTEN_AND_TYPE" && question.audioUrl && (
+              <ListenAndType
+                audioUrl={question.audioUrl}
+                correctAnswer={question.correctAnswer}
+                language={question.language || "arabic"}
+                onSubmit={handleListenSubmit}
+              />
+            )}
 
-          {/* Render Drag and Drop Audio for DRAG_DROP_AUDIO Question Type */}
-          {question.type === "DRAG_DROP_AUDIO" && question.options && (
-            <DragDropAudio
-              audioUrl={question.audioUrl!}
-              words={question.options}
-              correctOrder={question.correctAnswer.split(" ")}
-              onSubmit={handleDropSubmit}
-            />
-          )}
+            {/* Audio Preview Question */}
+            {question.type === "AUDIO_PREVIEW" && question.options && (
+              <AudioPreviewQuestion
+                options={question.options}
+                audioUrl={question.audioUrl}
+                playAudio={playAudio}
+              />
+            )}
 
-          {/* Render Listen and Type for LISTEN_AND_TYPE Question Type */}
-          {question.type === "LISTEN_AND_TYPE" && question.audioUrl && (
-            <ListenAndType
-              audioUrl={question.audioUrl}
-              correctAnswer={question.correctAnswer}
-              language={question.language || "arabic"}
-              onSubmit={handleListenSubmit}
-            />
-          )}
+            {/* True/False Question */}
+            {question.type === "TRUE_FALSE" && (
+              <TrueFalseQuestion
+                selectedAnswer={selectedAnswer}
+                handleAnswer={handleAnswer}
+              />
+            )}
 
-          {/* Audio Preview Question */}
-          {question.type === "AUDIO_PREVIEW" && question.options && (
-            <AudioPreviewQuestion
-              options={question.options}
-              audioUrl={question.audioUrl}
-              playAudio={playAudio}
-            />
-          )}
+            {question.type === "MULTIPLE_CHOICE" && question.options && (
+              <MultipleChoiceQuestion
+                options={question.options}
+                selectedAnswer={selectedAnswer}
+                handleAnswer={handleAnswer}
+              />
+            )}
 
-          {/* True/False Question */}
-          {question.type === "TRUE_FALSE" && (
-            <TrueFalseQuestion
-              selectedAnswer={selectedAnswer}
-              handleAnswer={handleAnswer}
-            />
-          )}
+            {/* Render Draw Canvas for DRAW_INPUT questions */}
+            {question.type === "DRAW_INPUT" && (
+              <DrawCanvas onSubmit={handleDrawingSubmit} />
+            )}
 
-          {question.type === "MULTIPLE_CHOICE" && question.options && (
-            <MultipleChoiceQuestion
-              options={question.options}
-              selectedAnswer={selectedAnswer}
-              handleAnswer={handleAnswer}
-            />
-          )}
-
-          {/* Render Draw Canvas for DRAW_INPUT questions */}
-          {question.type === "DRAW_INPUT" && (
-            <DrawCanvas onSubmit={handleDrawingSubmit} />
-          )}
-
-          {/* Audio Recorder Section */}
-          {question.audioUrl && <AudioRecorder audioUrl={question.audioUrl} />}
-
-          {feedback && (
-            <p
-              className={`mt-4 ${
-                feedback === "Correct!" ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {feedback}
-            </p>
-          )}
+            {/* Audio Recorder Section */}
+            {question.audioUrl && (
+              <AudioRecorder audioUrl={question.audioUrl} />
+            )}
+          </div>
         </div>
       )}
 
-      <div className="mt-8 flex justify-between">
-        {currentQuestion > 0 && (
-          <button onClick={handleBack} className="btn btn-secondary">
-            Back
-          </button>
-        )}
-        {!lessonComplete && (
-          <button
-            onClick={handleNext}
-            className={`btn btn-primary ${
-              !isAnswerCorrect && !isSkippable
-                ? "cursor-not-allowed opacity-50"
-                : ""
-            }`}
-            disabled={!isAnswerCorrect && !isSkippable}
-          >
-            {currentQuestion < lesson.questions.length - 1 ? "Next" : "Finish"}
-          </button>
-        )}
+      <div className="mt-8 flex w-full items-center justify-between">
+        <div>
+          {currentQuestion > 0 && (
+            <button
+              onClick={handleBack}
+              className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600"
+            >
+              Back
+            </button>
+          )}
+        </div>
+        <div className="ml-auto">
+          {!lessonComplete && (
+            <button
+              onClick={handleNext}
+              className={`rounded-md bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-5 py-2 text-white transition ${
+                !isAnswerCorrect && !isSkippable
+                  ? "cursor-not-allowed opacity-50"
+                  : ""
+              }`}
+              disabled={!isAnswerCorrect && !isSkippable}
+            >
+              {currentQuestion < lesson.questions.length - 1
+                ? "Next"
+                : "Finish"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,137 +1,100 @@
 import { useState, useRef } from "react";
+import { FaVolumeUp, FaStop, FaMicrophone } from "react-icons/fa";
 
 interface AudioRecorderProps {
-  audioUrl: string; // The question's provided audio URL
+  audioUrl: string;
 }
 
 export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
-  const [recording, setRecording] = useState<boolean>(false);
+  const [recording, setRecording] = useState(false);
   const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const userAudioRef = useRef<HTMLAudioElement | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // ✅ Timeout reference
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ Detect the best format for the browser
   const getSupportedMimeType = () => {
     const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
     return mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
   };
 
-  // ✅ Play the provided question audio
   const playQuestionAudio = () => {
-    if (!audioUrl) {
-      console.error("No question audio URL provided.");
-      return;
-    }
-
-    const audio = new Audio(audioUrl);
-    audio.play()
-      .then(() => console.log("🎵 Playing question audio."))
-      .catch((err) => console.error("❌ Error playing question audio:", err));
+    if (!audioUrl) return;
+    new Audio(audioUrl).play().catch(console.error);
   };
 
-  // ✅ Start recording user audio
   const startRecording = async () => {
     try {
-      console.log("🎤 Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      console.log("✅ Microphone access granted. Starting recording...");
       setRecording(true);
-      audioChunksRef.current = []; // Reset previous recordings
+      audioChunksRef.current = [];
 
-      // Use the best supported MIME type
       const mimeType = getSupportedMimeType();
-      if (!mimeType) {
-        console.error("❌ No supported MIME type found!");
-        return;
-      }
+      if (!mimeType) return;
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          console.log("🎙️ Audio chunk received.");
-          audioChunksRef.current.push(event.data);
-        }
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
       mediaRecorder.onstop = () => {
-        console.log("⏹️ Recording stopped. Processing audio...");
-        if (audioChunksRef.current.length === 0) {
-          console.error("❌ No audio data recorded.");
-          return;
-        }
-
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        const newUserAudioUrl = URL.createObjectURL(audioBlob);
-        setUserAudioUrl(newUserAudioUrl);
-        console.log("✅ Audio recorded and available at:", newUserAudioUrl);
+        setUserAudioUrl(URL.createObjectURL(audioBlob));
       };
 
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
-    // ✅ Auto-stop after 10s
-    timeoutRef.current = setTimeout(() => {
-      if (mediaRecorder.state === "recording") stopRecording();
-    }, 10_000);
-  } catch (error) {
-    console.error("Error accessing microphone:", error);
-  }
-};
 
-  // ✅ Stop recording and save audio
-  const stopRecording = () => {
-    if (!mediaRecorderRef.current) return;
-    mediaRecorderRef.current.stop();
-    setRecording(false);
-
-    // ✅ Clear timeout if user stopped manually
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+      timeoutRef.current = setTimeout(() => {
+        if (mediaRecorder.state === "recording") stopRecording();
+      }, 10000);
+    } catch (err) {
+      console.error("Mic access error:", err);
     }
   };
 
-  // ✅ Play the recorded audio
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
   const playRecordedAudio = () => {
-    if (!userAudioUrl) {
-      console.warn("⚠️ No recorded audio available.");
-      return;
-    }
-
-    console.log("🔊 Playing recorded audio from URL:", userAudioUrl);
-    const audio = new Audio(userAudioUrl);
-
-    audio.play()
-      .then(() => console.log("🎵 Playing recorded audio."))
-      .catch((err) => console.error("❌ Error playing recorded audio:", err));
+    if (!userAudioUrl) return;
+    new Audio(userAudioUrl).play().catch(console.error);
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Play provided question audio */}
-      <button onClick={playQuestionAudio} className="btn btn-primary">
-        ▶️ Play Question Audio
+    <div className="mt-6 flex justify-center gap-4">
+      {/* Play Question Audio */}
+      <button
+        onClick={playQuestionAudio}
+        aria-label="Play Question Audio"
+        className="h-14 w-14 rounded-full bg-[#00E2FF] text-white flex items-center justify-center shadow-md"
+      >
+        <FaVolumeUp className="text-lg" />
       </button>
 
-      <div className="flex gap-4">
-        {/* Start/Stop Recording */}
-        <button
-          onClick={recording ? stopRecording : startRecording}
-          className={`btn ${recording ? "btn-danger" : "btn-secondary"}`}
-        >
-          🎙️ {recording ? "Stop Recording" : "Record Yourself"}
-        </button>
+      {/* Record / Stop Button */}
+      <button
+        onClick={recording ? stopRecording : startRecording}
+        aria-label={recording ? "Stop Recording" : "Record Yourself"}
+        className="h-14 w-14 rounded-full bg-[#FF8A00] text-white flex items-center justify-center shadow-md"
+      >
+        {recording ? <FaStop className="text-lg" /> : <FaMicrophone className="text-lg" />}
+      </button>
 
-        {/* Play User Recording */}
-        {userAudioUrl && (
-          <button onClick={playRecordedAudio} className="btn btn-success">
-            🔊 Play Your Recording
-          </button>
-        )}
-      </div>
+      {/* Play User Recording */}
+      <button
+        onClick={playRecordedAudio}
+        disabled={!userAudioUrl}
+        aria-label="Play Your Recording"
+        className={`h-14 w-14 rounded-full ${
+          userAudioUrl ? "bg-gray-500 text-white" : "bg-gray-300 text-gray-400"
+        } flex items-center justify-center shadow-md`}
+      >
+        <FaVolumeUp className="text-lg" />
+      </button>
     </div>
   );
 }

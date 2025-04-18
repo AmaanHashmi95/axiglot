@@ -1,5 +1,7 @@
 "use client";
 import LessonBookmarkButton from "../LessonBookmarkButton";
+import { useState } from "react";
+
 
 interface Word {
   id: string;
@@ -38,6 +40,9 @@ export default function QuestionTextBlock({
   setLastClickedWord,
   playWordAudio,
 }: Props) {
+
+  const [showTranslation, setShowTranslation] = useState(false);  
+  
   const handleMouseEnter = (wordId: string) => {
     if (!lastClickedWord) setActiveWordId(wordId);
   };
@@ -47,16 +52,21 @@ export default function QuestionTextBlock({
   };
 
   const handleWordClick = (wordId: string, audioUrl?: string | null) => {
-    if (activeWordId === wordId) return;
     setLastClickedWord(wordId);
     setActiveWordId(wordId);
-    playWordAudio(audioUrl ?? undefined);
+    if (audioUrl) {
+      console.log("🔊 Playing word audio:", audioUrl);
+      playWordAudio(audioUrl);
+    } else {
+      console.warn("⚠️ No audio URL found for word ID:", wordId);
+    }
   };
+  
 
   return (
-    <div className="mt-2 text-lg">
+    <div className="mt-4 text-xl sm:text-2xl md:text-3xl text-center">
       {words.length > 0 ? (
-        <div>
+        <div className="flex flex-wrap justify-center items-center gap-1">
           {words.map((word) => (
             <span
               key={word.id}
@@ -74,29 +84,40 @@ export default function QuestionTextBlock({
               {word.text}
             </span>
           ))}
+          <LessonBookmarkButton
+            lessonId={lessonId}
+            questionId={questionId}
+            words={words}
+            translations={translations}
+          />
         </div>
       ) : (
         <span className="text-gray-500"></span>
       )}
 
-      {translations.length > 0 ? (
-        <div className="mt-2 text-gray-800">
+      {/* Toggle Button */}
+      {translations.length > 0 && (
+        <div className="mt-1 text-xl text-gray-500">
+          <button
+            onClick={() => setShowTranslation((prev) => !prev)}
+            className="btn btn-outline btn-sm"
+          >
+            {showTranslation ? "Hide translation" : "Show translation"}
+          </button>
+        </div>
+      )}
+
+      {/* Conditionally show translations */}
+      {showTranslation && translations.length > 0 && (
+        <div className="mt-2 text-gray-800 flex flex-wrap justify-center gap-2">
           {translations.map((translation) => (
             <div key={translation.id} className="flex items-center">
               <span style={{ color: translation.color }} className="mx-1">
                 {translation.text}
               </span>
-              <LessonBookmarkButton
-                lessonId={lessonId}
-                questionId={questionId}
-                words={words}
-                translations={translations}
-              />
             </div>
           ))}
         </div>
-      ) : (
-        <span className="text-gray-500"></span>
       )}
     </div>
   );
