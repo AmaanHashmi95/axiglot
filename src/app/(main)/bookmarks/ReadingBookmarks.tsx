@@ -70,7 +70,7 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
         bookmarks.map((b) => (
           <div key={b.id} className="space-y-3 rounded border p-4 shadow">
             <p className="text-sm text-gray-500">Book: {b.book.title}</p>
-            <p className="flex flex-wrap text-sm leading-relaxed text-gray-800">
+            <p className="flex flex-wrap text-md leading-relaxed text-gray-800">
               {b.words?.map((w, i) => {
                 const isPunctuation = /^[.,!?;:"'()\-—]+$/.test(w.word.text);
                 const isEndOfSentence = /[.!?]+$/.test(w.word.text);
@@ -87,8 +87,7 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
               })}
             </p>
 
-            <p className="text-sm text-gray-600">
-              <strong>Translation:</strong>{" "}
+            <p className="text-md text-gray-600">
               {b.words
                 ?.slice()
                 .sort(
@@ -103,8 +102,7 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
                 ))}
             </p>
 
-            <p className="text-sm italic text-gray-500">
-              <strong>Transliteration:</strong>{" "}
+            <p className="text-md text-gray-500">
               {b.words
                 ?.slice()
                 .sort(
@@ -120,12 +118,9 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
                 ))}
             </p>
 
-            <button
-              onClick={() => mutate({ id: b.id })}
-              className="flex items-center gap-2 text-red-500"
-            >
-              <Trash2 className="h-4 w-4" /> Remove
-            </button>
+            <button onClick={() => mutate({ id: b.id })}>
+                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
+              </button>
           </div>
         ))
       ) : (

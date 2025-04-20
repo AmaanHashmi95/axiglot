@@ -76,12 +76,12 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
           return (
             <div key={b.id} className="rounded border p-4 shadow space-y-3">
               <p className="text-sm text-gray-500">Song: {b.song.title}</p>
-              <p className="text-sm text-gray-700">{first.text}</p>
+              <p className="text-sm text-gray-100">{first.text}</p>
               {first.bookmarkedEnglish && (
-                <p className="text-sm text-gray-500">{first.bookmarkedEnglish}</p>
+                <p className="text-sm text-gray-100">{first.bookmarkedEnglish}</p>
               )}
               {first.bookmarkedTransliteration && (
-                <p className="text-sm italic text-gray-400">{first.bookmarkedTransliteration}</p>
+                <p className="text-sm text-gray-100">{first.bookmarkedTransliteration}</p>
               )}
               <button
                 className="btn btn-outline btn-xs flex items-center gap-2"
@@ -90,7 +90,7 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
               </button>
               <AudioRecorder audioUrl={first.audioUrl} />
               <button onClick={() => mutate({ id: b.id })}>
-                <Bookmark className="text-red-500" />
+                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
               </button>
             </div>
           );

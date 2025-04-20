@@ -159,14 +159,7 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
               </div>
             )}
             {bookmark.question.audioUrl && (
-              <div className="mt-4 flex flex-col gap-2">
-                <button
-                  className="btn btn-sm btn-outline flex items-center gap-2"
-                  onClick={() => handlePlayQuestionAudio(bookmark.question.audioUrl)}
-                >
-                  <Volume2 className="h-4 w-4" />
-                  Play Question Audio
-                </button>
+              <div className="mt-4 flex flex-col gap-2 left-1">
                 <AudioRecorder audioUrl={bookmark.question.audioUrl} />
               </div>
             )}
@@ -175,7 +168,7 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
                 mutate({ lessonId: bookmark.lessonId, questionId: bookmark.questionId })
               }
             >
-              <Bookmark className="text-red-500" />
+              <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
             </button>
           </div>
         ))

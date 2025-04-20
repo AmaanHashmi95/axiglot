@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Trash2, Bookmark } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ky from "@/lib/ky";
 
@@ -55,13 +55,13 @@ export default function TranslatorBookmarks({ selectedLanguage }: Props) {
       ) : (
         filtered.map((b) => (
           <div key={b.id} className="rounded border p-4 shadow">
-            <p className="text-sm text-gray-500">Original: {b.sourceText}</p>
+            <p className="text-sm text-gray-100">Original: {b.sourceText}</p>
             <p className="text-sm"><strong>Translation:</strong> {b.translatedText}</p>
-            <p className="text-sm italic text-gray-600">
+            <p className="text-sm text-gray-100">
               <strong>Transliteration:</strong> {b.transliteration}
             </p>
             {b.words && (
-              <div className="mt-1 text-sm text-gray-800">
+              <div className="mt-1 text-sm text-gray-100">
                 <strong>Word Breakdown:</strong>
                 <ul className="list-disc pl-5">
                   {b.words.map((w: any, i: number) => (
@@ -70,9 +70,9 @@ export default function TranslatorBookmarks({ selectedLanguage }: Props) {
                 </ul>
               </div>
             )}
-            <button onClick={() => mutate({ id: b.id })} className="flex items-center gap-2 text-red-500 mt-2">
-              <Trash2 className="h-4 w-4" /> Remove
-            </button>
+            <button onClick={() => mutate({ id: b.id })}>
+                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
+              </button>
           </div>
         ))
       )}

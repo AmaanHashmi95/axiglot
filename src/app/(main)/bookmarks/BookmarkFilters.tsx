@@ -30,7 +30,7 @@ export default function BookmarkFilters({
      {/* Item Type Dropdown */}
      <DropdownMenu>
        <DropdownMenuTrigger asChild>
-         <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-white dark:bg-gray-900 w-40")}>
+         <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-gray-900 w-40")}>
            <span>{selectedType}</span>
            <ChevronDown className="w-4 h-4" />
          </button>
@@ -48,7 +48,7 @@ export default function BookmarkFilters({
      {/* Language Dropdown */}
      <DropdownMenu>
        <DropdownMenuTrigger asChild>
-         <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-white dark:bg-gray-900 w-40")}>
+         <button className={cn("flex items-center gap-2 p-2 rounded-lg border bg-gray-900 w-40")}>
            <span>{selectedLanguage}</span>
            <ChevronDown className="w-4 h-4" />
          </button>
