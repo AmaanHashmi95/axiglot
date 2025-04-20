@@ -58,14 +58,20 @@ export default function AudioLessonPlayer({
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
+        audioRef.current
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(console.error);
       }
     }
   };
 
   const seek = (seconds: number) => {
     if (!audioRef.current) return;
-    const newTime = Math.max(0, Math.min(audioRef.current.currentTime + seconds, duration));
+    const newTime = Math.max(
+      0,
+      Math.min(audioRef.current.currentTime + seconds, duration),
+    );
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
@@ -95,9 +101,13 @@ export default function AudioLessonPlayer({
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
     if (!progressBarRef.current || !audioRef.current) return;
     const rect = progressBarRef.current.getBoundingClientRect();
-    const clientX = "touches" in event ? event.touches[0].clientX : event.clientX;
+    const clientX =
+      "touches" in event ? event.touches[0].clientX : event.clientX;
     const offsetX = clientX - rect.left;
-    const newTime = Math.max(0, Math.min((offsetX / rect.width) * duration, duration));
+    const newTime = Math.max(
+      0,
+      Math.min((offsetX / rect.width) * duration, duration),
+    );
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
@@ -117,17 +127,26 @@ export default function AudioLessonPlayer({
 
   return (
     <div
-      className="fixed bottom-0 left-0 w-full flex flex-col items-center border-t bg-white px-4 py-2 shadow-lg"
+      className="fixed bottom-0 left-0 flex w-full flex-col items-center border-t bg-white px-4 py-2 shadow-lg"
       style={{ bottom: `${bottomPadding}px` }}
     >
-      <audio ref={audioRef} src={`/api/media?id=${lesson.audioUrl}`} />
-
+      <audio
+        ref={audioRef}
+        src={`/api/media?id=${lesson.audioUrl}`}
+        preload="metadata"
+        onLoadedMetadata={() => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration || 0);
+          }
+        }}
+        onEnded={() => setIsPlaying(false)}
+      />
 
       {/* Controls */}
-      <div className="flex items-center justify-center max-w-2xl gap-4 w-[400px]">
+      <div className="flex w-[400px] max-w-2xl items-center justify-center gap-4">
         {/* Title + Speaker */}
-        <div className="flex flex-col text-xs text-gray-800 truncate w-1/4">
-          <span className="font-semibold truncate">{lesson.title}</span>
+        <div className="flex w-1/4 flex-col truncate text-xs text-gray-800">
+          <span className="truncate font-semibold">{lesson.title}</span>
           <span className="truncate">{lesson.speaker}</span>
         </div>
 
@@ -140,7 +159,10 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path fill="url(#gradient)" d="M11 12L22 22V2zM2 12L13 22V2z"></path>
+            <path
+              fill="url(#gradient)"
+              d="M11 12L22 22V2zM2 12L13 22V2z"
+            ></path>
           </svg>
         </button>
 
@@ -169,14 +191,19 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path fill="url(#gradient)" d="M13 12L2 22V2zM22 12L11 22V2z"></path>
+            <path
+              fill="url(#gradient)"
+              d="M13 12L2 22V2zM22 12L11 22V2z"
+            ></path>
           </svg>
         </button>
 
         {/* Speed Control */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="px-3 py-1 text-xs">Speed: {playbackRate}x ⏷</Button>
+            <Button className="px-3 py-1 text-xs">
+              Speed: {playbackRate}x ⏷
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {[1, 0.75, 0.5, 0.25].map((speed) => (
@@ -191,7 +218,7 @@ export default function AudioLessonPlayer({
       {/* Progress Bar */}
       <div
         ref={progressBarRef}
-        className="relative mt-2 w-full h-2 cursor-pointer rounded-lg bg-gray-200 max-w-2xl"
+        className="relative mt-2 h-2 w-full max-w-2xl cursor-pointer rounded-lg bg-gray-200"
         onMouseDown={handleSeek}
         onTouchStart={handleSeek}
       >
