@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
-import { Bookmark, Trash2 } from "lucide-react";
+import { Bookmark, Loader2} from "lucide-react";
 
 interface Props {
   selectedLanguage: string;
@@ -65,7 +65,7 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
   return (
     <div className="space-y-5">
       {status === "pending" ? (
-        <p>Loading...</p>
+        <Loader2 className="mx-auto my-3 animate-spin" />
       ) : bookmarks.length > 0 ? (
         bookmarks.map((b) => (
           <div key={b.id} className="space-y-3 rounded border p-4 shadow">

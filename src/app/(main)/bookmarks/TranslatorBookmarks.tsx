@@ -1,4 +1,4 @@
-import { Trash2, Bookmark } from "lucide-react";
+import { Loader2, Bookmark } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ky from "@/lib/ky";
 
@@ -49,7 +49,7 @@ export default function TranslatorBookmarks({ selectedLanguage }: Props) {
   return (
     <div className="space-y-4">
       {status === "pending" ? (
-        <p>Loading...</p>
+        <Loader2 className="mx-auto my-3 animate-spin text-[#00E2FF]" />
       ) : filtered.length === 0 ? (
         <p className="text-center">No translator bookmarks.</p>
       ) : (

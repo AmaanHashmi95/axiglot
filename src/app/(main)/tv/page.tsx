@@ -9,6 +9,7 @@ import VideoScreen from "@/components/VideoScreen";
 import { Video } from "@/lib/video";
 import { Button } from "@/components/ui/button";
 import BrowserWarning from "@/components/BrowserWarning";
+import { Loader2 } from "lucide-react";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -80,7 +81,7 @@ export default function Page() {
     setShowSubtitles(false);
   };
 
-  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (loading) return <Loader2 className="mx-auto my-3 animate-spin" />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

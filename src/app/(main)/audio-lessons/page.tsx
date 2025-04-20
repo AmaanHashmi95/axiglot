@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, } from "react";
 import { useSearchParams } from "next/navigation";
 import AudioLessonChooser from "@/components/AudioLessonChooser";
 import AudioLessonPlayer from "@/components/AudioLessonPlayer";
+import { Loader2 } from "lucide-react";
 
 interface AudioLesson {
   id: string;
@@ -53,7 +54,7 @@ export default function Page() {
     fetchLessons();
   }, [lessonId]);
 
-  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (loading) return <Loader2 className="mx-auto my-3 animate-spin" />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (

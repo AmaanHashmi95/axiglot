@@ -6,6 +6,8 @@ import ReadingChooser from "@/components/ReadingChooser";
 import Reading from "@/components/Reading";
 import { Book } from "@/lib/book";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -63,7 +65,7 @@ export default function Page() {
     setSelectedBook(null);
   };
 
-  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (loading) return <Loader2 className="mx-auto my-3 animate-spin" />;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
