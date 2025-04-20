@@ -7,6 +7,7 @@ import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import blueTick from "@/assets/Blue Tick.png";
 import LessonGroupAccordion from "@/components/lessons/LessonGroupAccordion";
+import BrowserWarning from "@/components/BrowserWarning";
 
 function getGradientClass(language?: string | null) {
   switch (language?.toLowerCase()) {
@@ -49,6 +50,7 @@ export default async function CoursePage({
   return (
     <main className="flex w-full min-w-0 justify-center">
       <div className="w-full min-w-0 max-w-5xl space-y-5">
+        <BrowserWarning />
         <div className="rounded-2xl bg-card p-5 shadow-sm">
           <div className="mb-3 flex items-center space-x-3">
             <h1 className="text-left text-2xl font-bold">{course.title}</h1>

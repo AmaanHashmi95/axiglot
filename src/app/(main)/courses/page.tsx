@@ -3,6 +3,7 @@ import Link from "next/link";
 import LanguageAccordion from "@/components/lessons/LanguageAccordion";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import BrowserWarning from "@/components/BrowserWarning";
 
 export const metadata: Metadata = {
   title: "Courses",
@@ -12,6 +13,7 @@ export default function Page() {
   return (
     <main className="flex w-full min-w-0 justify-center">
       <div className="w-full min-w-0 space-y-5 max-w-5xl">
+        <BrowserWarning />
         <div className="rounded-2xl bg-card p-5 shadow-sm">
           <h1 className="text-center text-2xl font-bold">Courses</h1>
         </div>

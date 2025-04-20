@@ -7,6 +7,7 @@ import MusicPlayer from "@/components/MusicPlayer";
 import Lyrics from "@/components/Lyrics";
 import { Song } from "@/lib/song";
 import { Loader2 } from "lucide-react";
+import BrowserWarning from "@/components/BrowserWarning";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -63,6 +64,7 @@ export default function Page() {
 
   return (
     <div className="flex w-full flex-col gap-4 overflow-hidden p-4">
+      <BrowserWarning />
       {showLyrics ? (
         selectedSong && <Lyrics song={selectedSong} currentTime={currentTime} />
       ) : (

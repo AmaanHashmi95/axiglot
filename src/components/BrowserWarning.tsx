@@ -22,8 +22,8 @@ export default function BrowserWarning() {
   if (!showWarning) return null;
 
   return (
-    <div className="w-full bg-yellow-200 px-4 py-2 text-sm text-yellow-900 shadow">
-      ⚠️ Safari on macOS may block videos or audio from loading. We recommend using Chrome or Firefox for the best experience.
+    <div className="w-full bg-gray-700 px-4 py-2 text-sm text-gray-400 shadow rounded-lg">
+      Safari on macOS may block videos or audio from loading. We recommend using Chrome or Firefox for the best experience.
     </div>
   );
 }

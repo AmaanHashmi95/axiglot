@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import AudioLessonChooser from "@/components/AudioLessonChooser";
 import AudioLessonPlayer from "@/components/AudioLessonPlayer";
 import { Loader2 } from "lucide-react";
+import BrowserWarning from "@/components/BrowserWarning";
 
 interface AudioLesson {
   id: string;
@@ -59,6 +60,7 @@ export default function Page() {
 
   return (
     <div className="flex w-full flex-col gap-4 overflow-hidden p-4">
+      <BrowserWarning />
       <AudioLessonChooser
         lessons={lessons}
         selectedLesson={selectedLesson}

@@ -3,6 +3,7 @@ import { getLesson } from "@/lib/lesson";
 import LessonComponent from "@/components/lessons/LessonComponent";
 import { notFound } from "next/navigation";
 import { validateRequest } from "@/auth";
+import BrowserWarning from "@/components/BrowserWarning";
 
 export default async function LessonPage({
   params,
@@ -19,6 +20,7 @@ export default async function LessonPage({
 
   return (
     <div className="container mx-auto px-4 pt-6">
+      <BrowserWarning />
       <div className="mb-6 flex items-center space-x-4">
         <Link
           href={`/courses/${lesson.course?.id}`}
