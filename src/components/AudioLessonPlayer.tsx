@@ -120,7 +120,8 @@ export default function AudioLessonPlayer({
       className="fixed bottom-0 left-0 w-full flex flex-col items-center border-t bg-white px-4 py-2 shadow-lg"
       style={{ bottom: `${bottomPadding}px` }}
     >
-      <audio ref={audioRef} src={lesson.audioUrl} onEnded={() => setIsPlaying(false)} />
+      <audio ref={audioRef} src={`/api/media?id=${lesson.audioUrl}`} />
+
 
       {/* Controls */}
       <div className="flex items-center justify-center max-w-2xl gap-4 w-[400px]">
