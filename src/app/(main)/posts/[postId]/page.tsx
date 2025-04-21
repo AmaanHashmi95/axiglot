@@ -1,9 +1,9 @@
 import { validateRequest } from "@/auth";
-import FollowButton from "@/components/FollowButton";
+import FollowButton from "../../users/FollowButton";
 import Linkify from "@/app/(main)/components/Linkify";
 import Post from "@/app/(main)/components/posts/Post";
-import UserAvatar from "@/components/UserAvatar";
-import UserTooltip from "@/components/UserTooltip";
+import UserAvatar from "../../users/UserAvatar";
+import UserTooltip from "../../users/UserTooltip";
 import prisma from "@/lib/prisma";
 import { getPostDataInclude, UserData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
