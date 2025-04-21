@@ -1,5 +1,5 @@
 import avatarPlaceholder from "@/assets/avatar-placeholder.png";
-import CropImageDialog from "@/components/CropImageDialog";
+import CropImageDialog from "./CropImageDialog";
 import LoadingButton from "@/app/(main)/components/LoadingButton";
 import {
   Dialog,
