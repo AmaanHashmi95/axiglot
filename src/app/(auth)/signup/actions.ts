@@ -1,3 +1,4 @@
+// File: src/app/(auth)/signup/actions.ts
 "use server";
 
 import { lucia } from "@/auth";
@@ -25,22 +26,7 @@ export async function signUp(
 
     const userId = generateIdFromEntropySize(10);
 
-    const existingUsername = await prisma.user.findFirst({
-      where: {
-        username: {
-          equals: username,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    if (existingUsername) {
-      return {
-        error: "Username already taken",
-      };
-    }
-
-    const existingEmail = await prisma.user.findFirst({
+    const existingUserByEmail = await prisma.user.findFirst({
       where: {
         email: {
           equals: email,
@@ -49,13 +35,49 @@ export async function signUp(
       },
     });
 
-    if (existingEmail) {
-      return {
-        error: "Email already taken",
-      };
+    if (existingUserByEmail) {
+      if (existingUserByEmail.hasSubscription) {
+        return { error: "Email already taken" };
+      }
+
+      if (
+        existingUserByEmail.username.toLowerCase() !== username.toLowerCase()
+      ) {
+        return {
+          error:
+            "Account already exists. Please log in or use the original username.",
+        };
+      }
+
+      const checkoutRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/stripe/create-checkout-session`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            userId: existingUserByEmail.id,
+            email,
+          }),
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const { url } = await checkoutRes.json();
+      return redirect(url);
     }
 
-    // ✅ Just create the user here — no email logic
+    const existingUserByUsername = await prisma.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (existingUserByUsername) {
+      return { error: "Username already taken" };
+    }
+
     await prisma.user.create({
       data: {
         id: userId,
@@ -72,16 +94,17 @@ export async function signUp(
       name: username,
     });
 
-    // 🔁 Redirect to Stripe
-    const checkoutRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/stripe/create-checkout-session`, {
-      method: "POST",
-      body: JSON.stringify({ userId, email }),
-      headers: { "Content-Type": "application/json" },
-    });
+    const checkoutRes = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/stripe/create-checkout-session`,
+      {
+        method: "POST",
+        body: JSON.stringify({ userId, email }),
+        headers: { "Content-Type": "application/json" },
+      },
+    );
 
     const { url } = await checkoutRes.json();
     return redirect(url);
-
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);
