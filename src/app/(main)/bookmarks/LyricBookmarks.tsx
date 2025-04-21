@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import { useRef } from "react";
-import AudioRecorder from "@/components/ui/AudioRecorder";
+import AudioRecorder from "@/app/(main)/components/ui/AudioRecorder";
 import { Volume2, Bookmark, Loader2 } from "lucide-react";
 
 interface Props {

@@ -2,7 +2,7 @@ import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { formatDate } from "date-fns";
 import EditProfileForm from "./EditProfileForm";
-import LogoutButton from "@/components/LogoutButton";
+import LogoutButton from "@/app/(main)/settings/LogoutButton";
 
 export default async function Account() {
   const { user } = await validateRequest();

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { validateRequest } from "@/auth";
 
 export async function GET() {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
   try {
     console.log("Fetching books from the database...");
 

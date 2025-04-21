@@ -6,12 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { updateUserProfileSchema, UpdateUserProfileValues } from "@/lib/validation";
 import { useUpdateProfileMutation } from "@/app/(main)/users/[username]/mutations";
 import { UserData } from "@/lib/types";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import LoadingButton from "@/components/LoadingButton";
-import UserAvatar from "@/components/UserAvatar";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/app/(main)/components/ui/form";
+import { Input } from "@/app/(main)/components/ui/input";
+import { Textarea } from "@/app/(main)/components/ui/textarea";
+import { Label } from "@/app/(main)/components/ui/label";
+import LoadingButton from "@/app/(main)/components/LoadingButton";
+import UserAvatar from "../users/UserAvatar";
 
 interface Props {
   user: Pick<UserData, "id" | "displayName" | "bio" | "avatarUrl" | "username">;

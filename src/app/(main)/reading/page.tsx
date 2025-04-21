@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import ReadingChooser from "@/components/ReadingChooser";
-import Reading from "@/components/Reading";
+import ReadingChooser from "@/app/(main)/reading/ReadingChooser";
+import Reading from "@/app/(main)/reading/Reading";
 import { Book } from "@/lib/book";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/(main)/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 

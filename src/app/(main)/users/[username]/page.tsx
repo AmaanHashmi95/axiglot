@@ -1,8 +1,8 @@
 import { validateRequest } from "@/auth";
-import FollowButton from "@/components/FollowButton";
-import FollowerCount from "@/components/FollowerCount";
-import Linkify from "@/components/Linkify";
-import UserAvatar from "@/components/UserAvatar";
+import FollowButton from "../FollowButton";
+import FollowerCount from "../FollowerCount";
+import Linkify from "@/app/(main)/components/Linkify";
+import UserAvatar from "../UserAvatar";
 import prisma from "@/lib/prisma";
 import { FollowerInfo, getUserDataSelect, UserData } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
@@ -14,7 +14,7 @@ import EditProfileButton from "./EditProfileButton";
 import UserPosts from "./UserPosts";
 import UserFollowing from "./UserFollowing";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/(main)/components/ui/button";
 
 interface PageProps {
   params: { username: string };

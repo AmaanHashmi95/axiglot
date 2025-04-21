@@ -1,7 +1,7 @@
 "use client";
 
-import LoadingButton from "@/components/LoadingButton";
-import { PasswordInput } from "@/components/PasswordInput";
+import LoadingButton from "@/app/(main)/components/LoadingButton";
+import { PasswordInput } from "@/app/(auth)/PasswordInput";
 import {
   Form,
   FormControl,
@@ -9,8 +9,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/app/(main)/components/ui/form";
+import { Input } from "@/app/(main)/components/ui/input";
 import { loginSchema, LoginValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";

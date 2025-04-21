@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { validateRequest } from "@/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { videoId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { videoId: string } },
+) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
   try {
     console.log("Fetching videos from the database...");
 
@@ -11,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: { videoId: str
           include: {
             words: {
               include: { word: true }, // ✅ Now this works for English
-              orderBy: { order: "asc" }
+              orderBy: { order: "asc" },
             },
           },
         },
@@ -19,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: { videoId: str
           include: {
             words: {
               include: { word: true }, // ✅ Already working fine for Target
-              orderBy: { order: "asc" }
+              orderBy: { order: "asc" },
             },
           },
         },
@@ -27,7 +36,7 @@ export async function GET(req: NextRequest, { params }: { params: { videoId: str
           include: {
             words: {
               include: { word: true }, // ✅ Now this works for Transliteration
-              orderBy: { order: "asc" }
+              orderBy: { order: "asc" },
             },
           },
         },

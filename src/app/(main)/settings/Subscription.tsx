@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/(main)/components/ui/button";
 
 export default function Subscription() {
   const [loading, setLoading] = useState(false);

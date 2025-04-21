@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import SongChooser from "@/components/SongChooser";
-import MusicPlayer from "@/components/MusicPlayer";
-import Lyrics from "@/components/Lyrics";
+import SongChooser from "@/app/(main)/music-lyrics/SongChooser";
+import MusicPlayer from "@/app/(main)/music-lyrics/MusicPlayer";
+import Lyrics from "@/app/(main)/music-lyrics/Lyrics";
 import { Song } from "@/lib/song";
 import { Loader2 } from "lucide-react";
-import BrowserWarning from "@/components/BrowserWarning";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export default function Page() {
   const searchParams = useSearchParams();

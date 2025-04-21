@@ -1,13 +1,13 @@
 import { getCourseWithLessons } from "@/lib/course";
 import Link from "next/link";
 import { validateRequest } from "@/auth";
-import ProgressBar from "@/components/ui/ProgressBar";
+import ProgressBar from "@/app/(main)/components/lessons/ProgressBar";
 import Image from "next/image";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import blueTick from "@/assets/Blue Tick.png";
-import LessonGroupAccordion from "@/components/lessons/LessonGroupAccordion";
-import BrowserWarning from "@/components/BrowserWarning";
+import LessonGroupAccordion from "@/app/(main)/components/lessons/LessonGroupAccordion";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 function getGradientClass(language?: string | null) {
   switch (language?.toLowerCase()) {

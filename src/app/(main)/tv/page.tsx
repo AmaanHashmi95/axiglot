@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import VideoChooser from "@/components/VideoChooser";
-import VideoPlayer from "@/components/VideoPlayer";
-import Subtitles from "@/components/Subtitles";
-import VideoScreen from "@/components/VideoScreen";
+import VideoChooser from "@/app/(main)/tv/VideoChooser";
+import VideoPlayer from "@/app/(main)/tv/VideoPlayer";
+import Subtitles from "@/app/(main)/tv/Subtitles";
+import VideoScreen from "@/app/(main)/tv/VideoScreen";
 import { Video } from "@/lib/video";
-import { Button } from "@/components/ui/button";
-import BrowserWarning from "@/components/BrowserWarning";
+import { Button } from "@/app/(main)/components/ui/button";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 import { Loader2 } from "lucide-react";
 
 export default function Page() {

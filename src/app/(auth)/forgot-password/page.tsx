@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/app/(main)/components/ui/input";
+import { Button } from "@/app/(main)/components/ui/button";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

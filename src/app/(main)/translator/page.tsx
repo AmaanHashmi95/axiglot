@@ -1,4 +1,4 @@
-import Translator from "@/components/Translator";
+import Translator from "@/app/(main)/translator/Translator";
 
 export default function TranslatorPage() {
   return (

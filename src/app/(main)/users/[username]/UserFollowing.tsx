@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
-import UserAvatar from "@/components/UserAvatar";
+import UserAvatar from "../UserAvatar";
 import Link from "next/link";
-import FollowButtonWrapper from "@/components/FollowButtonWrapper"; // ← add this
+import FollowButtonWrapper from "../FollowButtonWrapper"; // ← add this
 
 interface Props {
   userId: string;

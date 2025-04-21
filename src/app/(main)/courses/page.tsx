@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import LanguageAccordion from "@/components/lessons/LanguageAccordion";
+import LanguageAccordion from "@/app/(main)/components/lessons/LanguageAccordion";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
-import BrowserWarning from "@/components/BrowserWarning";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
   title: "Courses",

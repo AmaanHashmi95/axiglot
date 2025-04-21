@@ -1,5 +1,5 @@
-import LessonProgressSidebar from "@/components/LessonProgressSidebar";
-import Feeds from "./Feeds";
+import LessonProgressSidebar from "@/app/(main)/components/LessonProgressSidebar";
+import Feeds from "./feeds/Feeds";
 
 export default function Home() {
   return (

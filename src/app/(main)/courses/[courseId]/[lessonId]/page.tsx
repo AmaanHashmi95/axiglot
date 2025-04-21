@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getLesson } from "@/lib/lesson";
-import LessonComponent from "@/components/lessons/LessonComponent";
+import LessonComponent from "@/app/(main)/components/lessons/LessonComponent";
 import { notFound } from "next/navigation";
 import { validateRequest } from "@/auth";
-import BrowserWarning from "@/components/BrowserWarning";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export default async function LessonPage({
   params,

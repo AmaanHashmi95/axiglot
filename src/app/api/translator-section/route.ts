@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import { validateRequest } from "@/auth";
 
 export async function POST(req: Request) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
   try {
     const { text, to, from } = await req.json();
     if (!text || !to) {
-      return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing parameters" },
+        { status: 400 },
+      );
     }
 
     console.log("Request received for translation:", { text, from, to });
@@ -17,7 +26,8 @@ export async function POST(req: Request) {
       {
         headers: {
           "Ocp-Apim-Subscription-Key": process.env.AZURE_TRANSLATOR_API_KEY_1!,
-          "Ocp-Apim-Subscription-Region": process.env.AZURE_TRANSLATOR_LOCATION!,
+          "Ocp-Apim-Subscription-Region":
+            process.env.AZURE_TRANSLATOR_LOCATION!,
           "Content-Type": "application/json",
         },
         params: {
@@ -25,10 +35,11 @@ export async function POST(req: Request) {
           from,
           to,
         },
-      }
+      },
     );
 
-    const translatedText = translationResponse.data[0]?.translations[0]?.text || "Translation error";
+    const translatedText =
+      translationResponse.data[0]?.translations[0]?.text || "Translation error";
     console.log("Translation successful:", translatedText);
 
     // Step 2: Transliterate full text (if applicable)
@@ -44,8 +55,10 @@ export async function POST(req: Request) {
           [{ Text: translatedText }],
           {
             headers: {
-              "Ocp-Apim-Subscription-Key": process.env.AZURE_TRANSLATOR_API_KEY_1!,
-              "Ocp-Apim-Subscription-Region": process.env.AZURE_TRANSLATOR_LOCATION!,
+              "Ocp-Apim-Subscription-Key":
+                process.env.AZURE_TRANSLATOR_API_KEY_1!,
+              "Ocp-Apim-Subscription-Region":
+                process.env.AZURE_TRANSLATOR_LOCATION!,
               "Content-Type": "application/json",
             },
             params: {
@@ -54,13 +67,19 @@ export async function POST(req: Request) {
               fromScript,
               toScript: "Latn",
             },
-          }
+          },
         );
 
         transliteratedText = transliterationResponse.data[0]?.text || "";
         console.log("Transliteration successful:", transliteratedText);
-      } catch (translitError: any) { // ✅ Explicitly cast error type
-        console.error("Transliteration failed:", translitError?.response?.data || translitError?.message || translitError);
+      } catch (translitError: any) {
+        // ✅ Explicitly cast error type
+        console.error(
+          "Transliteration failed:",
+          translitError?.response?.data ||
+            translitError?.message ||
+            translitError,
+        );
       }
     }
 
@@ -75,8 +94,10 @@ export async function POST(req: Request) {
           [{ Text: word }],
           {
             headers: {
-              "Ocp-Apim-Subscription-Key": process.env.AZURE_TRANSLATOR_API_KEY_1!,
-              "Ocp-Apim-Subscription-Region": process.env.AZURE_TRANSLATOR_LOCATION!,
+              "Ocp-Apim-Subscription-Key":
+                process.env.AZURE_TRANSLATOR_API_KEY_1!,
+              "Ocp-Apim-Subscription-Region":
+                process.env.AZURE_TRANSLATOR_LOCATION!,
               "Content-Type": "application/json",
             },
             params: {
@@ -84,10 +105,11 @@ export async function POST(req: Request) {
               from,
               to,
             },
-          }
+          },
         );
 
-        const translatedWord = wordTranslationResponse.data[0]?.translations[0]?.text || "";
+        const translatedWord =
+          wordTranslationResponse.data[0]?.translations[0]?.text || "";
         let transliteratedWord = "";
 
         if (["pa", "ur"].includes(to)) {
@@ -97,8 +119,10 @@ export async function POST(req: Request) {
               [{ Text: word }],
               {
                 headers: {
-                  "Ocp-Apim-Subscription-Key": process.env.AZURE_TRANSLATOR_API_KEY_1!,
-                  "Ocp-Apim-Subscription-Region": process.env.AZURE_TRANSLATOR_LOCATION!,
+                  "Ocp-Apim-Subscription-Key":
+                    process.env.AZURE_TRANSLATOR_API_KEY_1!,
+                  "Ocp-Apim-Subscription-Region":
+                    process.env.AZURE_TRANSLATOR_LOCATION!,
                   "Content-Type": "application/json",
                 },
                 params: {
@@ -107,24 +131,41 @@ export async function POST(req: Request) {
                   fromScript: to === "pa" ? "Guru" : "Arab",
                   toScript: "Latn",
                 },
-              }
+              },
             );
 
-            transliteratedWord = wordTransliterationResponse.data[0]?.text || "";
-          } catch (error: any) { // ✅ Explicitly cast error type
-            console.error(`Word transliteration failed for "${word}":`, error?.message || error);
+            transliteratedWord =
+              wordTransliterationResponse.data[0]?.text || "";
+          } catch (error: any) {
+            // ✅ Explicitly cast error type
+            console.error(
+              `Word transliteration failed for "${word}":`,
+              error?.message || error,
+            );
           }
         }
 
-        wordTranslations.push({ original: word, translation: translatedWord, transliteration: transliteratedWord });
-      } catch (error: any) { // ✅ Explicitly cast error type
-        console.error(`Word translation failed for "${word}":`, error?.message || error);
+        wordTranslations.push({
+          original: word,
+          translation: translatedWord,
+          transliteration: transliteratedWord,
+        });
+      } catch (error: any) {
+        // ✅ Explicitly cast error type
+        console.error(
+          `Word translation failed for "${word}":`,
+          error?.message || error,
+        );
       }
     }
 
-    return NextResponse.json({ translation: translatedText, transliteration: transliteratedText, wordTranslations });
-
-  } catch (error: any) { // ✅ Explicitly cast error type
+    return NextResponse.json({
+      translation: translatedText,
+      transliteration: transliteratedText,
+      wordTranslations,
+    });
+  } catch (error: any) {
+    // ✅ Explicitly cast error type
     console.error("Translation error:", error?.message || error);
     return NextResponse.json({ error: "Translation failed" }, { status: 500 });
   }

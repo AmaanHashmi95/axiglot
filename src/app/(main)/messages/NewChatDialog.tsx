@@ -1,12 +1,12 @@
-import LoadingButton from "@/components/LoadingButton";
+import LoadingButton from "@/app/(main)/components/LoadingButton";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+} from "@/app/(main)/components/ui/dialog";
+import { useToast } from "@/app/(main)/components/ui/use-toast";
 import UserAvatar from "@/components/UserAvatar";
 import useDebounce from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";

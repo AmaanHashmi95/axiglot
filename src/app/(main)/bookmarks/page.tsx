@@ -8,7 +8,7 @@ import SubtitleBookmarks from "@/app/(main)/bookmarks/SubtitleBookmarks";
 import LyricBookmarks from "@/app/(main)/bookmarks/LyricBookmarks";
 import ReadingBookmarks from "@/app/(main)/bookmarks/ReadingBookmarks";
 import TranslatorBookmarks from "./TranslatorBookmarks";
-import BrowserWarning from "@/components/BrowserWarning";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export default function Page() {
  const [selectedType, setSelectedType] = useState("Posts");

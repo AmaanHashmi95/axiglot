@@ -2,10 +2,10 @@ import { validateRequest, lucia } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import SessionProvider from "./SessionProvider";
-import Navbar from "./Navbar";
-import MenuBar from "./MenuBar";
+import Navbar from "./components/Navbar";
+import MenuBar from "./components/MenuBar";
 import { cookies } from "next/headers";
-import MobileMenu from "@/components/MobileMenu";
+import MobileMenu from "@/app/(main)/components/MobileMenu";
 
 export default async function Layout({
   children,

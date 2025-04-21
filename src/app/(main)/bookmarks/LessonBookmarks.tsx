@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import { Loader2, Bookmark, Volume2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import AudioRecorder from "@/components/ui/AudioRecorder";
+import { useToast } from "@/app/(main)/components/ui/use-toast";
+import AudioRecorder from "@/app/(main)/components/ui/AudioRecorder";
 
 interface Word {
   id: string;

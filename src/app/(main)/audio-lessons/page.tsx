@@ -2,10 +2,10 @@
 
 import { useEffect, useState, } from "react";
 import { useSearchParams } from "next/navigation";
-import AudioLessonChooser from "@/components/AudioLessonChooser";
-import AudioLessonPlayer from "@/components/AudioLessonPlayer";
+import AudioLessonChooser from "@/app/(main)/audio-lessons/AudioLessonChooser";
+import AudioLessonPlayer from "@/app/(main)/audio-lessons/AudioLessonPlayer";
 import { Loader2 } from "lucide-react";
-import BrowserWarning from "@/components/BrowserWarning";
+import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 interface AudioLesson {
   id: string;

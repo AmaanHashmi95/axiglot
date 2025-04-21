@@ -7,16 +7,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/app/(main)/components/ui/form";
+import { Input } from "@/app/(main)/components/ui/input";
 import { signUpSchema, SignUpValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { signUp } from "./actions";
-import { Button } from "@/components/ui/button";
-import { PasswordInput } from "@/components/PasswordInput";
-import LoadingButton from "@/components/LoadingButton";
+import { Button } from "@/app/(main)/components/ui/button";
+import { PasswordInput } from "@/app/(auth)/PasswordInput";
+import LoadingButton from "@/app/(main)/components/LoadingButton";
 
 export default function SignUpForm() {
   const [error, setError] = useState<string>();
