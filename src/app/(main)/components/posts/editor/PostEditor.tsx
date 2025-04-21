@@ -4,7 +4,7 @@
 import { useSession } from "@/app/(main)/SessionProvider";
 import LoadingButton from "@/app/(main)/components/LoadingButton";
 import { Button } from "@/app/(main)/components/ui/button";
-import UserAvatar from "@/components/UserAvatar";
+import UserAvatar from "../../../users/UserAvatar";
 import { cn } from "@/lib/utils";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
