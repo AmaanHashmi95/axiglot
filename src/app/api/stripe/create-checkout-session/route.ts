@@ -52,3 +52,4 @@ async function getOrCreateStripeCustomer(userId: string, email: string): Promise
 
   return customer.id;
 }
+
