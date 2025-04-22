@@ -6,6 +6,7 @@ import kyInstance from "@/lib/ky";
 import { Loader2, Bookmark, Volume2 } from "lucide-react";
 import { useToast } from "@/app/(main)/components/ui/use-toast";
 import AudioRecorder from "@/app/(main)/components/ui/AudioRecorder";
+import { useInfiniteBookmarks } from "@/hooks/useInfiniteBookmarks";
 
 interface Word {
   id: string;
@@ -35,26 +36,40 @@ interface LessonBookmarksProps {
   selectedLanguage: string;
 }
 
-export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksProps) {
+export default function LessonBookmarks({
+  selectedLanguage,
+}: LessonBookmarksProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const queryKey = ["lesson-bookmarks"];
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const { data: allBookmarks = [], status } = useQuery<LessonBookmark[]>({
-    queryKey,
-    queryFn: () => kyInstance.get("/api/lesson-bookmarks").json(),
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteBookmarks<LessonBookmark>("lesson-bookmarks", selectedLanguage);
+
+  const allBookmarks = data?.pages.flat() || [];
 
   const { mutate } = useMutation({
-    mutationFn: async ({ lessonId, questionId }: { lessonId: string; questionId: string }) => {
-      await kyInstance.delete("/api/lesson-bookmarks", { json: { lessonId, questionId } });
+    mutationFn: async ({
+      lessonId,
+      questionId,
+    }: {
+      lessonId: string;
+      questionId: string;
+    }) => {
+      await kyInstance.delete("/api/lesson-bookmarks", {
+        json: { lessonId, questionId },
+      });
     },
     onMutate: async ({ lessonId, questionId }) => {
       toast({ description: "Bookmark removed" });
       await queryClient.cancelQueries({ queryKey });
       queryClient.setQueryData(queryKey, (old: LessonBookmark[] | undefined) =>
-        old ? old.filter((b) => !(b.lessonId === lessonId && b.questionId === questionId)) : []
+        old
+          ? old.filter(
+              (b) => !(b.lessonId === lessonId && b.questionId === questionId),
+            )
+          : [],
       );
     },
     onSuccess: () => {
@@ -82,14 +97,18 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
     setActiveWordId(wordInstanceId);
     if (audioUrl) {
       const audio = new Audio(audioUrl);
-      audio.play().catch((error) => console.error("Audio playback failed:", error));
+      audio
+        .play()
+        .catch((error) => console.error("Audio playback failed:", error));
     }
   };
 
   const handlePlayQuestionAudio = (audioUrl: string | null | undefined) => {
     if (audioUrl && audioRef.current) {
       audioRef.current.src = audioUrl;
-      audioRef.current.play().catch((error) => console.error("Audio playback failed:", error));
+      audioRef.current
+        .play()
+        .catch((error) => console.error("Audio playback failed:", error));
     }
   };
 
@@ -108,11 +127,14 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
     };
   }, []);
 
-  const bookmarks = selectedLanguage === "All Languages"
-    ? allBookmarks
-    : allBookmarks.filter(
-        (b) => b.question.language?.toLowerCase() === selectedLanguage.toLowerCase()
-      );
+  const bookmarks =
+    selectedLanguage === "All Languages"
+      ? allBookmarks
+      : allBookmarks.filter(
+          (b) =>
+            b.question.language?.toLowerCase() ===
+            selectedLanguage.toLowerCase(),
+        );
 
   return (
     <div className="space-y-5">
@@ -121,8 +143,10 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
         <Loader2 className="mx-auto my-3 animate-spin" />
       ) : bookmarks.length > 0 ? (
         bookmarks.map((bookmark) => (
-          <div key={bookmark.id} className="p-4 border rounded-lg shadow">
-            <p className="text-sm text-gray-500">Lesson: {bookmark.lesson.title}</p>
+          <div key={bookmark.id} className="rounded-lg border p-4 shadow">
+            <p className="text-sm text-gray-500">
+              Lesson: {bookmark.lesson.title}
+            </p>
             <div className="text-lg">
               {bookmark.words.map((word, index) => {
                 const wordInstanceId = `${bookmark.id}-${word.id}-${index}`;
@@ -133,13 +157,16 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
                     className="word-container relative mx-1 cursor-pointer"
                     onMouseEnter={() => handleMouseEnter(wordInstanceId)}
                     onMouseLeave={() => handleMouseLeave(wordInstanceId)}
-                    onClick={() => handleWordClick(wordInstanceId, word.audioUrl)}
+                    onClick={() =>
+                      handleWordClick(wordInstanceId, word.audioUrl)
+                    }
                   >
-                    {activeWordId === wordInstanceId && word.transliteration && (
-                      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm text-white shadow-lg transition-opacity duration-200 ease-in-out">
-                        {word.transliteration}
-                      </span>
-                    )}
+                    {activeWordId === wordInstanceId &&
+                      word.transliteration && (
+                        <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 transform rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm text-white shadow-lg transition-opacity duration-200 ease-in-out">
+                          {word.transliteration}
+                        </span>
+                      )}
                     {word.text}
                   </span>
                 );
@@ -159,21 +186,35 @@ export default function LessonBookmarks({ selectedLanguage }: LessonBookmarksPro
               </div>
             )}
             {bookmark.question.audioUrl && (
-              <div className="mt-4 flex flex-col gap-2 left-1">
+              <div className="left-1 mt-4 flex flex-col gap-2">
                 <AudioRecorder audioUrl={bookmark.question.audioUrl} />
               </div>
             )}
             <button
               onClick={() =>
-                mutate({ lessonId: bookmark.lessonId, questionId: bookmark.questionId })
+                mutate({
+                  lessonId: bookmark.lessonId,
+                  questionId: bookmark.questionId,
+                })
               }
             >
-              <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
+              <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
             </button>
           </div>
         ))
       ) : (
-        <p className="text-center text-muted-foreground">No lesson bookmarks found.</p>
+        <p className="text-center text-muted-foreground">
+          No lesson bookmarks found.
+        </p>
+      )}
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage}
+          className="w-full rounded border py-2 text-center shadow hover:bg-gray-600"
+        >
+          {isFetchingNextPage ? "Loading more..." : "Load more"}
+        </button>
       )}
     </div>
   );

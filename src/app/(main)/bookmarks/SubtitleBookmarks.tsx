@@ -5,6 +5,7 @@ import kyInstance from "@/lib/ky";
 import { useRef } from "react";
 import AudioRecorder from "@/app/(main)/components/ui/AudioRecorder";
 import { Volume2, Bookmark, Loader2 } from "lucide-react";
+import { useInfiniteBookmarks } from "@/hooks/useInfiniteBookmarks";
 
 interface Props {
   selectedLanguage: string;
@@ -33,10 +34,12 @@ export default function SubtitleBookmarks({ selectedLanguage }: Props) {
   const queryClient = useQueryClient();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const { data: allBookmarks = [], status } = useQuery<SubtitleBookmark[]>({
-    queryKey,
-    queryFn: () => kyInstance.get("/api/subtitle-bookmarks").json(),
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteBookmarks<SubtitleBookmark>(
+      "subtitle-bookmarks",
+      selectedLanguage,
+    );
+  const allBookmarks = data?.pages.flat() || [];
 
   const { mutate } = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
@@ -59,12 +62,13 @@ export default function SubtitleBookmarks({ selectedLanguage }: Props) {
     }
   };
 
-  const bookmarks = selectedLanguage === "All Languages"
-    ? allBookmarks
-    : allBookmarks.filter(
-        (b: SubtitleBookmark) =>
-          b.language?.toLowerCase() === selectedLanguage.toLowerCase(),
-      );
+  const bookmarks =
+    selectedLanguage === "All Languages"
+      ? allBookmarks
+      : allBookmarks.filter(
+          (b: SubtitleBookmark) =>
+            b.language?.toLowerCase() === selectedLanguage.toLowerCase(),
+        );
 
   return (
     <div className="space-y-5">
@@ -76,11 +80,13 @@ export default function SubtitleBookmarks({ selectedLanguage }: Props) {
           const first = b.sentences[0];
 
           return (
-            <div key={b.id} className="rounded border p-4 shadow space-y-3">
+            <div key={b.id} className="space-y-3 rounded border p-4 shadow">
               <p className="text-sm text-gray-500">Video: {b.video.title}</p>
               <p className="text-sm text-gray-100">{first.text}</p>
               {first.bookmarkedEnglish && (
-                <p className="text-sm text-gray-100">{first.bookmarkedEnglish}</p>
+                <p className="text-sm text-gray-100">
+                  {first.bookmarkedEnglish}
+                </p>
               )}
               {first.bookmarkedTransliteration && (
                 <p className="text-sm text-gray-100">
@@ -91,13 +97,22 @@ export default function SubtitleBookmarks({ selectedLanguage }: Props) {
               <AudioRecorder audioUrl={first.audioUrl} />
 
               <button onClick={() => mutate({ id: b.id })}>
-                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
+                <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
               </button>
             </div>
           );
         })
       ) : (
         <p className="text-center">No subtitle bookmarks found.</p>
+      )}
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage}
+          className="w-full rounded border py-2 text-center shadow hover:bg-gray-600"
+        >
+          {isFetchingNextPage ? "Loading more..." : "Load more"}
+        </button>
       )}
     </div>
   );

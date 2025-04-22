@@ -26,13 +26,32 @@ export async function GET(req: NextRequest) {
   const { user } = await validateRequest();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const lang = searchParams.get("lang");
+  const skip = parseInt(searchParams.get("skip") || "0", 10);
+  const take = parseInt(searchParams.get("take") || "20", 10);
+
+  const languageMap: Record<string, string> = {
+    Punjabi: "pa",
+    Urdu: "ur",
+  };
+
+  const languageFilter =
+    lang && lang !== "All Languages" ? languageMap[lang] : undefined;
+
   const bookmarks = await prisma.translatorBookmark.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      ...(languageFilter && { language: languageFilter }),
+    },
     orderBy: { createdAt: "desc" },
+    skip,
+    take,
   });
 
   return NextResponse.json(bookmarks);
 }
+
 
 export async function DELETE(req: NextRequest) {
   const { user } = await validateRequest();

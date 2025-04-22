@@ -4,13 +4,26 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const { user } = await validateRequest();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(req.url);
+  const skip = parseInt(searchParams.get("skip") || "0", 10);
+  const take = parseInt(searchParams.get("take") || "20", 10);
+  const lang = searchParams.get("lang");
 
   const bookmarks = await prisma.lyricBookmark.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      ...(lang && lang !== "All Languages"
+        ? { song: { language: { equals: lang, mode: "insensitive" } } }
+        : {}),
+    },
     include: {
       song: { include: { targetSentences: true } },
     },
+    skip,
+    take,
   });
 
   const enriched = bookmarks.map((b) => {
@@ -37,9 +50,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const { user } = await validateRequest();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { songId, sentenceIds, words, translations, audioUrl, bookmarkedEnglish, bookmarkedTransliteration } = await req.json();
+  const {
+    songId,
+    sentenceIds,
+    words,
+    translations,
+    audioUrl,
+    bookmarkedEnglish,
+    bookmarkedTransliteration,
+  } = await req.json();
 
   const targetSentences = await prisma.lyricTargetSentence.findMany({
     where: { id: { in: sentenceIds } },
@@ -53,18 +75,19 @@ export async function POST(req: NextRequest) {
       });
 
       const shouldUpdate =
-        !current?.bookmarkedEnglish?.trim() && !current?.bookmarkedTransliteration?.trim();
+        !current?.bookmarkedEnglish?.trim() &&
+        !current?.bookmarkedTransliteration?.trim();
 
       if (!shouldUpdate) return null;
 
       return prisma.lyricTargetSentence.update({
         where: { id: s.id },
         data: {
-            bookmarkedEnglish,
-            bookmarkedTransliteration,
+          bookmarkedEnglish,
+          bookmarkedTransliteration,
         },
       });
-    })
+    }),
   );
 
   const bookmark = await prisma.lyricBookmark.create({
@@ -81,7 +104,8 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const { user } = await validateRequest();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await req.json();
   await prisma.lyricBookmark.delete({ where: { id } });

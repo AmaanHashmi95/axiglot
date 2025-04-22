@@ -7,9 +7,21 @@ export async function GET(req: NextRequest) {
     const { user } = await validateRequest();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
+    const { searchParams } = new URL(req.url);
+    const skip = parseInt(searchParams.get("skip") || "0", 10);
+    const take = parseInt(searchParams.get("take") || "20", 10);
+    const lang = searchParams.get("lang");
+
     const bookmarks = await prisma.lessonBookmark.findMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        ...(lang && lang !== "All Languages"
+          ? { question: { language: { equals: lang, mode: "insensitive" } } }
+          : {}),
+      },
       include: { lesson: true, question: true },
+      skip,
+      take,
     });
 
     return Response.json(bookmarks);

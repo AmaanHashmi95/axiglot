@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
-import { Bookmark, Loader2} from "lucide-react";
+import { Bookmark, Loader2 } from "lucide-react";
+import { useInfiniteBookmarks } from "@/hooks/useInfiniteBookmarks";
 
 interface Props {
   selectedLanguage: string;
@@ -36,10 +37,13 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
   const queryKey = ["reading-bookmarks"];
   const queryClient = useQueryClient();
 
-  const { data: allBookmarks = [], status } = useQuery<ReadingBookmark[]>({
-    queryKey,
-    queryFn: () => kyInstance.get("/api/reading-bookmarks").json(),
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteBookmarks<ReadingBookmark>(
+      "reading-bookmarks",
+      selectedLanguage,
+    );
+
+  const allBookmarks = data?.pages.flat() || [];
 
   const { mutate } = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
@@ -70,7 +74,7 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
         bookmarks.map((b) => (
           <div key={b.id} className="space-y-3 rounded border p-4 shadow">
             <p className="text-sm text-gray-500">Book: {b.book.title}</p>
-            <p className="flex flex-wrap text-md leading-relaxed text-gray-800">
+            <p className="text-md flex flex-wrap leading-relaxed text-gray-800">
               {b.words?.map((w, i) => {
                 const isPunctuation = /^[.,!?;:"'()\-—]+$/.test(w.word.text);
                 const isEndOfSentence = /[.!?]+$/.test(w.word.text);
@@ -119,12 +123,21 @@ export default function ReadingBookmarks({ selectedLanguage }: Props) {
             </p>
 
             <button onClick={() => mutate({ id: b.id })}>
-                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
-              </button>
+              <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
+            </button>
           </div>
         ))
       ) : (
         <p className="text-center">No reading bookmarks found.</p>
+      )}
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage}
+          className="w-full rounded border py-2 text-center shadow hover:bg-gray-600"
+        >
+          {isFetchingNextPage ? "Loading more..." : "Load more"}
+        </button>
       )}
     </div>
   );

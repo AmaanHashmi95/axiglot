@@ -5,6 +5,7 @@ import kyInstance from "@/lib/ky";
 import { useRef } from "react";
 import AudioRecorder from "@/app/(main)/components/ui/AudioRecorder";
 import { Volume2, Bookmark, Loader2 } from "lucide-react";
+import { useInfiniteBookmarks } from "@/hooks/useInfiniteBookmarks";
 
 interface Props {
   selectedLanguage: string;
@@ -33,10 +34,10 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
   const queryClient = useQueryClient();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const { data: allBookmarks = [], status } = useQuery<LyricBookmark[]>({
-    queryKey,
-    queryFn: () => kyInstance.get("/api/lyric-bookmarks").json(),
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteBookmarks<LyricBookmark>("lyric-bookmarks", selectedLanguage);
+
+  const allBookmarks = data?.pages.flat() || [];
 
   const { mutate } = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
@@ -46,7 +47,7 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
       queryClient.setQueryData(
         queryKey,
         (old: LyricBookmark[] | undefined) =>
-          old?.filter((b) => b.id !== id) || []
+          old?.filter((b) => b.id !== id) || [],
       );
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
@@ -59,11 +60,12 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
     }
   };
 
-  const bookmarks = selectedLanguage === "All Languages"
-    ? allBookmarks
-    : allBookmarks.filter(
-        (b) => b.language?.toLowerCase() === selectedLanguage.toLowerCase()
-      );
+  const bookmarks =
+    selectedLanguage === "All Languages"
+      ? allBookmarks
+      : allBookmarks.filter(
+          (b) => b.language?.toLowerCase() === selectedLanguage.toLowerCase(),
+        );
 
   return (
     <div className="space-y-5">
@@ -74,29 +76,41 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
         bookmarks.map((b) => {
           const first = b.sentences[0];
           return (
-            <div key={b.id} className="rounded border p-4 shadow space-y-3">
+            <div key={b.id} className="space-y-3 rounded border p-4 shadow">
               <p className="text-sm text-gray-500">Song: {b.song.title}</p>
               <p className="text-sm text-gray-100">{first.text}</p>
               {first.bookmarkedEnglish && (
-                <p className="text-sm text-gray-100">{first.bookmarkedEnglish}</p>
+                <p className="text-sm text-gray-100">
+                  {first.bookmarkedEnglish}
+                </p>
               )}
               {first.bookmarkedTransliteration && (
-                <p className="text-sm text-gray-100">{first.bookmarkedTransliteration}</p>
+                <p className="text-sm text-gray-100">
+                  {first.bookmarkedTransliteration}
+                </p>
               )}
               <button
                 className="btn btn-outline btn-xs flex items-center gap-2"
                 onClick={() => playAudio(first.audioUrl)}
-              >
-              </button>
+              ></button>
               <AudioRecorder audioUrl={first.audioUrl} />
               <button onClick={() => mutate({ id: b.id })}>
-                <Bookmark className="fill-[#00E2FF] text-[#00E2FF] mt-4" />
+                <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
               </button>
             </div>
           );
         })
       ) : (
         <p className="text-center">No lyric bookmarks found.</p>
+      )}
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          disabled={isFetchingNextPage}
+          className="w-full rounded border py-2 text-center shadow hover:bg-gray-600"
+        >
+          {isFetchingNextPage ? "Loading more..." : "Load more"}
+        </button>
       )}
     </div>
   );
