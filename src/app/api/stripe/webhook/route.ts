@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
 import prisma from "@/lib/prisma";
+import { Resend } from 'resend';
+
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const resend = new Resend(process.env.RESEND_API_KEY!);
+
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature")!;
@@ -36,6 +40,31 @@ export async function POST(req: NextRequest) {
         stripeSubscriptionId: subscription?.id ?? null,
       },
     });
+
+    if (userId) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+    
+      if (user && user.email) {
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM!,
+          to: user.email,
+          subject: "Thank you for subscribing!",
+          html: `
+            <p>Hi ${user.displayName || user.username || ''},</p>
+            <p>Thank you for subscribing to Axiglot!</p>
+            <p><strong>Plan:</strong> Monthly Access</p>
+            <p><strong>Amount:</strong> £9.99 per month</p>
+            <p>You can manage or cancel your subscription anytime by visiting your account settings:</p>
+            <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/settings">Manage Subscription</a></p>
+            <p>If you have any questions, feel free to reply to this email.</p>
+            <p>Thanks for being part of Axiglot!</p>
+          `,
+        });
+    
+        console.log(`Payment confirmation email sent to ${user.email}`);
+      }
+    }
+    
   }
 
   // 🛑 2. Cancel or expire = revoke access
@@ -68,6 +97,64 @@ export async function POST(req: NextRequest) {
       });
     }
   }
+
+ // ✅ 3. Renewal payment succeeded (fixed version)
+ if (event.type === "invoice.paid") {
+  const invoice = event.data.object as { subscription?: string | Stripe.Subscription };
+
+  if (invoice.subscription) {
+    const subscriptionId = typeof invoice.subscription === "string"
+      ? invoice.subscription
+      : invoice.subscription.id;
+
+    const user = await prisma.user.findFirst({
+      where: { stripeSubscriptionId: subscriptionId },
+    });
+
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          hasSubscription: true,
+        },
+      });
+    }
+  }
+}
+
+// ❌ 4. Payment failed (optional but recommended)
+if (event.type === "invoice.payment_failed") {
+  const invoice = event.data.object as { subscription?: string | Stripe.Subscription };
+
+  if (invoice.subscription) {
+    const subscriptionId = typeof invoice.subscription === "string"
+      ? invoice.subscription
+      : invoice.subscription.id;
+
+    const user = await prisma.user.findFirst({
+      where: { stripeSubscriptionId: subscriptionId },
+    });
+
+    if (user && user.email) {
+      await resend.emails.send({
+        from: process.env.EMAIL_FROM!,
+        to: user.email,
+        subject: "Payment Failed - Please Update Your Card",
+        html: `
+          <p>Hi ${user.displayName || user.username || ''},</p>
+          <p>We couldn't process your latest subscription payment. Please update your payment details to keep your access active.</p>
+          <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/settings">Update Payment Method</a></p>
+          <p>Thanks!</p>
+        `,
+      });
+
+      console.log(`Payment failure email sent to ${user.email}`);
+    }
+  }
+}
+
+
+
 
   return new Response("ok", { status: 200 });
 }
