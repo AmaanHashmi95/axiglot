@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
         console.log(`Payment confirmation email sent to ${user.email}`);
       }
     }
-    
+  
   }
 
   // 🛑 2. Cancel or expire = revoke access
