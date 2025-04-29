@@ -114,7 +114,7 @@ export default function SignUpForm() {
                 <FormLabel className="text-sm">
                   I agree to the{" "}
                   <Link
-                    href="/policies.html"
+                    href="https://www.axiglot.com/policies.html"
                     target="_blank"
                     className="underline"
                   >
