@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
       html: `
         <p>Thanks for subscribing! Click below to verify your email:</p>
         <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+        <p>You may have to check your spam folder.</p>
+        <p>If you do not receive an email, please email info@axiglot.com</p>
       `,
     });
 

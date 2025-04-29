@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
             <p><strong>Amount:</strong> £9.99 per month</p>
             <p>You can manage or cancel your subscription anytime by visiting your account settings:</p>
             <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/settings">Manage Subscription</a></p>
+            <p>You can view our terms & conditions here <a href="https://www.axiglot.com/policies.html" className="underline text-primary">Axiglot Policies</a></p>
             <p>If you have any questions, feel free to reply to this email.</p>
             <p>Thanks for being part of Axiglot!</p>
           `,
