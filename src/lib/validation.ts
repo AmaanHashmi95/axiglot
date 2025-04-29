@@ -9,6 +9,9 @@ export const signUpSchema = z.object({
     "Only letters, numbers, - and _ allowed",
   ),
   password: requiredString.min(8, "Must be at least 8 characters"),
+  terms: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the terms and conditions" }),
+  }),
 });
 
 export type SignUpValues = z.infer<typeof signUpSchema>;
