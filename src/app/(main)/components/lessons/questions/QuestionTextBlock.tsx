@@ -1,6 +1,6 @@
 "use client";
 import LessonBookmarkButton from "../LessonBookmarkButton";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 
 interface Word {
@@ -41,6 +41,8 @@ export default function QuestionTextBlock({
   playWordAudio,
 }: Props) {
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   const [showTranslation, setShowTranslation] = useState(false);  
   
   const handleMouseEnter = (wordId: string) => {
@@ -52,19 +54,37 @@ export default function QuestionTextBlock({
   };
 
   const handleWordClick = (wordId: string, audioUrl?: string | null) => {
-    setLastClickedWord(wordId);
-    setActiveWordId(wordId);
-    if (audioUrl) {
-      console.log("🔊 Playing word audio:", audioUrl);
-      playWordAudio(audioUrl);
+    const isSameWord = lastClickedWord === wordId;
+    if (isSameWord) {
+      setLastClickedWord(null);
+      setActiveWordId(null);
     } else {
-      console.warn("⚠️ No audio URL found for word ID:", wordId);
+      setLastClickedWord(wordId);
+      setActiveWordId(wordId);
+      if (audioUrl) {
+        console.log("🔊 Playing word audio:", audioUrl);
+        playWordAudio(audioUrl);
+      } else {
+        console.warn("⚠️ No audio URL found for word ID:", wordId);
+      }
     }
   };
   
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setActiveWordId(null);
+        setLastClickedWord(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+  
+  
 
   return (
-    <div className="mt-4 text-xl sm:text-2xl md:text-3xl text-center">
+    <div ref={containerRef} className="mt-4 text-xl sm:text-2xl md:text-3xl text-center">
       {words.length > 0 ? (
         <div className="flex flex-wrap justify-center items-center gap-1">
           {words.map((word) => (
