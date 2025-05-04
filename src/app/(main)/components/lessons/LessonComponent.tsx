@@ -395,7 +395,7 @@ export default function LessonComponent({
 
             {/* Render Draw Canvas for DRAW_INPUT questions */}
             {question.type === "DRAW_INPUT" && (
-              <DrawCanvas onSubmit={handleDrawingSubmit} />
+              <DrawCanvas key={question.id} onSubmit={handleDrawingSubmit} />
             )}
 
             {/* Audio Recorder Section */}
