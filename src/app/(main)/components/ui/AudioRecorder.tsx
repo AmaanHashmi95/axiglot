@@ -21,10 +21,15 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
     setLogMessages((prev) => [...prev.slice(-4), msg]);
   };
 
-  const getSupportedMimeType = () => {
-    const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
-    return mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
-  };
+  const isIOS = typeof window !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+const getSupportedMimeType = () => {
+  const preferred = isIOS
+    ? ["audio/mp4", "audio/wav"]
+    : ["audio/webm", "audio/ogg", "audio/mp4", "audio/wav"];
+  return preferred.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+};
+
 
   const playQuestionAudio = () => {
     if (!audioUrl) return;
