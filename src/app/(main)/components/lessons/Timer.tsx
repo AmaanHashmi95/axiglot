@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface TimerProps {
   timeLeft: number;
@@ -8,28 +8,35 @@ interface TimerProps {
 
 export default function Timer({ timeLeft, onTimeout, timerRunning }: TimerProps) {
   const [time, setTime] = useState(timeLeft);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasTimedOut = useRef(false);
 
+  // Reset on props change
   useEffect(() => {
     setTime(timeLeft);
-  }, [timeLeft]);
+    hasTimedOut.current = false;
+    clearInterval(intervalRef.current!);
 
-  useEffect(() => {
-    if (!timerRunning || time <= 0) {
-      return; // Stop updating when timer is stopped or reaches 0
+    if (timerRunning && timeLeft > 0) {
+      intervalRef.current = setInterval(() => {
+        setTime(prev => {
+          if (prev <= 1 && !hasTimedOut.current) {
+            hasTimedOut.current = true;
+            clearInterval(intervalRef.current!);
+            onTimeout();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-    
-    const interval = setInterval(() => {
-      setTime((prev) => prev - 1);
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [time, onTimeout, timerRunning]);
+    return () => clearInterval(intervalRef.current!);
+  }, [timeLeft, timerRunning, onTimeout]);
 
   return (
     <span className="rounded bg-white px-2 py-1 text-lg font-bold text-[hsl(24,9.8%,10%)]">
-    {time}s
+      {time}s
     </span>
   );
 }
-
-
