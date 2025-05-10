@@ -10,31 +10,20 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
   const [recording, setRecording] = useState(false);
   const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [logMessages, setLogMessages] = useState<string[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlaybackRef = useRef<HTMLAudioElement | null>(null);
 
-  const log = (msg: string) => {
-    console.log(msg);
-    setLogMessages((prev) => [...prev.slice(-4), msg]);
+  const getSupportedMimeType = () => {
+    const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
+    return mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
   };
-
-  const isIOS = typeof window !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
-
-const getSupportedMimeType = () => {
-  const preferred = isIOS
-    ? ["audio/mp4", "audio/wav"]
-    : ["audio/webm", "audio/ogg", "audio/mp4", "audio/wav"];
-  return preferred.find((type) => MediaRecorder.isTypeSupported(type)) || "";
-};
-
 
   const playQuestionAudio = () => {
     if (!audioUrl) return;
     const audio = new Audio(audioUrl);
-    audio.play().catch((err) => log("❌ Question audio play failed: " + err));
+    audio.play().catch(console.error);
   };
 
   const startRecording = async () => {
@@ -45,10 +34,7 @@ const getSupportedMimeType = () => {
       audioChunksRef.current = [];
 
       const mimeType = getSupportedMimeType();
-      if (!mimeType) {
-        log("❌ No supported MIME type");
-        return;
-      }
+      if (!mimeType) return;
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
@@ -60,18 +46,18 @@ const getSupportedMimeType = () => {
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        log(`📦 audioBlob.size = ${audioBlob.size}`);
+        console.log("📦 audioBlob.size:", audioBlob.size);
 
         if (audioBlob.size === 0) {
           setError("Recording failed — please try again.");
-          log("⚠️ Empty blob - likely failure in Safari.");
+          console.warn("⚠️ Blob is empty; recording failed.");
           return;
         }
 
         const newUrl = URL.createObjectURL(audioBlob);
         if (userAudioUrl) URL.revokeObjectURL(userAudioUrl);
         setUserAudioUrl(newUrl);
-        log("✅ New blob URL set: " + newUrl);
+        console.log("✅ New blob URL set:", newUrl);
       };
 
       mediaRecorderRef.current = mediaRecorder;
@@ -79,11 +65,11 @@ const getSupportedMimeType = () => {
 
       timeoutRef.current = setTimeout(() => {
         if (mediaRecorder.state === "recording") {
-          stopRecording();
+          setTimeout(() => stopRecording(), 150); // slight delay to finalize blob
         }
       }, 10000);
     } catch (err) {
-      log("❌ Mic access error: " + err);
+      console.error("Mic access error:", err);
       setError("Microphone access error.");
     }
   };
@@ -92,24 +78,23 @@ const getSupportedMimeType = () => {
     mediaRecorderRef.current?.stop();
     setRecording(false);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    log("⏹️ Stopped recording");
   };
 
   const playRecordedAudio = () => {
     if (!userAudioUrl || !audioPlaybackRef.current) {
-      log("❌ No user audio to play");
+      console.warn("❌ No audio URL or playback element");
       return;
     }
 
+    console.log("▶️ Playing recording:", userAudioUrl);
     audioPlaybackRef.current.src = userAudioUrl;
-    log("▶️ Playing recording: " + userAudioUrl);
 
     setTimeout(() => {
       audioPlaybackRef.current
         ?.play()
-        .then(() => log("🎧 Playback started"))
+        .then(() => console.log("🎧 Playback started"))
         .catch((err) => {
-          log("❌ Playback error: " + err);
+          console.error("Playback failed:", err);
           setError("Unable to play your recording.");
         });
     }, 50);
@@ -157,19 +142,8 @@ const getSupportedMimeType = () => {
       </div>
 
       {error && (
-        <div className="text-sm text-red-500 mt-1 text-center max-w-xs">
-          {error}
-        </div>
+        <div className="text-sm text-red-500 mt-1 text-center max-w-xs">{error}</div>
       )}
-
-      <div className="mt-2 w-full max-w-md rounded bg-gray-100 p-2 text-xs font-mono text-left text-gray-700 shadow-inner whitespace-pre-wrap break-all">
-        <strong>Debug Log:</strong>
-        <div className="mt-1">
-          {logMessages.map((line, i) => (
-            <div key={i}>• {line}</div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
