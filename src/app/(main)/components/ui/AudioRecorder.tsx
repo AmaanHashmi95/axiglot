@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+"use client";
+import { useState, useRef, useEffect } from "react";
 import { FaVolumeUp, FaStop, FaMicrophone } from "react-icons/fa";
 
 interface AudioRecorderProps {
@@ -11,6 +12,7 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioPlaybackRef = useRef<HTMLAudioElement | null>(null);
 
   const getSupportedMimeType = () => {
     const mimeTypes = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"];
@@ -19,7 +21,8 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
 
   const playQuestionAudio = () => {
     if (!audioUrl) return;
-    new Audio(audioUrl).play().catch(console.error);
+    const audio = new Audio(audioUrl);
+    audio.play().catch(console.error);
   };
 
   const startRecording = async () => {
@@ -34,19 +37,26 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        setUserAudioUrl(URL.createObjectURL(audioBlob));
+        const newUrl = URL.createObjectURL(audioBlob);
+
+        if (userAudioUrl) URL.revokeObjectURL(userAudioUrl); // Clean up old blob
+        setUserAudioUrl(newUrl);
       };
 
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
 
       timeoutRef.current = setTimeout(() => {
-        if (mediaRecorder.state === "recording") stopRecording();
+        if (mediaRecorder.state === "recording") {
+          stopRecording();
+        }
       }, 10000);
     } catch (err) {
       console.error("Mic access error:", err);
@@ -60,12 +70,29 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
   };
 
   const playRecordedAudio = () => {
-    if (!userAudioUrl) return;
-    new Audio(userAudioUrl).play().catch(console.error);
+    if (!userAudioUrl || !audioPlaybackRef.current) return;
+    audioPlaybackRef.current.src = userAudioUrl;
+
+    // iOS WebKit playback fix
+    setTimeout(() => {
+      audioPlaybackRef.current?.play().catch((err) => {
+        console.error("User audio playback failed:", err);
+      });
+    }, 50);
   };
+
+  useEffect(() => {
+    return () => {
+      if (userAudioUrl) URL.revokeObjectURL(userAudioUrl);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      setUserAudioUrl(null);
+    };
+  }, []);
 
   return (
     <div className="mt-6 flex justify-center gap-4">
+      <audio ref={audioPlaybackRef} hidden />
+
       {/* Play Question Audio */}
       <button
         onClick={playQuestionAudio}
