@@ -400,7 +400,7 @@ export default function LessonComponent({
 
             {/* Audio Recorder Section */}
             {question.audioUrl && (
-              <AudioRecorder audioUrl={question.audioUrl} />
+              <AudioRecorder key={question.id} audioUrl={question.audioUrl} />
             )}
           </div>
         </div>
