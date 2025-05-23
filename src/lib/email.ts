@@ -6,7 +6,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await resend.emails.send({
     from: process.env.EMAIL_FROM!,
     to,
-    subject: "Reset your Bugbook password",
+    subject: "Reset your Axiglot password",
     html: `
       <p>Hello,</p>
       <p>You requested to reset your password. Click the button below to reset it:</p>

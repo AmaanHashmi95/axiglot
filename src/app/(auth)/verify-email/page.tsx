@@ -35,7 +35,7 @@ export default function VerifyEmailPage() {
         <p className="text-green-600 text-lg">Email verified! Redirecting to login...</p>
       )}
       {message === 'error' && (
-        <p className="text-red-600 text-lg">Invalid or expired link. Please try again.</p>
+        <p className="text-red-600 text-lg">Invalid or expired link. Please try again. If it does not work, please email info@axiglot.com so we can resolve the issue for you.</p>
       )}
     </main>
   );

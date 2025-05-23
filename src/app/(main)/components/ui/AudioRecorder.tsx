@@ -82,7 +82,7 @@ export default function AudioRecorder({ audioUrl }: AudioRecorderProps) {
       userAudioRef.current.currentTime = 0;
       userAudioRef.current.play().catch((err) => {
         console.error("Playback error:", err);
-        setError("Could not play your recording.");
+        setError("Sorry there’s a glitch! Give it a minute and try again.");
       });
     }
   };

@@ -30,8 +30,8 @@ export default function Page() {
       <div className="text-center space-y-3">
         <h1 className="text-2xl font-bold">Thanks for subscribing!</h1>
         {status === 'loading' && <p>Finalizing setup…</p>}
-        {status === 'sent' && <p>Check your email to verify your account.</p>}
-        {status === 'error' && <p className="text-red-600">Something went wrong. Please contact support.</p>}
+        {status === 'sent' && <p>Check your email to verify your account, you might have to check your spam. If you do not receive anything, please email info@axiglot.com so we can resolve the issue for you.</p>}
+        {status === 'error' && <p className="text-red-600">Something went wrong. Please email info@axiglot.com so we can resolve the issue for you.</p>}
       </div>
     </main>
   );
