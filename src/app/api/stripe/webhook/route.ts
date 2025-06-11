@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
             <p>Hi ${user.displayName || user.username || ''},</p>
             <p>Thank you for subscribing to Axiglot!</p>
             <p><strong>Plan:</strong> Monthly Access</p>
-            <p><strong>Amount:</strong> £9.99 per month</p>
+            <p><strong>Amount:</strong> £19.99 per month</p>
             <p>You can manage or cancel your subscription anytime by visiting your account settings:</p>
             <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/settings">Manage Subscription</a></p>
             <p>You can view our terms & conditions here <a href="https://www.axiglot.com/policies.html" className="underline text-primary">Axiglot Policies</a></p>
@@ -140,11 +140,11 @@ if (event.type === "invoice.payment_failed") {
       await resend.emails.send({
         from: process.env.EMAIL_FROM!,
         to: user.email,
-        subject: "Payment Failed - Please Update Your Card",
+        subject: "Payment Failed - Please Ensure Sufficient Funds",
         html: `
           <p>Hi ${user.displayName || user.username || ''},</p>
-          <p>We couldn't process your latest subscription payment. Please update your payment details to keep your access active.</p>
-          <p><a href="${process.env.NEXT_PUBLIC_BASE_URL}/settings">Update Payment Method</a></p>
+          <p>We couldn't process your latest subscription payment. Please ensure your account has sufficient funds.</p>
+          <p>Login will not be permitted until payment is successful. if the issue persists, please email info@axiglot.com</p>
           <p>Thanks!</p>
         `,
       });
