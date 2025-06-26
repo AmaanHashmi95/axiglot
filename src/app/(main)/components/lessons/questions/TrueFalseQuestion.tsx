@@ -12,9 +12,9 @@ export default function TrueFalseQuestion({
   return (
     <div className="mt-6 flex justify-center gap-6">
       <button
-        onClick={() => handleAnswer("true")}
+        onClick={() => handleAnswer("TRUE")}
         className={`px-6 py-2 rounded-md text-white transition shadow-md ${
-          selectedAnswer === "true"
+          selectedAnswer === "TRUE"
             ? "bg-[#00E2FF]"
             : "bg-[#00E2FF] opacity-80 hover:opacity-100"
         }`}
@@ -22,9 +22,9 @@ export default function TrueFalseQuestion({
         True
       </button>
       <button
-        onClick={() => handleAnswer("false")}
+        onClick={() => handleAnswer("FALSE")}
         className={`px-6 py-2 rounded-md text-white transition shadow-md ${
-          selectedAnswer === "false"
+          selectedAnswer === "FALSE"
             ? "bg-[#FF8A00]"
             : "bg-[#FF8A00] opacity-80 hover:opacity-100"
         }`}
