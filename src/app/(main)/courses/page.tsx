@@ -36,11 +36,6 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Urdu</h1>
               </div>
             </Link>
-            <Link href="/courses/a1urdu">
-              <div className="rounded-2xl bg-gradient-to-r from-[#00605b] to-[#cfcfcf] p-5 shadow-sm w-full">
-                <h1 className="text-left text-xl font-bold">A2 Urdu</h1>
-              </div>
-            </Link>
           </div>
         </LanguageAccordion>
       </div>
