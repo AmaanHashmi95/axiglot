@@ -3,6 +3,7 @@ import Link from "next/link";
 import LanguageAccordion from "@/app/(main)/components/lessons/LanguageAccordion";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import iran from "@/assets/iran-flag.webp";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
@@ -18,14 +19,14 @@ export default function Page() {
           <h1 className="text-center text-2xl font-bold">Courses</h1>
         </div>
 
-        <LanguageAccordion title="Punjabi" flagSrc={india} flagAlt="Punjabi Icon">
+        <LanguageAccordion title="Farsi" flagSrc={iran} flagAlt="Farsi Icon">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             <Link href="/courses/a1farsi">
-              <div className="rounded-2xl bg-gradient-to-r from-[#00bf63] to-[#ff8a00] p-5 shadow-sm w-full">
+              <div className="rounded-2xl bg-gradient-to-r from-[#00bf63] to-[#ef2626] p-5 shadow-sm w-full">
                 <h1 className="text-left text-xl font-bold">A1 Farsi</h1>
               </div>
             </Link>
-            {/* Add more Punjabi levels here */}
+            {/* Add more Farsi levels here */}
           </div>
         </LanguageAccordion>
 
