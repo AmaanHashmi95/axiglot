@@ -3,7 +3,7 @@ import Link from "next/link";
 import LanguageAccordion from "@/app/(main)/components/lessons/LanguageAccordion";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
-import iran from "@/public/flags/iran-flag.webp";
+import iran from "@/assets/iran-flag.webp";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
