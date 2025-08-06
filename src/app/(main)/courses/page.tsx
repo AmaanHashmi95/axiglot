@@ -20,6 +20,17 @@ export default function Page() {
 
         <LanguageAccordion title="Punjabi" flagSrc={india} flagAlt="Punjabi Icon">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <Link href="/courses/a1farsi">
+              <div className="rounded-2xl bg-gradient-to-r from-[#00bf63] to-[#ff8a00] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A1 Farsi</h1>
+              </div>
+            </Link>
+            {/* Add more Punjabi levels here */}
+          </div>
+        </LanguageAccordion>
+
+        <LanguageAccordion title="Punjabi" flagSrc={india} flagAlt="Punjabi Icon">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             <Link href="/courses/a1punjabi">
               <div className="rounded-2xl bg-gradient-to-r from-[#00bf63] to-[#ff8a00] p-5 shadow-sm w-full">
                 <h1 className="text-left text-xl font-bold">A1 Punjabi</h1>
