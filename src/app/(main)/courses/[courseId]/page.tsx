@@ -5,6 +5,7 @@ import ProgressBar from "@/app/(main)/components/lessons/ProgressBar";
 import Image from "next/image";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import iran from "@/assets/iran-flag.webp";
 import blueTick from "@/assets/Blue Tick.png";
 import LessonGroupAccordion from "@/app/(main)/components/lessons/LessonGroupAccordion";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
@@ -17,6 +18,8 @@ function getGradientClass(language?: string | null) {
       return "bg-gradient-to-r from-[#00605b] to-[#cfcfcf]";
     case "swahili":
       return "bg-gradient-to-r from-black via-red-500 to-[#00605b]";
+    case "farsi":
+      return "bg-gradient-to-r from-black via-red-500 to-[#00605b]";
     default:
       return "bg-card";
   }
@@ -28,6 +31,8 @@ function getFlagForLanguage(language?: string | null) {
       return { src: india, alt: "Punjabi Flag" };
     case "urdu":
       return { src: pakistan, alt: "Urdu Flag" };
+    case "farsi":
+      return { src: iran, alt: "Farsi Flag" };
     default:
       return null;
   }
