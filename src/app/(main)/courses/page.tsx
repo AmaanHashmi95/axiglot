@@ -4,7 +4,7 @@ import LanguageAccordion from "@/app/(main)/components/lessons/LanguageAccordion
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import iran from "@/assets/iran-flag.webp";
-import russian from "@/assets/russian-flag.png";
+import russian from "@/assets/russia-flag.png";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
