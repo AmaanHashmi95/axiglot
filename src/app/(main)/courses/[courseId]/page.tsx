@@ -19,7 +19,7 @@ function getGradientClass(language?: string | null) {
     case "swahili":
       return "bg-gradient-to-r from-black via-red-500 to-[#00605b]";
     case "farsi":
-      return "bg-gradient-to-r from-black via-red-500 to-[#00605b]";
+      return "bg-gradient-to-r from-[#00bf63] to-[#ef2626]";
     default:
       return "bg-card";
   }
