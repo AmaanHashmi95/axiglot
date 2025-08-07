@@ -4,6 +4,7 @@ import LanguageAccordion from "@/app/(main)/components/lessons/LanguageAccordion
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import iran from "@/assets/iran-flag.webp";
+import russian from "@/assets/russian-flag.png";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
@@ -38,6 +39,17 @@ export default function Page() {
               </div>
             </Link>
             {/* Add more Punjabi levels here */}
+          </div>
+        </LanguageAccordion>
+
+        <LanguageAccordion title="Russian" flagSrc={russian} flagAlt="Russian Icon">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <Link href="/courses/a1russian">
+              <div className="rounded-2xl bg-gradient-to-r from-[#ef2626] to-[#4a86e8] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A1 Russian</h1>
+              </div>
+            </Link>
+            {/* Add more Russian levels here */}
           </div>
         </LanguageAccordion>
 
