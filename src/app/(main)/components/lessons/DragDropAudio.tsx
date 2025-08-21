@@ -1,10 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+"use client";
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 
 interface DragDropAudioProps {
   audioUrl: string;
   words: string[];
   correctOrder: string[];
   onSubmit: (isCorrect: boolean) => void;
+  /** Force RTL behavior if known; if omitted, auto-detect from glyphs */
+  isRTL?: boolean;
 }
 
 export default function DragDropAudio({
@@ -12,6 +15,7 @@ export default function DragDropAudio({
   words,
   correctOrder,
   onSubmit,
+  isRTL,
 }: DragDropAudioProps) {
   const [userOrder, setUserOrder] = useState<(string | null)[]>(
     Array(correctOrder.length).fill(null)
@@ -21,33 +25,55 @@ export default function DragDropAudio({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wordWidthsRef = useRef<Record<string, number>>({});
 
+  // Why: auto-enable RTL even if prop not passed
+  const autoIsRTL = useMemo(() => {
+    const sample = [...words, ...correctOrder].join(" ");
+    // Arabic, Persian, Urdu, Hebrew ranges
+    return /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(sample);
+  }, [words, correctOrder]);
+
+  const rtl = typeof isRTL === 'boolean' ? isRTL : autoIsRTL;
+
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.play().catch((err) => console.error('Audio playback failed:', err));
+      audioRef.current
+        .play()
+        .catch((err) => console.error('Audio playback failed:', err));
     }
   }, []);
 
+  // Why: robust deep equality & NFC normalization; avoids hidden form diffs
+  const normalizeToken = useCallback((s: string | null) =>
+     (s ?? '').replace(/[\u00A0\u202F]/g, ' ').trim().normalize('NFC'), []);
+const arraysEqual = useCallback((a: (string | null)[], b: string[]) => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (normalizeToken(a[i]) !== normalizeToken(b[i])) return false;
+    }
+    return true;
+  }, [normalizeToken]);
+
   useEffect(() => {
     if (!userOrder.includes(null)) {
-      const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
+      const isCorrect = arraysEqual(userOrder, correctOrder);
       setIsCorrectAnswer(isCorrect);
       onSubmit(isCorrect);
     }
-  }, [userOrder, correctOrder, onSubmit]);
+  }, [userOrder, correctOrder, arraysEqual, onSubmit]);
 
-  const handleSelectWord = (word: string) => {
-    const emptyIndex = userOrder.indexOf(null);
+  const handleSelectWord = (word: string, idxInBank: number) => {
+    const emptyIndex = userOrder.indexOf(null); // RTL fills from right because index 0 is rightmost in dir=rtl
     if (emptyIndex !== -1) {
       const newOrder = [...userOrder];
       newOrder[emptyIndex] = word;
       setUserOrder(newOrder);
 
-      const indexToRemove = availableWords.indexOf(word);
-      if (indexToRemove !== -1) {
-        const newAvailable = [...availableWords];
-        newAvailable.splice(indexToRemove, 1);
-        setAvailableWords(newAvailable);
-      }
+      // remove by index from the current bank (supports duplicates)
+      setAvailableWords((prev) => {
+        const next = [...prev];
+        next.splice(idxInBank, 1);
+        return next;
+      });
     }
   };
 
@@ -57,7 +83,7 @@ export default function DragDropAudio({
       const newOrder = [...userOrder];
       newOrder[index] = null;
       setUserOrder(newOrder);
-      setAvailableWords([...availableWords, wordToRemove]);
+      setAvailableWords((prev) => [...prev, wordToRemove]);
       setIsCorrectAnswer(null);
     }
   };
@@ -67,7 +93,11 @@ export default function DragDropAudio({
       <audio ref={audioRef} src={audioUrl} autoPlay />
 
       {/* Drop Zones */}
-      <div className="flex flex-wrap justify-center gap-2 mt-6">
+      <div
+        className="flex flex-wrap justify-center gap-2 mt-6"
+        // Why: make visual order match logical index order for RTL
+        dir={rtl ? 'rtl' : 'ltr'}
+      >
         {userOrder.map((word, index) => {
           let bgClass = word
             ? 'bg-gray-600'
@@ -95,11 +125,11 @@ export default function DragDropAudio({
       </div>
 
       {/* Word Bank */}
-      <div className="flex flex-wrap justify-center gap-3 mt-8">
+      <div className="flex flex-wrap justify-center gap-3 mt-8" dir={rtl ? 'rtl' : 'ltr'}>
         {availableWords.map((word, index) => (
           <div
-            key={index}
-            onClick={() => handleSelectWord(word)}
+            key={`${word}-${index}`}
+            onClick={() => handleSelectWord(word, index)}
             ref={(el) => {
               if (el) wordWidthsRef.current[word] = el.offsetWidth;
             }}

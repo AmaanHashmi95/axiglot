@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import ProgressBar from "@/app/(main)/components/lessons/ProgressBar";
 import DrawCanvas from "@/app/(main)/components/lessons/DrawCanvas";
 import DragDropAudio from "@/app/(main)/components/lessons/DragDropAudio";
@@ -54,17 +54,14 @@ interface LessonComponentProps {
   userId: string; // Add userId as a prop
 }
 
-export default function LessonComponent({
-  lesson,
-  userId,
-}: LessonComponentProps) {
+export default function LessonComponent({ lesson, userId }: LessonComponentProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState<string>("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [performance, setPerformance] = useState<number[]>([]); // Tracks 1 for correct, 0 for incorrect
+  const [performance, setPerformance] = useState<number[]>([]);
   const [lessonComplete, setLessonComplete] = useState(false);
   const [incorrectQuestions, setIncorrectQuestions] = useState<number[]>([]);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
@@ -85,42 +82,37 @@ export default function LessonComponent({
     });
   }, []);
 
-  async function saveProgress(lessonId: string, progress: number) {
-    try {
-      const res = await fetch("/api/lesson/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lessonId, progress }),
-      });
+  // --- RTL helpers ---
+  const isRTLLanguage = (lang?: string | null) => {
+    const l = (lang || '').toLowerCase();
+    return [
+      'arabic','ar','farsi','fa','persian','ur','urdu','he','hebrew','ps','pashto','ku','kurdish'
+    ].includes(l);
+  };
 
-      if (!res.ok) {
-        console.error("Failed to save progress:", await res.text());
-      }
-    } catch (error) {
-      console.error("Error saving progress:", error);
-    }
-  }
+  const dragDropIsRTL = useMemo(() => {
+    if (isRTLLanguage(question.language)) return true;
+    // Auto-detect from glyphs as fallback
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(
+      `${question.correctAnswer} ${question.options?.join(' ') ?? ''}`
+    );
+  }, [question.language, question.correctAnswer, question.options]);
 
   // Adjust timer duration based on performance
   useEffect(() => {
-    console.log(`User ID: ${userId}`); // Log the userId to verify it's passed correctly
     if (question.hasTimer) {
       const baseTime = 10;
-      const adjustment = performance
-        .slice(-3)
-        .reduce((sum, val) => sum + val, 0);
+      const adjustment = performance.slice(-3).reduce((sum, val) => sum + val, 0);
       const newTime = baseTime + adjustment * 5;
       setTimeLeft(newTime > 10 ? newTime : 10);
-      setTimerRunning(true); // Start the timer when a new question loads
+      setTimerRunning(true);
     } else {
       setTimeLeft(null);
       setTimerRunning(false);
     }
   }, [currentQuestion, question.hasTimer, performance, userId]);
 
-  const handleTimeout = () => {
-    setFeedback("Time’s up!");
-  };
+  const handleTimeout = () => setFeedback("Time’s up!");
 
   const playAudio = (audioUrl: string | null | undefined) => {
     if (audioUrl && audioRef.current) {
@@ -134,77 +126,41 @@ export default function LessonComponent({
   };
 
   const playWordAudio = (audioUrl?: string) => {
-    if (!audioUrl) {
-      console.error("No audio URL provided.");
-      return;
-    }
-
-    console.log("Attempting to play audio from:", audioUrl);
-
+    if (!audioUrl) return;
     const audio = new Audio(audioUrl);
-    audio
-      .play()
-      .then(() => console.log("Audio playing..."))
-      .catch((error) => console.error("Audio playback failed:", error));
+    audio.play().catch((error) => console.error("Audio playback failed:", error));
   };
 
-  // Handle speak-and-answer submission
   const handleSpeakSubmit = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setFeedback("Correct!");
-      playSound("correct");
-    } else {
-      setFeedback("Try again.");
-      playSound("incorrect");
-    }
+    setFeedback(isCorrect ? "Correct!" : "Try again.");
+    playSound(isCorrect ? "correct" : "incorrect");
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
 
-  // Handle submission for drag-and-drop audio questions
   const handleDropSubmit = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setFeedback("Correct!");
-      playSound("correct");
-    } else {
-      setFeedback("Try again.");
-      playSound("incorrect");
-    }
+    setFeedback(isCorrect ? "Correct!" : "Try again.");
+    playSound(isCorrect ? "correct" : "incorrect");
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
 
-  // Handle listen-and-type submission
   const handleListenSubmit = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setFeedback("Correct!");
-      playSound("correct");
-    } else {
-      setFeedback("Try again.");
-      playSound("incorrect");
-    }
+    setFeedback(isCorrect ? "Correct!" : "Try again.");
+    playSound(isCorrect ? "correct" : "incorrect");
     setIsAnswerCorrect(isCorrect);
     if (isCorrect) setTimerRunning(false);
   };
 
-  // Handle answer selection or text input submission
   const handleAnswer = (option: string) => {
     const isCorrect = option === question.correctAnswer;
-    if (isCorrect) {
-      setFeedback("Correct!");
-      playSound("correct");
-    } else {
-      setFeedback(
-        `Incorrect! The correct answer is: ${question.correctAnswer}`,
-      );
-      playSound("incorrect");
-    }
+    setFeedback(isCorrect ? "Correct!" : `Incorrect! The correct answer is: ${question.correctAnswer}`);
+    playSound(isCorrect ? "correct" : "incorrect");
     setSelectedAnswer(option);
     setIsAnswerCorrect(isCorrect);
-    if (isCorrect) setTimerRunning(false); // Stop the timer
+    if (isCorrect) setTimerRunning(false);
   };
 
-  // Handle submission of canvas drawing
   const handleDrawingSubmit = (dataUrl: string) => {
     console.log("Drawing submitted:", dataUrl);
     setFeedback("Drawing submitted successfully!");
@@ -217,7 +173,7 @@ export default function LessonComponent({
       setFeedback("Correct!");
       playSound("correct");
       setIsAnswerCorrect(true);
-      setTimerRunning(false); // Stop the timer
+      setTimerRunning(false);
     } else {
       setFeedback("Try again.");
       playSound("incorrect");
@@ -233,7 +189,7 @@ export default function LessonComponent({
 
     setFeedback(null);
     setSelectedAnswer(null);
-    setIsAnswerCorrect(false); // Reset for the next question
+    setIsAnswerCorrect(false);
 
     if (incorrectQuestions.length > 0) {
       setCurrentQuestion(incorrectQuestions[0]);
@@ -245,30 +201,35 @@ export default function LessonComponent({
       setLessonComplete(isLessonCompleted);
       if (isLessonCompleted) playSound("complete");
       saveCompletion(lesson.id, isLessonCompleted);
-      // 🎉 Fire confetti
-      confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.6 },
-      });
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
     }
   };
 
-  const saveCompletion = async (lessonId: string, completed: boolean) => {
+  async function saveCompletion(lessonId: string, completed: boolean) {
     try {
       const res = await fetch("/api/lesson/progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessonId, completed }),
       });
-
-      if (!res.ok) {
-        console.error("Failed to save completion status:", await res.text());
-      }
+      if (!res.ok) console.error("Failed to save completion status:", await res.text());
     } catch (error) {
       console.error("Error saving completion status:", error);
     }
-  };
+  }
+
+  async function saveProgress(lessonId: string, progress: number) {
+    try {
+      const res = await fetch("/api/lesson/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId, progress }),
+      });
+      if (!res.ok) console.error("Failed to save progress:", await res.text());
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
+  }
 
   const savePartialProgress = () => {
     const totalQuestions = lesson.questions.length;
@@ -280,7 +241,7 @@ export default function LessonComponent({
   const handleBack = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
-      setFeedback(null); // Clear feedback when going back
+      setFeedback(null);
       setLessonComplete(false);
     }
   };
@@ -288,11 +249,7 @@ export default function LessonComponent({
   return (
     <div className="lesson-container">
       <ProgressBar
-        progress={
-          lessonComplete
-            ? 100
-            : ((currentQuestion + 1) / lesson.questions.length) * 100
-        }
+        progress={lessonComplete ? 100 : ((currentQuestion + 1) / lesson.questions.length) * 100}
       />
 
       {lessonComplete ? (
@@ -305,11 +262,7 @@ export default function LessonComponent({
             <p className="text-xl font-semibold sm:text-2xl md:text-3xl">
               {question.content}{" "}
               {question.hasTimer && timeLeft !== null && (
-                <Timer
-                  timeLeft={timeLeft}
-                  onTimeout={handleTimeout}
-                  timerRunning={timerRunning}
-                />
+                <Timer timeLeft={timeLeft} onTimeout={handleTimeout} timerRunning={timerRunning} />
               )}
             </p>
 
@@ -328,36 +281,26 @@ export default function LessonComponent({
             {feedback && (
               <div className="mt-6 flex justify-center">
                 {feedback === "Correct!" ? (
-                  <Image
-                    src="/icons/Correct.png"
-                    alt="Correct"
-                    width={412}
-                    height={68}
-                    className="h-68 w-412 sm:h-68 sm:w-412"
-                  />
+                  <Image src="/icons/Correct.png" alt="Correct" width={412} height={68} className="h-68 w-412 sm:h-68 sm:w-412" />
                 ) : (
-                  <Image
-                    src="/icons/TryAgain.png"
-                    alt="Incorrect"
-                    width={412}
-                    height={68}
-                    className="h-34 w-206 sm:h-34 sm:w-206"
-                  />
+                  <Image src="/icons/TryAgain.png" alt="Incorrect" width={412} height={68} className="h-34 w-206 sm:h-34 sm:w-206" />
                 )}
               </div>
             )}
 
-            {/* Render Drag and Drop Audio for DRAG_DROP_AUDIO Question Type */}
+            {/* DRAG_DROP_AUDIO */}
             {question.type === "DRAG_DROP_AUDIO" && question.options && (
               <DragDropAudio
                 audioUrl={question.audioUrl!}
                 words={question.options}
-                correctOrder={question.correctAnswer.split(" ")}
+                // Why: robust splitting for RTL (handles non-breaking spaces)
+                correctOrder={question.correctAnswer.replace(/\u00A0|\u202F/g, ' ').trim().split(/\s+/)}
                 onSubmit={handleDropSubmit}
+                isRTL={dragDropIsRTL}
               />
             )}
 
-            {/* Render Listen and Type for LISTEN_AND_TYPE Question Type */}
+            {/* LISTEN_AND_TYPE */}
             {question.type === "LISTEN_AND_TYPE" && question.audioUrl && (
               <ListenAndType
                 audioUrl={question.audioUrl}
@@ -367,23 +310,17 @@ export default function LessonComponent({
               />
             )}
 
-            {/* Audio Preview Question */}
+            {/* AUDIO_PREVIEW */}
             {question.type === "AUDIO_PREVIEW" && question.options && (
-              <AudioPreviewQuestion
-                options={question.options}
-                audioUrl={question.audioUrl}
-                playAudio={playAudio}
-              />
+              <AudioPreviewQuestion options={question.options} audioUrl={question.audioUrl} playAudio={playAudio} />
             )}
 
-            {/* True/False Question */}
+            {/* TRUE_FALSE */}
             {question.type === "TRUE_FALSE" && (
-              <TrueFalseQuestion
-                selectedAnswer={selectedAnswer}
-                handleAnswer={handleAnswer}
-              />
+              <TrueFalseQuestion selectedAnswer={selectedAnswer} handleAnswer={handleAnswer} />
             )}
 
+            {/* MULTIPLE_CHOICE */}
             {question.type === "MULTIPLE_CHOICE" && question.options && (
               <MultipleChoiceQuestion
                 options={question.options}
@@ -393,12 +330,12 @@ export default function LessonComponent({
               />
             )}
 
-            {/* Render Draw Canvas for DRAW_INPUT questions */}
+            {/* DRAW_INPUT */}
             {question.type === "DRAW_INPUT" && (
               <DrawCanvas key={question.id} onSubmit={handleDrawingSubmit} />
             )}
 
-            {/* Audio Recorder Section */}
+            {/* Audio Recorder */}
             {question.audioUrl && (
               <AudioRecorder key={`audio-${question.id}`} audioUrl={question.audioUrl} />
             )}
@@ -410,10 +347,7 @@ export default function LessonComponent({
         {!lessonComplete && (
           <div>
             {currentQuestion > 0 && (
-              <button
-                onClick={handleBack}
-                className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600"
-              >
+              <button onClick={handleBack} className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600">
                 Back
               </button>
             )}
@@ -425,15 +359,11 @@ export default function LessonComponent({
             <button
               onClick={handleNext}
               className={`rounded-md bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-5 py-2 text-white transition ${
-                !isAnswerCorrect && !isSkippable
-                  ? "cursor-not-allowed opacity-50"
-                  : ""
+                !isAnswerCorrect && !isSkippable ? "cursor-not-allowed opacity-50" : ""
               }`}
               disabled={!isAnswerCorrect && !isSkippable}
             >
-              {currentQuestion < lesson.questions.length - 1
-                ? "Next"
-                : "Finish"}
+              {currentQuestion < lesson.questions.length - 1 ? "Next" : "Finish"}
             </button>
           )}
         </div>
