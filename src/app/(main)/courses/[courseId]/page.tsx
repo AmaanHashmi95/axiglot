@@ -7,6 +7,8 @@ import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import iran from "@/assets/iran-flag.webp";
 import russian from "@/assets/russia-flag.png";
+import portuguese from "@/assets/brazil-flag.png";
+import swahili from "@/assets/kenya-flag.png";
 import blueTick from "@/assets/Blue Tick.png";
 import LessonGroupAccordion from "@/app/(main)/components/lessons/LessonGroupAccordion";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
@@ -23,6 +25,10 @@ function getGradientClass(language?: string | null) {
       return "bg-gradient-to-r from-[#00bf63] to-[#ef2626]";
     case "russian":
       return "bg-gradient-to-r from-[#ef2626] to-[#4a86e8]";
+    case "portuguese":
+      return "bg-gradient-to-r from-[#009440] to-[#ffcb00]";
+    case "swahili":
+      return "bg-gradient-to-r from-black via-red-500 to-[#008C51]";
     default:
       return "bg-card";
   }
@@ -38,6 +44,10 @@ function getFlagForLanguage(language?: string | null) {
       return { src: iran, alt: "Farsi Flag" };
     case "russian":
       return { src: russian, alt: "Russian Flag" };
+    case "portuguese":
+      return { src: portuguese, alt: "Portuguese Flag" };
+    case "swahili":
+      return { src: swahili, alt: "Swahili Flag" };
     default:
       return null;
   }

@@ -5,6 +5,8 @@ import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
 import iran from "@/assets/iran-flag.webp";
 import russian from "@/assets/russia-flag.png";
+import portuguese from "@/assets/brazil-flag.png";
+import swahili from "@/assets/kenya-flag.png";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export const metadata: Metadata = {
@@ -31,6 +33,17 @@ export default function Page() {
           </div>
         </LanguageAccordion>
 
+        <LanguageAccordion title="Portuguese" flagSrc={portuguese} flagAlt="Portuguese Icon">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <Link href="/courses/a1portuguese">
+              <div className="rounded-2xl bg-gradient-to-r from-[#009440] to-[#ffcb00] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A1 Portuguese</h1>
+              </div>
+            </Link>
+            {/* Add more Portuguese levels here */}
+          </div>
+        </LanguageAccordion>
+
         <LanguageAccordion title="Punjabi" flagSrc={india} flagAlt="Punjabi Icon">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             <Link href="/courses/a1punjabi">
@@ -50,6 +63,17 @@ export default function Page() {
               </div>
             </Link>
             {/* Add more Russian levels here */}
+          </div>
+        </LanguageAccordion>
+
+        <LanguageAccordion title="Swahili" flagSrc={swahili} flagAlt="Swahili Icon">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <Link href="/courses/a1swahili">
+              <div className="rounded-2xl bg-gradient-to-r from-black via-red-500 to-[#008C51] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A1 Swahili</h1>
+              </div>
+            </Link>
+            {/* Add more Swahili levels here */}
           </div>
         </LanguageAccordion>
 
