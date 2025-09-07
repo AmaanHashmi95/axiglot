@@ -11,6 +11,10 @@ interface VideoChooserProps {
 const languageFlags: Record<string, string> = {
   Punjabi: "/flags/india-flag.png",
   Urdu: "/flags/pakistan-flag.png",
+  Swahili: "/flags/kenya-flag.png",
+  Farsi: "/flags/iran-flag.webp",
+  Portuguese: "/flags/brazil-flag.png",
+  Russian: "/flags/russia-flag.png",
 };
 
 export default function VideoChooser({
@@ -167,7 +171,7 @@ function VideoCarousel({
           >
             <div className="flex h-32 w-full items-center justify-center">
               <Image
-                src={video.imageUrl || "/icons/Video.png"}
+                src={video.imageUrl || "/icons/PlayButton.png"}
                 alt={video.title}
                 width={130}
                 height={120}

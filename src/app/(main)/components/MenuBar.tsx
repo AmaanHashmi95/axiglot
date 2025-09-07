@@ -11,7 +11,7 @@ import library from "@/assets/My Library.png";
 import tv from "@/assets/TV.png";
 import music from "@/assets/Music.png";
 import reading from "@/assets/Reading.png";
-import learngo from "@/assets/Learn on the go.png";
+import audio from "@/assets/AudioLessons.png";
 import translator from "@/assets/Translator.png";
 import settings from "@/assets/Settings.png";
 import UserButton from "../users/UserButton";
@@ -78,12 +78,12 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
       >
         <Link href="/audio-lessons">
           <Image
-            src={learngo} // Add your image in the public/icons directory
-            alt="Learn on the Go"
+            src={audio} // Add your image in the public/icons directory
+            alt="Audio Lessons"
             width={32}
             height={32}
           />
-          <span className="hidden lg:inline">Learn Go</span>
+          <span className="hidden lg:inline">Audio Lessons</span>
         </Link>
       </Button>
       <Button

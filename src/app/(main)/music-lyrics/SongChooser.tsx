@@ -11,6 +11,10 @@ interface SongChooserProps {
 const languageFlags: Record<string, string> = {
   Punjabi: "/flags/india-flag.png",
   Urdu: "/flags/pakistan-flag.png",
+  Swahili: "/flags/kenya-flag.png",
+  Farsi: "/flags/iran-flag.webp",
+  Portuguese: "/flags/brazil-flag.png",
+  Russian: "/flags/russia-flag.png",
 };
 
 export default function SongChooser({
@@ -167,7 +171,7 @@ function SongCarousel({
           >
             <div className="flex h-32 w-full items-center justify-center">
               <Image
-                src={song.imageUrl || "/icons/Music.png"}
+                src={song.imageUrl || "/icons/MusicNote.png"}
                 alt={song.title}
                 width={120}
                 height={120}

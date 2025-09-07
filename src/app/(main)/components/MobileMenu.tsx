@@ -12,7 +12,7 @@ import menuIcon from "@/assets/Mobile Menu.png";
 import tv from "@/assets/TV.png";
 import music from "@/assets/Music.png";
 import reading from "@/assets/Reading.png";
-import learngo from "@/assets/Learn on the go.png";
+import audio from "@/assets/AudioLessons.png";
 import translator from "@/assets/Translator.png";
 import settings from "@/assets/Settings.png";
 
@@ -52,8 +52,8 @@ export default function MobileMenu() {
             </Link>
 
             <Link href="/audio-lessons" className="flex flex-col items-center justify-center gap-1">
-              <Image src={learngo} alt="Learn on the Go" width={40} height={40} />
-              <span className="text-sm">Learn Go</span>
+              <Image src={audio} alt="Audio Lessons" width={40} height={40} />
+              <span className="text-sm">Audio Lessons</span>
             </Link>
 
             <Link href="/tv" className="flex flex-col items-center justify-center gap-1">

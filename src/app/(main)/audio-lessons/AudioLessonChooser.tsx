@@ -177,7 +177,7 @@ function AudioLessonCarousel({
           >
             <div className="h-32 w-32">
               <Image
-                src={lesson.imageUrl || "/icons/Music.png"}
+                src={lesson.imageUrl || "/icons/Headphones.png"}
                 alt={lesson.title}
                 width={120}
                 height={120}
