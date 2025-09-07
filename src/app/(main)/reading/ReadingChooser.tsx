@@ -12,6 +12,10 @@ interface ReadingChooserProps {
 const languageFlags: Record<string, string> = {
   Punjabi: "/flags/india-flag.png",
   Urdu: "/flags/pakistan-flag.png",
+  Swahili: "/flags/kenya-flag.png",
+  Farsi: "/flags/iran-flag.webp",
+  Portuguese: "/flags/brazil-flag.png",
+  Russian: "/flags/russia-flag.png",
 };
 
 export default function ReadingChooser({

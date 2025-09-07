@@ -8,7 +8,7 @@ import { ChevronDown } from "lucide-react";
 
 
 const itemTypes = ["Posts", "Lessons", "Subtitles", "Lyrics", "Reading", "Translator"];
-const languages = ["All Languages", "Punjabi", "Urdu"];
+const languages = ["All Languages", "Punjabi", "Urdu", "Swahili", "Farsi", "Portuguese", "Russian"];
 
 
 interface BookmarkFiltersProps {

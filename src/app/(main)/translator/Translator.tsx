@@ -7,6 +7,10 @@ import { ChevronDown } from "lucide-react";
 const languages = [
   { code: "pa", name: "Punjabi" },
   { code: "ur", name: "Urdu" },
+  { code: "sw", name: "Swahili" },
+  { code: "fa", name: "Farsi" },
+  { code: "pt", name: "Portuguese" },
+  { code: "ru", name: "Russian" },
 ];
 
 export default function Translator() {
