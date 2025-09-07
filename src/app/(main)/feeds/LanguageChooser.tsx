@@ -7,6 +7,10 @@ import Image, { StaticImageData } from "next/image";
 import { ChevronDown } from "lucide-react";
 import india from "@/assets/india-flag.png";
 import pakistan from "@/assets/pakistan-flag.png";
+import kenya from "@/assets/kenya-flag.png";
+import iran from "@/assets/iran-flag.webp";
+import russia from "@/assets/russia-flag.png";
+import brazil from "@/assets/brazil-flag.png";
 import global from "@/assets/Global.png";
 
 interface Language {
@@ -18,6 +22,10 @@ const languages: Language[] = [
   { name: "Global", flag: global },
   { name: "Punjabi", flag: india },
   { name: "Urdu", flag: pakistan },
+  { name: "Swahili", flag: kenya },
+  { name: "Farsi", flag: iran },
+  { name: "Russian", flag: russia },
+  { name: "Portuguese", flag: brazil },
 ];
 
 interface LanguageChooserProps {
