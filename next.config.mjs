@@ -26,6 +26,7 @@ const nextConfig = {
   },
   rewrites: () => {
     return [
+      { source: "/icons/Music.png", destination: "/icons/Headphones.png" },
       {
         source: "/hashtag/:tag",
         destination: "/search?q=%23:tag",
