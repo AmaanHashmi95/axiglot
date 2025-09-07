@@ -27,11 +27,6 @@ const nextConfig = {
   rewrites: () => {
     return [
       {
-      source: "/icons/Music.png",
-      has: [{ type: "header", key: "referer", value: ".*/audio-lessons.*" }],
-      destination: "/icons/Headphones.png",
-    },
-      {
         source: "/hashtag/:tag",
         destination: "/search?q=%23:tag",
       },
