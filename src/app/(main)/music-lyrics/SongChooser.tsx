@@ -171,7 +171,7 @@ function SongCarousel({
           >
             <div className="flex h-32 w-full items-center justify-center">
               <Image
-                src={song.imageUrl || "/icons/MusicNote.png"}
+                src={song.imageUrl || "/icons/Music.png"}
                 alt={song.title}
                 width={120}
                 height={120}

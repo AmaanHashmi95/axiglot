@@ -171,7 +171,7 @@ function VideoCarousel({
           >
             <div className="flex h-32 w-full items-center justify-center">
               <Image
-                src={video.imageUrl || "/icons/PlayButton.png"}
+                src={video.imageUrl || "/icons/Video.png"}
                 alt={video.title}
                 width={130}
                 height={120}
