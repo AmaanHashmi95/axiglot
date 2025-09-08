@@ -20,12 +20,12 @@ interface Language {
 
 const languages: Language[] = [
   { name: "Global", flag: global },
-  { name: "Punjabi", flag: india },
-  { name: "Urdu", flag: pakistan },
-  { name: "Swahili", flag: kenya },
   { name: "Farsi", flag: iran },
-  { name: "Russian", flag: russia },
   { name: "Portuguese", flag: brazil },
+  { name: "Punjabi", flag: india },
+  { name: "Russian", flag: russia },
+  { name: "Swahili", flag: kenya },
+  { name: "Urdu", flag: pakistan },
 ];
 
 interface LanguageChooserProps {
