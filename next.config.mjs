@@ -20,7 +20,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "u8ombuwywmnulg03.public.blob.vercel-storage.com", // ✅ Allow images from this host
-        pathname: "/*",
+        pathname: "/**",
       },
     ],
   },
