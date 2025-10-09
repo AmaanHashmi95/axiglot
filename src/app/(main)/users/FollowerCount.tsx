@@ -17,7 +17,6 @@ export default function FollowerCount({
 
   return (
     <span>
-      Followers:{" "}
       <span className="font-semibold">{formatNumber(data.followers)}</span>
     </span>
   );
