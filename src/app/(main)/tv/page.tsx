@@ -118,6 +118,7 @@ export default function Page() {
           onSelectVideo={handleSelectVideo}
         />
       )}
+      <>More videos will be uploaded very shortly - watch this space</>
     </div>
   );
 }

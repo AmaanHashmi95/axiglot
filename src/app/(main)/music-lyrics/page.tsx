@@ -74,7 +74,7 @@ export default function Page() {
           onSelectSong={setSelectedSong}
         />
       )}
-
+<>More music will be uploaded very shortly - watch this space</>
       {/* Add padding to ensure space for MusicPlayer */}
       <div className="pb-24"></div>
 

@@ -81,6 +81,7 @@ export default function Page() {
           onSelectBook={handleSelectBook}
         />
       )}
+      <>More articles will be uploaded very shortly - watch this space</>
     </div>
   );
 }
