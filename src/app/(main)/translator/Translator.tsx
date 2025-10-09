@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import TranslatorBookmarkButton from "./TranslatorBookmarkButton";
 import { ChevronDown } from "lucide-react";
 
 const languages = [
@@ -100,13 +99,6 @@ export default function Translator() {
         >
           <strong>Translation:</strong>
           <p>{translatedText}</p>
-          <TranslatorBookmarkButton
-            sourceText={text}
-            translatedText={translatedText}
-            transliteration={transliteratedText}
-            language={to}
-            words={wordBreakdown}
-          />
         </div>
       )}
 

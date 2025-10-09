@@ -7,7 +7,6 @@ import LessonBookmarks from "@/app/(main)/bookmarks/LessonBookmarks";
 import SubtitleBookmarks from "@/app/(main)/bookmarks/SubtitleBookmarks";
 import LyricBookmarks from "@/app/(main)/bookmarks/LyricBookmarks";
 import ReadingBookmarks from "@/app/(main)/bookmarks/ReadingBookmarks";
-import TranslatorBookmarks from "./TranslatorBookmarks";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 
 export default function Page() {
@@ -39,7 +38,6 @@ export default function Page() {
        {selectedType === "Subtitles" && (<SubtitleBookmarks selectedLanguage={selectedLanguage} />)}
        {selectedType === "Lyrics" && (<LyricBookmarks selectedLanguage={selectedLanguage} />)}
        {selectedType === "Reading" && (<ReadingBookmarks selectedLanguage={selectedLanguage} />)}
-       {selectedType === "Translator" && <TranslatorBookmarks selectedLanguage={selectedLanguage} />}
      </div>
    </main>
  );
