@@ -51,7 +51,11 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Punjabi</h1>
               </div>
             </Link>
-            {/* Add more Punjabi levels here */}
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#59b88a] to-[#cbab86] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Coming Soon</h1>
+              </div>
+            </Link>
           </div>
         </LanguageAccordion>
 
