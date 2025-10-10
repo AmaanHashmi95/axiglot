@@ -54,6 +54,39 @@ interface LessonComponentProps {
   userId: string; // Add userId as a prop
 }
 
+function buildCorrectOrderFromOptions(correctAnswer: string, options: string[]) {
+  const norm = (s: string) => s.replace(/[\u00A0\u202F]/g, " ").trim().normalize("NFC");
+  const hay = norm(correctAnswer);
+
+  const taken: Array<{ start: number; end: number }> = [];
+
+  const findNextIndex = (needle: string) => {
+    let from = 0;
+    while (from <= hay.length) {
+      const idx = hay.indexOf(needle, from);
+      if (idx === -1) return -1;
+      const range = { start: idx, end: idx + needle.length };
+      const overlaps = taken.some(t => !(range.end <= t.start || range.start >= t.end));
+      if (!overlaps) {
+        taken.push(range);
+        return idx;
+      }
+      from = idx + 1;
+    }
+    return -1;
+  };
+
+  const withPos = options.map(opt => {
+    const pos = findNextIndex(norm(opt));
+    return { opt, pos };
+  });
+
+  const anyMissing = withPos.some(x => x.pos === -1);
+  if (anyMissing) return options.slice();
+
+  return withPos.sort((a, b) => a.pos - b.pos).map(x => x.opt);
+}
+
 export default function LessonComponent({ lesson, userId }: LessonComponentProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -255,7 +288,11 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
   return (
     <div className="lesson-container">
       <ProgressBar
-        progress={lessonComplete ? 100 : ((currentQuestion + 1) / lesson.questions.length) * 100}
+        progress={
+          lessonComplete
+            ? 100
+            : ((currentQuestion + 1) / lesson.questions.length) * 100
+        }
       />
 
       {lessonComplete ? (
@@ -268,7 +305,11 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
             <p className="text-xl font-semibold sm:text-2xl md:text-3xl">
               {question.content}{" "}
               {question.hasTimer && timeLeft !== null && (
-                <Timer timeLeft={timeLeft} onTimeout={handleTimeout} timerRunning={timerRunning} />
+                <Timer
+                  timeLeft={timeLeft}
+                  onTimeout={handleTimeout}
+                  timerRunning={timerRunning}
+                />
               )}
             </p>
 
@@ -287,9 +328,21 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
             {feedback && (
               <div className="mt-6 flex justify-center">
                 {feedback === "Correct!" ? (
-                  <Image src="/icons/Correct.png" alt="Correct" width={412} height={68} className="h-68 w-412 sm:h-68 sm:w-412" />
+                  <Image
+                    src="/icons/Correct.png"
+                    alt="Correct"
+                    width={412}
+                    height={68}
+                    className="h-68 w-412 sm:h-68 sm:w-412"
+                  />
                 ) : (
-                  <Image src="/icons/TryAgain.png" alt="Incorrect" width={412} height={68} className="h-34 w-206 sm:h-34 sm:w-206" />
+                  <Image
+                    src="/icons/TryAgain.png"
+                    alt="Incorrect"
+                    width={412}
+                    height={68}
+                    className="h-34 w-206 sm:h-34 sm:w-206"
+                  />
                 )}
               </div>
             )}
@@ -299,8 +352,11 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
               <DragDropAudio
                 audioUrl={question.audioUrl!}
                 words={question.options}
-                // Why: robust splitting for RTL (handles non-breaking spaces)
-                correctOrder={question.correctAnswer.replace(/\u00A0|\u202F/g, ' ').trim().split(/\s+/)}
+                // ✅ Build a correct order that respects multi-word options
+                correctOrder={buildCorrectOrderFromOptions(
+                  question.correctAnswer,
+                  question.options,
+                )}
                 onSubmit={handleDropSubmit}
                 isRTL={dragDropIsRTL}
               />
@@ -318,12 +374,19 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
             {/* AUDIO_PREVIEW */}
             {question.type === "AUDIO_PREVIEW" && question.options && (
-              <AudioPreviewQuestion options={question.options} audioUrl={question.audioUrl} playAudio={playAudio} />
+              <AudioPreviewQuestion
+                options={question.options}
+                audioUrl={question.audioUrl}
+                playAudio={playAudio}
+              />
             )}
 
             {/* TRUE_FALSE */}
             {question.type === "TRUE_FALSE" && (
-              <TrueFalseQuestion selectedAnswer={selectedAnswer} handleAnswer={handleAnswer} />
+              <TrueFalseQuestion
+                selectedAnswer={selectedAnswer}
+                handleAnswer={handleAnswer}
+              />
             )}
 
             {/* MULTIPLE_CHOICE */}
@@ -343,7 +406,10 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
 
             {/* Audio Recorder */}
             {question.audioUrl && (
-              <AudioRecorder key={`audio-${question.id}`} audioUrl={question.audioUrl} />
+              <AudioRecorder
+                key={`audio-${question.id}`}
+                audioUrl={question.audioUrl}
+              />
             )}
           </div>
         </div>
@@ -353,7 +419,10 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
         {!lessonComplete && (
           <div>
             {currentQuestion > 0 && (
-              <button onClick={handleBack} className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600">
+              <button
+                onClick={handleBack}
+                className="rounded-md bg-gray-500 px-5 py-2 text-white transition hover:bg-gray-600"
+              >
                 Back
               </button>
             )}
@@ -365,11 +434,15 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
             <button
               onClick={handleNext}
               className={`rounded-md bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-5 py-2 text-white transition ${
-                !isAnswerCorrect && !isSkippable ? "cursor-not-allowed opacity-50" : ""
+                !isAnswerCorrect && !isSkippable
+                  ? "cursor-not-allowed opacity-50"
+                  : ""
               }`}
               disabled={!isAnswerCorrect && !isSkippable}
             >
-              {currentQuestion < lesson.questions.length - 1 ? "Next" : "Finish"}
+              {currentQuestion < lesson.questions.length - 1
+                ? "Next"
+                : "Finish"}
             </button>
           )}
         </div>

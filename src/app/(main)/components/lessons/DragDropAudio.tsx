@@ -18,7 +18,7 @@ export default function DragDropAudio({
   isRTL,
 }: DragDropAudioProps) {
   const [userOrder, setUserOrder] = useState<(string | null)[]>(
-    Array(correctOrder.length).fill(null)
+    Array(words.length).fill(null)
   );
   const [availableWords, setAvailableWords] = useState<string[]>(words);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null);
