@@ -7,7 +7,7 @@ import { Media } from "@prisma/client";
 import { MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Linkify from "../Linkify";
 import UserAvatar from "@/app/(main)/users//UserAvatar";
 import UserTooltip from "@/app/(main)/users/UserTooltip";
@@ -127,15 +127,113 @@ function MediaPreview({ media }: { media: Media }) {
   }
 
   if (media.type === "VIDEO") {
-    return (
-      <video
-        src={media.url}
-        controls
-        playsInline
-        className="mx-auto w-full h-auto max-h-[30rem] rounded-2xl object-contain"
-      />
-    );
+    return <FeedVideo src={media.url} />;
   }
 
   return <p className="text-destructive">Unsupported media type</p>;
+}
+
+/** Minimal, inline, no-download feed video */
+function FeedVideo({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Pause when out of view
+  useEffect(() => {
+    const el = containerRef.current;
+    const vid = videoRef.current;
+    if (!el || !vid) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting && !vid.paused) {
+          vid.pause();
+          setIsPlaying(false);
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Stop other videos when this one plays
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<HTMLVideoElement>).detail;
+      if (!videoRef.current) return;
+      if (detail !== videoRef.current) {
+        // Another video started playing; pause this one
+        if (!videoRef.current.paused) {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        }
+      }
+    };
+    document.addEventListener("axiglot-stop-other-videos", handler as EventListener);
+    return () =>
+      document.removeEventListener("axiglot-stop-other-videos", handler as EventListener);
+  }, []);
+
+  const togglePlay = async () => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    if (vid.paused) {
+      // Signal others to stop
+      document.dispatchEvent(
+        new CustomEvent("axiglot-stop-other-videos", { detail: vid })
+      );
+      try {
+        await vid.play();
+        setIsPlaying(true);
+      } catch {
+        // ignore play rejection
+      }
+    } else {
+      vid.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative mx-auto w-full rounded-2xl"
+      style={{ height: "min(30rem, 80vh)" }}
+    >
+      {/* Top-left tiny play/pause button */}
+      <button
+        type="button"
+        onClick={togglePlay}
+        className="absolute left-2 top-2 z-10 rounded-full bg-black/70 px-3 py-1 text-xs text-white"
+        aria-label={isPlaying ? "Pause video" : "Play video"}
+      >
+        {isPlaying ? "Pause" : "Play"}
+      </button>
+
+      <video
+        ref={videoRef}
+        src={src}
+        // No native controls -> no seekbar/speed/download UI
+        controls={false}
+        // Inline on mobile (avoid fullscreen)
+        playsInline
+        webkit-playsinline="true"
+        // Deter downloads / extra UI
+        disablePictureInPicture
+        controlsList="nofullscreen noremoteplayback nodownload noplaybackrate"
+        // Keep aspect ratio contained
+        className="h-full w-full rounded-2xl object-contain"
+        // Don’t show context menu (basic deterrent)
+        onContextMenu={(e) => e.preventDefault()}
+        // Safari iOS sometimes respects muted on first interaction; we let user toggle via custom button,
+        // but keeping it unmuted by default here:
+        preload="metadata"
+      />
+    </div>
+  );
 }
