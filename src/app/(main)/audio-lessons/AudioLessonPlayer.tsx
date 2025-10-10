@@ -31,85 +31,124 @@ export default function AudioLessonPlayer({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
 
+  // OPTIONAL: save lesson progress like your music/video routes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-      setIsPlaying(false);
-      setCurrentTime(0);
-      audioRef.current.playbackRate = 1;
-      setPlaybackRate(1);
-    }
+    if (!lesson?.id) return;
+    (async () => {
+      try {
+        await fetch("/api/audio-lessons/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lessonId: lesson.id }),
+        });
+      } catch (e) {
+        console.error("Failed to save audio lesson progress:", e);
+      }
+    })();
+  }, [lesson?.id]);
+
+  // Reset on lesson change (same as music)
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.load();
+    setIsPlaying(false);
+    setCurrentTime(0);
+    el.playbackRate = 1;
+    setPlaybackRate(1);
   }, [lesson.audioUrl]);
 
+  // Keep player above any bottom menu
   useEffect(() => {
     const adjustBottomPadding = () => {
       const menuBar = document.getElementById("mobile-bottom-menu");
       setBottomPadding(menuBar ? menuBar.offsetHeight : 0);
     };
-
     adjustBottomPadding();
     window.addEventListener("resize", adjustBottomPadding);
     return () => window.removeEventListener("resize", adjustBottomPadding);
   }, []);
 
+  const canSeekNow = () => {
+    const el = audioRef.current;
+    return !!el && Number.isFinite(el.duration) && el.duration > 0;
+  };
+
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(console.error);
-      }
+    const el = audioRef.current;
+    if (!el) return;
+    if (isPlaying) {
+      el.pause();
+      setIsPlaying(false);
+    } else {
+      el.play().then(() => setIsPlaying(true)).catch(console.error);
     }
   };
 
   const seek = (seconds: number) => {
-    if (!audioRef.current) return;
-    const newTime = Math.max(
-      0,
-      Math.min(audioRef.current.currentTime + seconds, duration),
-    );
-    audioRef.current.currentTime = newTime;
+    const el = audioRef.current;
+    if (!el || !canSeekNow()) return;
+    const dur = el.duration;
+    const newTime = Math.max(0, Math.min(el.currentTime + seconds, dur));
+    el.currentTime = newTime;
     setCurrentTime(newTime);
   };
 
+  // Keep time/duration in sync (capture el for clean add/remove like music)
   useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+
     const updateTime = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-        setDuration(audioRef.current.duration || 0);
-        onTimeUpdate(audioRef.current.currentTime);
-      }
+      setCurrentTime(el.currentTime);
+      setDuration(Number.isFinite(el.duration) ? el.duration : 0);
+      onTimeUpdate(el.currentTime);
     };
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener("timeupdate", updateTime);
-      audioRef.current.addEventListener("loadedmetadata", updateTime);
-    }
+    el.addEventListener("timeupdate", updateTime);
+    el.addEventListener("loadedmetadata", updateTime);
+    el.addEventListener("durationchange", updateTime);
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("timeupdate", updateTime);
-        audioRef.current.removeEventListener("loadedmetadata", updateTime);
-      }
+      el.removeEventListener("timeupdate", updateTime);
+      el.removeEventListener("loadedmetadata", updateTime);
+      el.removeEventListener("durationchange", updateTime);
     };
   }, [onTimeUpdate]);
 
+  // Exact same click + drag seek behavior as MusicPlayer
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
-    if (!progressBarRef.current || !audioRef.current) return;
-    const rect = progressBarRef.current.getBoundingClientRect();
-    const clientX =
-      "touches" in event ? event.touches[0].clientX : event.clientX;
-    const offsetX = clientX - rect.left;
-    const newTime = Math.max(
-      0,
-      Math.min((offsetX / rect.width) * duration, duration),
-    );
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
+    const bar = progressBarRef.current;
+    const el = audioRef.current;
+    if (!bar || !el || !canSeekNow()) return;
+
+    const rect = bar.getBoundingClientRect();
+
+    const updateSeek = (e: MouseEvent | TouchEvent) => {
+      if (!audioRef.current) return;
+      const clientX =
+        "touches" in e ? (e.touches as TouchList)[0].clientX : (e as MouseEvent).clientX;
+      const offsetX = clientX - rect.left;
+      const dur = el.duration;
+      const newTime = Math.max(0, Math.min((offsetX / rect.width) * dur, dur));
+      el.currentTime = newTime;
+      setCurrentTime(newTime);
+    };
+
+    const stopSeek = () => {
+      document.removeEventListener("mousemove", updateSeek);
+      document.removeEventListener("mouseup", stopSeek);
+      document.removeEventListener("touchmove", updateSeek);
+      document.removeEventListener("touchend", stopSeek);
+    };
+
+    // initial jump where the user clicked
+    updateSeek(event as unknown as MouseEvent);
+    // keep updating while dragging
+    document.addEventListener("mousemove", updateSeek);
+    document.addEventListener("mouseup", stopSeek);
+    document.addEventListener("touchmove", updateSeek);
+    document.addEventListener("touchend", stopSeek);
   };
 
   const formatTime = (t: number) => {
@@ -119,10 +158,10 @@ export default function AudioLessonPlayer({
   };
 
   const changeSpeed = (rate: number) => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
-      setPlaybackRate(rate);
-    }
+    const el = audioRef.current;
+    if (!el) return;
+    el.playbackRate = rate;
+    setPlaybackRate(rate);
   };
 
   return (
@@ -132,12 +171,11 @@ export default function AudioLessonPlayer({
     >
       <audio
         ref={audioRef}
-        src={`/api/media?id=${lesson.audioUrl}`}
+        src={lesson.audioUrl}              /* ⬅️ same as MusicPlayer: use direct URL */
         preload="metadata"
         onLoadedMetadata={() => {
-          if (audioRef.current) {
-            setDuration(audioRef.current.duration || 0);
-          }
+          const el = audioRef.current;
+          if (el) setDuration(Number.isFinite(el.duration) ? el.duration : 0);
         }}
         onEnded={() => setIsPlaying(false)}
       />
@@ -159,10 +197,7 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path
-              fill="url(#gradient)"
-              d="M11 12L22 22V2zM2 12L13 22V2z"
-            ></path>
+            <path fill="url(#gradient)" d="M11 12L22 22V2zM2 12L13 22V2z"></path>
           </svg>
         </button>
 
@@ -191,19 +226,14 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path
-              fill="url(#gradient)"
-              d="M13 12L2 22V2zM22 12L11 22V2z"
-            ></path>
+            <path fill="url(#gradient)" d="M13 12L2 22V2zM22 12L11 22V2z"></path>
           </svg>
         </button>
 
         {/* Speed Control */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="px-3 py-1 text-xs">
-              Speed: {playbackRate}x ⏷
-            </Button>
+            <Button className="px-3 py-1 text-xs">Speed: {playbackRate}x ⏷</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {[1, 0.75, 0.5, 0.25].map((speed) => (
@@ -225,7 +255,7 @@ export default function AudioLessonPlayer({
         <div
           className="absolute h-2 rounded-lg"
           style={{
-            width: `${(currentTime / duration) * 100}%`,
+            width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
             background: "linear-gradient(90deg, #ff8a00, #ef2626)",
           }}
         ></div>
