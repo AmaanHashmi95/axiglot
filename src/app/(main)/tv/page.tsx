@@ -7,13 +7,13 @@ import VideoPlayer from "@/app/(main)/tv/VideoPlayer";
 import Subtitles from "@/app/(main)/tv/Subtitles";
 import VideoScreen from "@/app/(main)/tv/VideoScreen";
 import { Video } from "@/lib/video";
-import { Button } from "@/app/(main)/components/ui/button";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 import { Loader2 } from "lucide-react";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get("videoId");
+
   const [videos, setVideos] = useState<Video[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -22,25 +22,16 @@ export default function Page() {
   const [showSubtitles, setShowSubtitles] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const API_URL =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
-
   useEffect(() => {
     async function fetchVideos() {
       try {
-        console.log("Fetching from API:", `${API_URL}/api/video`);
-        const res = await fetch(`${API_URL}/api/video`);
-        if (!res.ok)
-          throw new Error(`Failed to fetch videos. Status: ${res.status}`);
+        const res = await fetch("/api/video"); // relative path
+        if (!res.ok) throw new Error(`Failed to fetch videos. Status: ${res.status}`);
         const fetchedVideos: Video[] = await res.json();
-        if (fetchedVideos.length === 0)
-          throw new Error("No videos available in the database.");
+        if (fetchedVideos.length === 0) throw new Error("No videos available in the database.");
 
         setVideos(fetchedVideos);
 
-        // Auto-select video if videoId exists in URL
         if (videoId) {
           const autoSelectedVideo = fetchedVideos.find((v) => v.id === videoId);
           if (autoSelectedVideo) {
@@ -48,10 +39,10 @@ export default function Page() {
             setShowSubtitles(true);
           }
         }
-
-      } catch (err: any) {
-        setError(err.message);
-        console.error("Fetch error:", err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setError(message);
+        console.error("Fetch error:", message);
       } finally {
         setLoading(false);
       }
@@ -89,22 +80,23 @@ export default function Page() {
       <BrowserWarning />
       {selectedVideo ? (
         <>
-        <div className="flex flex-col overflow-y-auto" style={{ height: "calc(100vh - 120px)"}}>
-          <VideoScreen
-            videoUrl={selectedVideo.videoUrl}
-            showSubtitles={showSubtitles}
-            videoRef={videoRef}
-          />
-          <div className="mt-2 px-2">
-          <Subtitles video={selectedVideo} currentTime={currentTime} />
-          </div>
+          <div
+            className="flex flex-col overflow-y-auto"
+            style={{ height: "calc(100vh - 120px)" }}
+          >
+            <VideoScreen
+              videoUrl={selectedVideo.videoUrl}
+              showSubtitles={showSubtitles}
+              videoRef={videoRef}
+            />
+            <div className="mt-2 px-2">
+              <Subtitles video={selectedVideo} currentTime={currentTime} />
+            </div>
           </div>
 
-
-          {/* VideoPlayer should only be visible when video screen is active */}
           <VideoPlayer
             video={selectedVideo}
-            onTimeUpdate={setCurrentTime}
+            onTimeUpdate={handleTimeUpdate}
             showSubtitles={showSubtitles}
             setShowSubtitles={setShowSubtitles}
             videoRef={videoRef}

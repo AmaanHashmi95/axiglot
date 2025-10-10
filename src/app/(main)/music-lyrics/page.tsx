@@ -12,6 +12,7 @@ import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 export default function Page() {
   const searchParams = useSearchParams();
   const songId = searchParams.get("songId");
+
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -19,24 +20,16 @@ export default function Page() {
   const [error, setError] = useState("");
   const [showLyrics, setShowLyrics] = useState(false);
 
-  const API_URL =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
-
   useEffect(() => {
     async function fetchSongs() {
       try {
-        console.log("Fetching from API:", `${API_URL}/api/music`);
-        const res = await fetch(`${API_URL}/api/music`);
-        if (!res.ok)
-          throw new Error(`Failed to fetch songs. Status: ${res.status}`);
+        const res = await fetch("/api/music"); // relative path
+        if (!res.ok) throw new Error(`Failed to fetch songs. Status: ${res.status}`);
         const fetchedSongs: Song[] = await res.json();
-        if (fetchedSongs.length === 0)
-          throw new Error("No songs available in the database.");
+        if (fetchedSongs.length === 0) throw new Error("No songs available in the database.");
 
         setSongs(fetchedSongs);
-        // Auto-select song if `songId` exists in the URL
+
         if (songId) {
           const autoSelectedSong = fetchedSongs.find((s) => s.id === songId);
           if (autoSelectedSong) {
@@ -44,9 +37,10 @@ export default function Page() {
             setShowLyrics(true);
           }
         }
-      } catch (err: any) {
-        setError(err.message);
-        console.error("Fetch error:", err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setError(message);
+        console.error("Fetch error:", message);
       } finally {
         setLoading(false);
       }
@@ -74,14 +68,13 @@ export default function Page() {
           onSelectSong={setSelectedSong}
         />
       )}
-<>More music will be uploaded very shortly - watch this space</>
-      {/* Add padding to ensure space for MusicPlayer */}
+      <>More music will be uploaded very shortly - watch this space</>
       <div className="pb-24"></div>
 
       {selectedSong && (
         <MusicPlayer
           song={selectedSong}
-          onTimeUpdate={setCurrentTime}
+          onTimeUpdate={handleTimeUpdate}
           showLyrics={showLyrics}
           setShowLyrics={setShowLyrics}
         />
