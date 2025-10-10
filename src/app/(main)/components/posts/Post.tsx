@@ -106,28 +106,34 @@ interface MediaPreviewProps {
   media: Media;
 }
 
-function MediaPreview({ media }: MediaPreviewProps) {
+function MediaPreview({ media }: { media: Media }) {
   if (media.type === "IMAGE") {
     return (
-      <Image
-        src={media.url}
-        alt="Attachment"
-        width={500}
-        height={500}
-        className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-      />
+      <div
+        className="relative mx-auto w-full rounded-2xl"
+        style={{ height: "min(30rem, 80vh)" }} // gives the fill image a box to live in
+      >
+        <Image
+          src={media.url}
+          alt="Attachment"
+          fill
+          unoptimized        // skip Next’s optimizer since these are blob URLs
+          sizes="(max-width: 768px) 100vw, 700px"
+          className="object-contain rounded-2xl"
+          priority={false}
+        />
+      </div>
     );
   }
 
   if (media.type === "VIDEO") {
     return (
-      <div>
-        <video
-          src={media.url}
-          controls
-          className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-        />
-      </div>
+      <video
+        src={media.url}
+        controls
+        playsInline
+        className="mx-auto w-full h-auto max-h-[30rem] rounded-2xl object-contain"
+      />
     );
   }
 
