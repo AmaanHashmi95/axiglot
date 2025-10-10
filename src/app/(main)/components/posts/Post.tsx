@@ -110,8 +110,10 @@ function MediaPreview({ media }: { media: Media }) {
   if (media.type === "IMAGE") {
     return (
       <div
-        className="relative mx-auto w-full rounded-2xl"
+        className="relative mx-auto w-full rounded-2xl select-none"
         style={{ height: "min(30rem, 80vh)" }} // gives the fill image a box to live in
+        onContextMenu={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
       >
         <Image
           src={media.url}
@@ -119,8 +121,18 @@ function MediaPreview({ media }: { media: Media }) {
           fill
           unoptimized        // skip Next’s optimizer since these are blob URLs
           sizes="(max-width: 768px) 100vw, 700px"
-          className="object-contain rounded-2xl"
+          className="object-contain rounded-2xl pointer-events-none select-none [-webkit-user-select:none] [-webkit-touch-callout:none]"
+          draggable={false}
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
           priority={false}
+        />
+        {/* Transparent overlay to catch long-press / press-hold save on mobile */}
+        <div
+          aria-hidden
+          className="absolute inset-0 z-10"
+          onContextMenu={(e) => e.preventDefault()}
+          onDragStart={(e) => e.preventDefault()}
         />
       </div>
     );
