@@ -82,6 +82,12 @@ export default function LessonComponent({ lesson, userId }: LessonComponentProps
     });
   }, []);
 
+  useEffect(() => {
+  setActiveWordId(null);
+  setLastClickedWord(null);
+}, [currentQuestion]);
+
+
   // --- RTL helpers ---
   const isRTLLanguage = (lang?: string | null) => {
     const l = (lang || '').toLowerCase();

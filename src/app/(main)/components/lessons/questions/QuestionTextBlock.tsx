@@ -79,7 +79,12 @@ export default function QuestionTextBlock({
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+  }, [setActiveWordId, setLastClickedWord]);
+
+  // Reset translation toggle when question changes
+useEffect(() => {
+  setShowTranslation(false);
+}, [questionId]);
   
   
 
