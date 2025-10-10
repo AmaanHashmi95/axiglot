@@ -136,6 +136,18 @@ function AudioLessonCarousel({
     return () => window.removeEventListener("resize", handleResize);
   }, [lessons.length]);
 
+  // 🔽 NEW: match Music/Video gradient logic
+  const getBackgroundStyle = (language: string | undefined) => {
+    switch (language) {
+      case "Punjabi":
+        return "linear-gradient(135deg, #00bf63, #ff8a00)";
+      case "Urdu":
+        return "linear-gradient(135deg, #00650b, #adadad)";
+      default:
+        return "linear-gradient(135deg, #cccccc, #999999)";
+    }
+  };
+
   return (
     <div className="relative flex w-full items-center">
       {canScrollLeft && (
@@ -171,7 +183,7 @@ function AudioLessonCarousel({
             }`}
             onClick={() => onSelectLesson(lesson)}
             style={{
-              background: "linear-gradient(135deg, #5f72be, #9b23ea)",
+              background: getBackgroundStyle(lesson.language),
               minWidth: "150px",
             }}
           >
