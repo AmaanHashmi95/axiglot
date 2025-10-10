@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AudioLessonChooser from "@/app/(main)/audio-lessons/AudioLessonChooser";
 import AudioLessonPlayer from "@/app/(main)/audio-lessons/AudioLessonPlayer";
@@ -21,22 +21,15 @@ export default function Page() {
   const lessonId = searchParams.get("lessonId");
 
   const [lessons, setLessons] = useState<AudioLesson[]>([]);
-  const [selectedLesson, setSelectedLesson] = useState<AudioLesson | null>(
-    null,
-  );
+  const [selectedLesson, setSelectedLesson] = useState<AudioLesson | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const API_URL =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || "https://axiglot.vercel.app";
-
   useEffect(() => {
     async function fetchLessons() {
       try {
-        const res = await fetch(`${API_URL}/api/audio-lessons`);
+        const res = await fetch("/api/audio-lessons"); // ← relative path
         if (!res.ok) throw new Error("Failed to fetch audio lessons.");
         const data: AudioLesson[] = await res.json();
         setLessons(data);
@@ -45,13 +38,12 @@ export default function Page() {
           const found = data.find((l) => l.id === lessonId);
           if (found) setSelectedLesson(found);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     }
-
     fetchLessons();
   }, [lessonId]);
 
@@ -68,10 +60,7 @@ export default function Page() {
       />
       <div className="pb-24"></div>
       {selectedLesson && (
-        <AudioLessonPlayer
-          lesson={selectedLesson}
-          onTimeUpdate={setCurrentTime}
-        />
+        <AudioLessonPlayer lesson={selectedLesson} onTimeUpdate={setCurrentTime} />
       )}
     </div>
   );
