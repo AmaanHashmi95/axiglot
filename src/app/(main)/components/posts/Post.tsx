@@ -138,6 +138,7 @@ function FeedVideo({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   // Pause when out of view
   useEffect(() => {
@@ -199,40 +200,83 @@ function FeedVideo({ src }: { src: string }) {
     }
   };
 
+  const toggleMuted = () => {
+    setMuted((m) => {
+      const next = !m;
+      if (videoRef.current) videoRef.current.muted = next;
+      return next;
+    });
+  };
+
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto w-full rounded-2xl"
+      className="relative mx-auto w-full rounded-2xl overflow-hidden bg-black"
       style={{ height: "min(30rem, 80vh)" }}
     >
-      {/* Top-left tiny play/pause button */}
+      {/* Play / Pause (top-left) */}
       <button
         type="button"
         onClick={togglePlay}
-        className="absolute left-2 top-2 z-10 rounded-full bg-black/70 px-3 py-1 text-xs text-white"
+        className="absolute left-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm"
         aria-label={isPlaying ? "Pause video" : "Play video"}
       >
-        {isPlaying ? "Pause" : "Play"}
+        {isPlaying ? (
+          // Pause icon
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
+            <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+          </svg>
+        ) : (
+          // Play icon
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M8 5v14l11-7z" fill="currentColor" />
+          </svg>
+        )}
+      </button>
+
+      {/* Audio on/off (top-right) — local only */}
+      <button
+        type="button"
+        onClick={toggleMuted}
+        className="absolute right-2 top-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm"
+        aria-label={muted ? "Unmute video" : "Mute video"}
+      >
+        {muted ? (
+          // Muted icon (speaker with X)
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M9 9H5v6h4l5 4V5L9 9z" fill="currentColor" />
+            <path d="M19 5l-3 3M16 16l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ) : (
+          // Volume icon (speaker with waves)
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M9 9H5v6h4l5 4V5L9 9z" fill="currentColor" />
+            <path d="M16 8c1.2 1 1.8 2.3 1.8 4s-.6 3-1.8 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+          </svg>
+        )}
       </button>
 
       <video
         ref={videoRef}
         src={src}
-        // No native controls -> no seekbar/speed/download UI
-        controls={false}
-        // Inline on mobile (avoid fullscreen)
+        controls={false}                       // no native UI
         playsInline
-        webkit-playsinline="true"
-        // Deter downloads / extra UI
+        webkit-playsinline="true"              // iOS inline
+        preload="auto"                         // draw first frame on load
+        muted={muted}                          // per-video mute only
         disablePictureInPicture
         controlsList="nofullscreen noremoteplayback nodownload noplaybackrate"
-        // Keep aspect ratio contained
-        className="h-full w-full rounded-2xl object-contain"
-        // Don’t show context menu (basic deterrent)
-        onContextMenu={(e) => e.preventDefault()}
-        // Safari iOS sometimes respects muted on first interaction; we let user toggle via custom button,
-        // but keeping it unmuted by default here:
-        preload="metadata"
+        className="z-10 h-full w-full rounded-2xl object-contain"
+        onContextMenu={(e) => e.preventDefault()} // deter downloads
+        onPlay={() => {
+          const vid = videoRef.current;
+          if (vid) {
+            document.dispatchEvent(new CustomEvent("axiglot-stop-other-videos", { detail: vid }));
+            setIsPlaying(true);
+          }
+        }}
+        onPause={() => setIsPlaying(false)}
       />
     </div>
   );
