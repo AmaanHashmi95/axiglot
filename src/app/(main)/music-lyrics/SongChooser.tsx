@@ -138,7 +138,7 @@ function SongCarousel({
       {canScrollLeft && (
         <button
           onClick={scrollLeftBy}
-          className="absolute left-[-40px] top-1/2 z-51 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="z-51 absolute left-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
         </button>
@@ -175,9 +175,18 @@ function SongCarousel({
                 alt={song.title}
                 width={120}
                 height={120}
-                className="h-full w-full rounded-lg object-cover"
+                className="select-none[user-select:none] h-full w-full rounded-lg object-cover [-webkit-touch-callout:none] [-webkit-user-select:none]"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
               />
             </div>
+            {/* Transparent overlay to catch long-press/right-click/drag */}
+            <div
+              aria-hidden
+              className="absolute inset-0 z-10"
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+            />
             <h3 className="text-md mt-2 text-center font-semibold">
               {song.title}
             </h3>
@@ -189,7 +198,7 @@ function SongCarousel({
       {canScrollRight && (
         <button
           onClick={scrollRightBy}
-          className="absolute right-[-40px] top-1/2 z-49 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="z-49 absolute right-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
         </button>

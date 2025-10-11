@@ -187,15 +187,24 @@ function AudioLessonCarousel({
               minWidth: "150px",
             }}
           >
-            <div className="h-32 w-32">
+            <div className="relative h-32 w-32 select-none">
               <Image
                 src={lesson.imageUrl || "/icons/Headphones.png"}
                 alt={lesson.title}
                 width={120}
                 height={120}
-                className="h-full w-full rounded-lg object-cover"
+                className="select-none[user-select:none] pointer-events-none h-full w-full rounded-lg object-cover [-webkit-touch-callout:none] [-webkit-user-select:none]"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
               />
             </div>
+            {/* Transparent overlay to intercept long-press/right-click/drag */}
+            <div
+              aria-hidden
+              className="absolute inset-0 z-10"
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+            />
             <h3 className="text-md mt-2 text-center font-semibold">
               {lesson.title}
             </h3>

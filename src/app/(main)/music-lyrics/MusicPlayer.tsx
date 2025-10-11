@@ -185,6 +185,11 @@ export default function MusicPlayer({
       <audio
         ref={audioRef}
         src={song.audioUrl}
+        controls={false} // keep native UI hidden
+        controlsList="nodownload noplaybackrate noremoteplayback"
+        preload="auto"
+        draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
         onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
         onTimeUpdate={() => {
           if (audioRef.current) {

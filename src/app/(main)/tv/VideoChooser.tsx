@@ -138,7 +138,7 @@ function VideoCarousel({
       {canScrollLeft && (
         <button
           onClick={scrollLeftBy}
-          className="absolute left-[-40px] top-1/2 z-51 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="z-51 absolute left-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
         </button>
@@ -175,7 +175,9 @@ function VideoCarousel({
                 alt={video.title}
                 width={130}
                 height={120}
-                className="h-full w-full rounded-lg object-cover"
+                className="h-full w-full select-none rounded-lg object-cover [-webkit-touch-callout:none] [-webkit-user-select:none] [user-select:none]"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
               />
             </div>
             <h3 className="text-md mt-2 text-center font-semibold">
@@ -189,7 +191,7 @@ function VideoCarousel({
       {canScrollRight && (
         <button
           onClick={scrollRightBy}
-          className="absolute right-[-40px] top-1/2 z-49 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="z-49 absolute right-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
         </button>

@@ -171,8 +171,16 @@ export default function AudioLessonPlayer({
     >
       <audio
         ref={audioRef}
-        src={lesson.audioUrl}              /* ⬅️ same as MusicPlayer: use direct URL */
-        preload="metadata"
+        src={lesson.audioUrl}
+        // Hide native UI; use your custom controls
+        controls={false}
+        // Chromium supports this on <audio>; Safari ignores (harmless)
+        controlsList="nodownload noplaybackrate noremoteplayback"
+        // Draw metadata quickly (for duration)
+        preload="auto"
+        // Deter casual saving
+        draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
         onLoadedMetadata={() => {
           const el = audioRef.current;
           if (el) setDuration(Number.isFinite(el.duration) ? el.duration : 0);
@@ -197,7 +205,10 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path fill="url(#gradient)" d="M11 12L22 22V2zM2 12L13 22V2z"></path>
+            <path
+              fill="url(#gradient)"
+              d="M11 12L22 22V2zM2 12L13 22V2z"
+            ></path>
           </svg>
         </button>
 
@@ -226,14 +237,19 @@ export default function AudioLessonPlayer({
                 <stop offset="100%" stopColor="#ef2626" />
               </linearGradient>
             </defs>
-            <path fill="url(#gradient)" d="M13 12L2 22V2zM22 12L11 22V2z"></path>
+            <path
+              fill="url(#gradient)"
+              d="M13 12L2 22V2zM22 12L11 22V2z"
+            ></path>
           </svg>
         </button>
 
         {/* Speed Control */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="px-3 py-1 text-xs">Speed: {playbackRate}x ⏷</Button>
+            <Button className="px-3 py-1 text-xs">
+              Speed: {playbackRate}x ⏷
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {[1, 0.75, 0.5, 0.25].map((speed) => (
