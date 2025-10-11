@@ -14,21 +14,29 @@ export async function GET() {
     const books = await prisma.book.findMany({
       include: {
         bookPages: {
+          orderBy: [
+            { order: "asc" },
+            { createdAt: "asc" }, // tie-breaker if two pages share the same order
+          ],
           include: {
             bookSentences: {
+              orderBy: [
+                { order: "asc" },
+                { createdAt: "asc" }, // tie-breaker for duplicate order values
+              ],
               include: {
-                words: { 
-                  select: { // ✅ Use only `select` and remove `include`
+                words: {
+                  select: {
                     id: true,
-                    word: { select: { text: true } }, // ✅ Fetch word text
-                    translation: true, // ✅ Fetch translation
-                    transliteration: true, // ✅ Fetch transliteration
-                    color: true, // ✅ Fetch color
+                    word: { select: { text: true } },
+                    translation: true,
+                    transliteration: true,
+                    color: true,
                     order: true,
-                    translationOrder: true, // ✅ Fetch translation order
-                    transliterationOrder: true, // ✅ Fetch transliteration order
+                    translationOrder: true,
+                    transliterationOrder: true,
                   },
-                  orderBy: { order: "asc" }
+                  orderBy: { order: "asc" }, // you already had this part effectively
                 },
               },
             },
@@ -36,6 +44,7 @@ export async function GET() {
         },
       },
     });
+
 
     return NextResponse.json(books);
   } catch (error) {
