@@ -12,6 +12,8 @@ const languages = [
   { code: "ru", name: "Russian" },
 ];
 
+const MAX_CHARS = 500;
+
 export default function Translator() {
   const [text, setText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -52,20 +54,31 @@ export default function Translator() {
     setWordBreakdown([]);
   }, [to]);
 
+  const charsUsed = text.length;
+  const charsLeft = MAX_CHARS - charsUsed;
+
   return (
     <div
-      className="mx-auto max-w-xl rounded-lg p-6 shadow-lg"
+      className="mx-auto max-w-3xl rounded-lg p-6 shadow-lg"
       style={{ backgroundColor: "hsl(24, 9.8%, 10%)" }}
     >
+      {/* Bigger textarea with 500-char cap */}
       <textarea
-        className="w-full rounded-md border border-gray-300 bg-black p-2 text-white placeholder-gray-400"
-        placeholder="Enter text"
+        className="w-full rounded-md border border-gray-300 bg-black p-4 text-white placeholder-gray-400 text-base leading-6 min-h-[220px] md:min-h-[280px]"
+        placeholder="Enter text…"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        rows={10}
+        maxLength={MAX_CHARS}
+        onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
       />
 
-      <div className="my-3 flex gap-2">
-        <div className="relative w-full">
+      {/* Counter + language picker */}
+      <div className="my-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-xs text-gray-400">
+          {charsUsed}/{MAX_CHARS} characters
+        </div>
+
+        <div className="relative w-full sm:w-64">
           <select
             className="w-full appearance-none rounded-md border border-gray-300 bg-black p-2 pr-10 text-white"
             value={to}
@@ -85,9 +98,9 @@ export default function Translator() {
       </div>
 
       <button
-        className="w-full rounded-md bg-gradient-to-r from-[#ff8a00] to-[#ef2626] p-2 font-semibold text-white disabled:opacity-50"
+        className="w-full rounded-md bg-gradient-to-r from-[#ff8a00] to-[#ef2626] p-3 font-semibold text-white disabled:opacity-50"
         onClick={translateText}
-        disabled={loading || !to}
+        disabled={loading || !to || text.trim().length === 0}
       >
         {loading ? "Translating..." : "Translate"}
       </button>
