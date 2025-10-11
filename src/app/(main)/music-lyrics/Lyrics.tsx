@@ -74,6 +74,11 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
     currentSentences.transliteration?.id,
   ].filter(Boolean) as string[];
 
+ // Fallback full-line strings (when per-word arrays are missing)
+const fallbackEnglish = currentSentences.english?.text ?? "";
+const fallbackTransliteration = currentSentences.transliteration?.text ?? "";
+const fallbackTarget = currentSentences.target?.text ?? "";
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest(".bookmark-group")) {
@@ -98,6 +103,9 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
             words={words}
             translations={translations}
             audioUrl={song.audioUrl}
+            fallbackEnglish={fallbackEnglish}
+            fallbackTransliteration={fallbackTransliteration}
+            fallbackTarget={fallbackTarget}
           />
         </div>
       )}

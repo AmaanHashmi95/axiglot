@@ -20,27 +20,57 @@ export async function GET(req: NextRequest) {
         : {}),
     },
     include: {
-      song: { include: { targetSentences: true } },
+            // We need all three lanes so we can build fallbacks by ID
+      song: {
+        include: {
+          targetSentences: true,
+          englishSentences: true,
+          transliterationSentences: true,
+        },
+      },
     },
     skip,
     take,
   });
 
   const enriched = bookmarks.map((b) => {
-    const enrichedSentences = b.sentenceIds.map((id) => {
-      const s = b.song.targetSentences.find((s) => s.id === id);
-      return {
-        id,
-        text: s?.text || "(missing)",
-        bookmarkedEnglish: s?.bookmarkedEnglish || "",
-        bookmarkedTransliteration: s?.bookmarkedTransliteration || "",
-        audioUrl: s?.audioUrl || "",
-      };
-    });
+    // Index sentences by id for quick lookups
+    const englishById = new Map(
+      (b.song.englishSentences ?? []).map((s) => [s.id, s]),
+    );
+    const translitById = new Map(
+      (b.song.transliterationSentences ?? []).map((s) => [s.id, s]),
+    );
+    const targetById = new Map(
+      (b.song.targetSentences ?? []).map((s) => [s.id, s]),
+    );
+
+    // We only need to produce ONE rendered block per bookmark card.
+    // Convention in your UI: you take the FIRST item (which should be the target line).
+    // So, pick the target id out of the sentenceIds list first:
+    const targetId = b.sentenceIds.find((id) => targetById.has(id));
+    const englishId = b.sentenceIds.find((id) => englishById.has(id));
+    const translitId = b.sentenceIds.find((id) => translitById.has(id));
+
+    const tgt = targetId ? targetById.get(targetId)! : undefined;
+    const eng = englishId ? englishById.get(englishId)! : undefined;
+    const trn = translitId ? translitById.get(translitId)! : undefined;
+
+    // Build fallbacks: prefer stored bookmarked* on the target sentence;
+    // if missing, fall back to the corresponding line’s full text.
+    const first = {
+      id: targetId ?? b.sentenceIds[0],
+      text: tgt?.text || "(missing)",
+      bookmarkedEnglish:
+        (tgt?.bookmarkedEnglish ?? "").trim() || eng?.text || "",
+      bookmarkedTransliteration:
+        (tgt?.bookmarkedTransliteration ?? "").trim() || trn?.text || "",
+      audioUrl: tgt?.audioUrl || "",
+    };
 
     return {
       ...b,
-      sentences: enrichedSentences,
+      sentences: [first], // Your UI reads only the first one
       language: b.song.language || "Unknown",
     };
   });
@@ -53,18 +83,42 @@ export async function POST(req: NextRequest) {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const {
+    const {
     songId,
-    sentenceIds,
-    words,
-    translations,
-    audioUrl,
-    bookmarkedEnglish,
-    bookmarkedTransliteration,
-  } = await req.json();
+    sentenceIds = [],
+    words = [],
+    translations = [],
+    audioUrl = "",
+    // fallbacks when per-word arrays are missing
+    fallbackEnglish = "",
+    fallbackTransliteration = "",
+    fallbackTarget = "",
+  } = await req.json()
+
+    // Build strings from per-word arrays
+  let computedEnglish =
+    Array.isArray(translations) && translations.length
+      ? translations.map((t: { text: string }) => t.text).join(" ")
+      : "";
+
+  let computedTransliteration =
+    Array.isArray(words) && words.length
+      ? words
+          .map(
+            (w: { text: string; transliteration?: string }) =>
+              w.transliteration || w.text,
+          )
+          .join(" ")
+      : "";
+
+  // If empty, fall back to full-line strings from the client
+  if (!computedEnglish?.trim()) computedEnglish = fallbackEnglish || "";
+  if (!computedTransliteration?.trim())
+    computedTransliteration = fallbackTransliteration || "";
 
   const targetSentences = await prisma.lyricTargetSentence.findMany({
     where: { id: { in: sentenceIds } },
+    select: { id: true, bookmarkedEnglish: true, bookmarkedTransliteration: true },
   });
 
   await Promise.all(
@@ -83,8 +137,8 @@ export async function POST(req: NextRequest) {
       return prisma.lyricTargetSentence.update({
         where: { id: s.id },
         data: {
-          bookmarkedEnglish,
-          bookmarkedTransliteration,
+          bookmarkedEnglish: computedEnglish,
+          bookmarkedTransliteration: computedTransliteration,
         },
       });
     }),

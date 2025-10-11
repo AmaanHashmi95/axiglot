@@ -23,6 +23,9 @@ interface Props {
   words: Word[];
   translations: Translation[];
   audioUrl: string;
+  fallbackEnglish?: string;
+  fallbackTransliteration?: string;
+  fallbackTarget?: string;
 }
 
 interface LyricBookmark {
@@ -37,6 +40,9 @@ export default function LyricBookmarkButton({
   words,
   translations,
   audioUrl,
+  fallbackEnglish,
+  fallbackTransliteration,
+  fallbackTarget,
 }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -60,7 +66,7 @@ export default function LyricBookmarkButton({
         });
       } else {
         await kyInstance.post("/api/lyric-bookmarks", {
-          json: { songId, sentenceIds, words, translations, audioUrl },
+          json: { songId, sentenceIds, words, translations, audioUrl, fallbackEnglish, fallbackTransliteration, fallbackTarget },
         });
       }
     },
