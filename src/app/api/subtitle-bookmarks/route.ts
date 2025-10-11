@@ -20,28 +20,55 @@ export async function GET(req: NextRequest) {
         : {}),
     },
     include: {
-      video: { include: { targetSentences: true } },
+            // Need all lanes for fallback assembly
+      video: {
+       include: {
+          targetSentences: true,
+          englishSentences: true,
+          transliterationSentences: true,
+        },
+      },
     },
     skip,
     take,
   });
 
   const enriched = bookmarks.map((b) => {
-    const enrichedSentences = b.sentenceIds.map((id) => {
-      const s = b.video.targetSentences.find((s) => s.id === id);
-      return {
-        id,
-        text: s?.text || "(missing)",
-        bookmarkedEnglish: s?.bookmarkedEnglish || "",
-        bookmarkedTransliteration: s?.bookmarkedTransliteration || "",
-        audioUrl: s?.audioUrl || "",
-      };
-    });
+    // Index by id
+    const englishById = new Map(
+      (b.video.englishSentences ?? []).map((s) => [s.id, s]),
+    );
+    const translitById = new Map(
+      (b.video.transliterationSentences ?? []).map((s) => [s.id, s]),
+    );
+    const targetById = new Map(
+      (b.video.targetSentences ?? []).map((s) => [s.id, s]),
+    );
+
+    // Pick the 3 sentence ids from the bookmark
+    const targetId = b.sentenceIds.find((id) => targetById.has(id));
+    const englishId = b.sentenceIds.find((id) => englishById.has(id));
+    const translitId = b.sentenceIds.find((id) => translitById.has(id));
+
+    const tgt = targetId ? targetById.get(targetId)! : undefined;
+    const eng = englishId ? englishById.get(englishId)! : undefined;
+    const trn = translitId ? translitById.get(translitId)! : undefined;
+
+    // Prefer stored bookmarked* on the target; otherwise fall back to full-line text
+    const first = {
+      id: targetId ?? b.sentenceIds[0],
+      text: tgt?.text || "(missing)",
+      bookmarkedEnglish:
+        (tgt?.bookmarkedEnglish ?? "").trim() || eng?.text || "",
+      bookmarkedTransliteration:
+        (tgt?.bookmarkedTransliteration ?? "").trim() || trn?.text || "",
+      audioUrl: tgt?.audioUrl || "",
+    };
 
     return {
       ...b,
-      sentences: enrichedSentences,
-      language: b.video.language || "Unknown", // ✅ FLATTENED: allow frontend to filter
+      sentences: [first],
+      language: b.video.language || "Unknown",
     };
   });
 
