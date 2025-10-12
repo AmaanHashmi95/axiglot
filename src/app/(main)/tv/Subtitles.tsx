@@ -21,7 +21,7 @@ interface Sentence {
 }
 
 interface SubtitlesProps {
-  video: Video;                 // ✅ use shared Video (has streamSrc)
+  video: Video; // ✅ use shared Video (has streamSrc)
   currentTime: number;
 }
 
@@ -34,10 +34,7 @@ export default function Subtitles({ video, currentTime }: SubtitlesProps) {
     transliteration: video.transliterationSentences.find((s) => currentTime >= s.startTime && currentTime < s.endTime),
   };
 
-  const getHighlightedWord = (sentence?: Sentence) =>
-    sentence?.words?.find(
-      (word) => currentTime >= word.startTime && currentTime < word.endTime
-    )?.word?.text || null;
+  // --- CHANGED: no more text.split-based comparison ---
 
   const words = currentSentences.target?.words?.map((w) => ({
     id: w.word.id,
@@ -69,66 +66,58 @@ export default function Subtitles({ video, currentTime }: SubtitlesProps) {
     return () => window.removeEventListener("click", handleClick);
   }, []);
 
+  // --- NEW: renderSentence uses per-word timings ---
+  const renderSentence = (sentence?: Sentence, fallbackLabel?: string) => {
+    if (!sentence) return <span>{fallbackLabel ?? ""}</span>;
+
+    if (sentence.words && sentence.words.length > 0) {
+      return (
+        <>
+          {sentence.words.map((w, i) => {
+            const chunk = w.word?.text ?? "";
+            const isHighlighted =
+              currentTime >= w.startTime && currentTime < w.endTime;
+
+            return (
+              <span key={w.word?.id ?? `${i}-${w.startTime}-${w.endTime}`}>
+                <span
+                  className={
+                    isHighlighted
+                      ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
+                      : ""
+                  }
+                >
+                  {chunk}
+                </span>{" "}
+              </span>
+            );
+          })}
+        </>
+      );
+    }
+
+    return <span>{sentence.text}</span>;
+  };
+
   return (
     <div
       className="bookmark-group w-full max-w-lg mx-auto mt-4 p-2 rounded relative cursor-pointer"
       onClick={() => setShowBookmark(true)}
     >
+      {/* --- CHANGED: use renderSentence (per-word timing) --- */}
       <p className="text-center font-semibold">
-      {currentSentences.english?.text.split(" ").map((word, i) => {
-  const highlighted = word === getHighlightedWord(currentSentences.english);
-  return (
-    <span key={i}>
-      <span
-        className={
-          highlighted
-            ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
-            : ""
-        }
-      >
-        {word}
-      </span>{" "}
-    </span>
-  );
-}) || "(The English Translation)"}
+        {renderSentence(currentSentences.english, "(The English Translation)")}
       </p>
 
       <p className="text-center font-semibold">
-      {currentSentences.target?.text.split(" ").map((word, i) => {
-    const highlighted = word === getHighlightedWord(currentSentences.target);
-    return (
-      <span key={i}>
-        <span
-          className={
-            highlighted
-              ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
-              : ""
-          }
-        >
-          {word}
-        </span>{" "}
-      </span>
-    );
-  }) || "(The Language Subtitles)"}
+        {renderSentence(currentSentences.target, "(The Language Subtitles)")}
       </p>
 
       <p className="text-center font-semibold">
-      {currentSentences.transliteration?.text.split(" ").map((word, i) => {
-    const highlighted = word === getHighlightedWord(currentSentences.transliteration);
-    return (
-      <span key={i}>
-        <span
-          className={
-            highlighted
-              ? "bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white px-1 rounded"
-              : ""
-          }
-        >
-          {word}
-        </span>{" "}
-      </span>
-    );
-  }) || "(The Transliteration Subtitles)"}
+        {renderSentence(
+          currentSentences.transliteration,
+          "(The Transliteration Subtitles)",
+        )}
       </p>
 
       {showBookmark && currentSentences.target && (

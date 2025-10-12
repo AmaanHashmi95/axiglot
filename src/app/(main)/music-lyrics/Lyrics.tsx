@@ -49,10 +49,8 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
     ),
   };
 
-  const getHighlightedWord = (sentence?: Sentence) =>
-    sentence?.words?.find(
-      (word) => currentTime >= word.startTime && currentTime < word.endTime,
-    )?.word?.text || null;
+  // --- CHANGED: removed string-comparison based highlighter ---
+  // We will render with per-word timings instead (see renderSentence below).
 
   const words =
     currentSentences.target?.words?.map((w) => ({
@@ -74,10 +72,10 @@ export default function Lyrics({ song, currentTime }: LyricsProps) {
     currentSentences.transliteration?.id,
   ].filter(Boolean) as string[];
 
- // Fallback full-line strings (when per-word arrays are missing)
-const fallbackEnglish = currentSentences.english?.text ?? "";
-const fallbackTransliteration = currentSentences.transliteration?.text ?? "";
-const fallbackTarget = currentSentences.target?.text ?? "";
+  // Fallback full-line strings (when per-word arrays are missing)
+  const fallbackEnglish = currentSentences.english?.text ?? "";
+  const fallbackTransliteration = currentSentences.transliteration?.text ?? "";
+  const fallbackTarget = currentSentences.target?.text ?? "";
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -88,6 +86,40 @@ const fallbackTarget = currentSentences.target?.text ?? "";
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
   }, []);
+
+  // --- NEW: renderSentence uses per-word timings so multi-token and repeated words work correctly ---
+  const renderSentence = (sentence?: Sentence, fallbackLabel?: string) => {
+    if (!sentence) return <span>{fallbackLabel ?? ""}</span>;
+
+    if (sentence.words && sentence.words.length > 0) {
+      return (
+        <>
+          {sentence.words.map((w, i) => {
+            const chunk = w.word?.text ?? "";
+            const isHighlighted =
+              currentTime >= w.startTime && currentTime < w.endTime;
+
+            return (
+              <span key={w.word?.id ?? `${i}-${w.startTime}-${w.endTime}`}>
+                <span
+                  className={
+                    isHighlighted
+                      ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
+                      : ""
+                  }
+                >
+                  {chunk}
+                </span>{" "}
+              </span>
+            );
+          })}
+        </>
+      );
+    }
+
+    // Fallback: render the sentence text when no per-word data exists
+    return <span>{sentence.text}</span>;
+  };
 
   return (
     <div
@@ -110,83 +142,24 @@ const fallbackTarget = currentSentences.target?.text ?? "";
         </div>
       )}
 
-      {/* Lyrics Block with Spacing */}
+      {/* --- CHANGED: use renderSentence instead of text.split(" ") --- */}
       <div className="flex flex-col items-center gap-10">
-        {/* ✅ English */}
+        {/* English */}
         <p className="text-center text-[28px] font-semibold">
-          {currentSentences.english
-            ? currentSentences.english.text.split(" ").map((word, index) => {
-                const highlightedWord = getHighlightedWord(
-                  currentSentences.english,
-                );
-                const isHighlighted = word === highlightedWord;
-                return (
-                  <span key={index}>
-                    <span
-                      className={
-                        isHighlighted
-                          ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
-                          : ""
-                      }
-                    >
-                      {word}
-                    </span>{" "}
-                  </span>
-                );
-              })
-            : "(The English Translation)"}
+          {renderSentence(currentSentences.english, "(The English Translation)")}
         </p>
 
-        {/* ✅ Target Language */}
+        {/* Target Language */}
         <p className="text-center text-[28px] font-semibold">
-          {currentSentences.target
-            ? currentSentences.target.text.split(" ").map((word, index) => {
-                const highlightedWord = getHighlightedWord(
-                  currentSentences.target,
-                );
-                const isHighlighted = word === highlightedWord;
-                return (
-                  <span key={index}>
-                    <span
-                      className={
-                        isHighlighted
-                          ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
-                          : ""
-                      }
-                    >
-                      {word}
-                    </span>{" "}
-                  </span>
-                );
-              })
-            : "(The Language Lyrics)"}
+          {renderSentence(currentSentences.target, "(The Language Lyrics)")}
         </p>
 
-        {/* ✅ Transliteration */}
+        {/* Transliteration */}
         <p className="text-center text-[28px] font-semibold">
-          {currentSentences.transliteration
-            ? currentSentences.transliteration.text
-                .split(" ")
-                .map((word, index) => {
-                  const highlightedWord = getHighlightedWord(
-                    currentSentences.transliteration,
-                  );
-                  const isHighlighted = word === highlightedWord;
-                  return (
-                    <span key={index}>
-                      <span
-                        className={
-                          isHighlighted
-                            ? "rounded bg-gradient-to-r from-[#ff8a00] to-[#ef2626] px-1 text-white"
-                            : ""
-                        }
-                      >
-                        {word}
-                      </span>{" "}
-                    </span>
-                  );
-                })
-            : "(The Transliteration)"}
+          {renderSentence(
+            currentSentences.transliteration,
+            "(The Transliteration)",
+          )}
         </p>
       </div>
     </div>
