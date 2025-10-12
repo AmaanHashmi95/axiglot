@@ -70,11 +70,15 @@ function SongCarousel({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(songs.length > 3);
 
+  // mouse-drag state (desktop)
   const isDragging = useRef(false);
   const moved = useRef(false);
   const startX = useRef(0);
   const dragStartScrollLeft = useRef(0);
-  const DRAG_THRESHOLD = 8; // px – if user moves more than this, it's a drag, not a click
+  const DRAG_THRESHOLD = 8;
+
+  // recent scroll guard (touch / momentum)
+  const lastScrollTs = useRef(0);
 
   const scrollLeftBy = () => {
     scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" });
@@ -86,6 +90,7 @@ function SongCarousel({
     updateScrollButtons();
   };
 
+  // Desktop mouse drag — keep this
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     isDragging.current = true;
@@ -93,16 +98,8 @@ function SongCarousel({
     startX.current = e.pageX - scrollRef.current.offsetLeft;
     dragStartScrollLeft.current = scrollRef.current.scrollLeft;
   };
-
-  const handleMouseLeave = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-    // don't reset moved here; card onClick checks it
-  };
-
+  const handleMouseLeave = () => { isDragging.current = false; };
+  const handleMouseUp = () => { isDragging.current = false; };
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current || !scrollRef.current) return;
     e.preventDefault();
@@ -112,33 +109,12 @@ function SongCarousel({
     scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
   };
 
-  // Touch support (iOS)
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!scrollRef.current) return;
-    isDragging.current = true;
-    moved.current = false;
-    startX.current = e.touches[0].clientX - scrollRef.current.offsetLeft;
-    dragStartScrollLeft.current = scrollRef.current.scrollLeft;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current || !scrollRef.current) return;
-    const clientX = e.touches[0].clientX;
-    const walk = clientX - startX.current;
-    if (Math.abs(walk) > DRAG_THRESHOLD) moved.current = true;
-    scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
-  };
-
-  const handleTouchEnd = () => {
-    isDragging.current = false;
-  };
-
   const updateScrollButtons = () => {
     if (!scrollRef.current) return;
     setCanScrollLeft(scrollRef.current.scrollLeft > 0);
     setCanScrollRight(
       scrollRef.current.scrollLeft <
-        scrollRef.current.scrollWidth - scrollRef.current.clientWidth,
+        scrollRef.current.scrollWidth - scrollRef.current.clientWidth
     );
   };
 
@@ -173,21 +149,21 @@ function SongCarousel({
 
       <div
         ref={scrollRef}
-        onScroll={updateScrollButtons}
+        onScroll={() => {
+          lastScrollTs.current = Date.now(); // mark that we recently scrolled (native momentum too)
+          updateScrollButtons();
+        }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         className="no-scrollbar flex w-full gap-4 overflow-x-auto p-2"
         style={{
           overflowX: "auto",
           whiteSpace: "nowrap",
-          WebkitOverflowScrolling: "touch",
-          touchAction: "pan-x", // ← iOS can pan horizontally with touch
-          cursor: "grab",       // open hand between cards
+          WebkitOverflowScrolling: "touch", // momentum on iOS
+          touchAction: "pan-x",              // allow horizontal pan
+          cursor: "grab",
         }}
       >
         {songs.map((song) => (
@@ -201,14 +177,13 @@ function SongCarousel({
                 : "border border-transparent"
             }`}
             onClick={() => {
-              // If the user dragged, suppress the click
+              // suppress click if user just scrolled (mobile) or dragged (desktop)
               if (moved.current) return;
+              if (Date.now() - lastScrollTs.current < 200) return;
               onSelectSong(song);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                onSelectSong(song);
-              }
+              if (e.key === "Enter" || e.key === " ") onSelectSong(song);
             }}
             style={{
               background: getBackgroundStyle(song.language),
@@ -226,8 +201,7 @@ function SongCarousel({
                 onContextMenu={(e) => e.preventDefault()}
               />
             </div>
-
-            {/* Make the overlay NON-interactive so it doesn't steal touches/clicks */}
+            {/* Non-interactive overlay so it never steals touches */}
             <div aria-hidden className="pointer-events-none absolute inset-0 z-10" />
 
             <h3 className="text-md mt-2 text-center font-semibold">{song.title}</h3>
