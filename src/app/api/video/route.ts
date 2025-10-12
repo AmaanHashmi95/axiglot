@@ -43,20 +43,21 @@ export async function GET(
       },
     });
 
-    const formattedVideos = videos.map((video) => ({
-      ...video,
-      audioUrl: video.videoUrl || "", // Ensure it's always a string
-      language: video.language || "Unknown",
-      imageUrl: video.imageUrl || "/icons/Video.png", // ✅ Set default image if missing
+    const formatted = videos.map(v => ({
+      id: v.id,
+      title: v.title,
+      genre: v.genre,
+      streamSrc: `/api/video/${v.id}/stream`,   // ← our gated route
+      language: v.language || "Unknown",
+      imageUrl: v.imageUrl || "/icons/Video.png",
+      englishSentences: v.englishSentences,
+      targetSentences: v.targetSentences,
+      transliterationSentences: v.transliterationSentences,
     }));
 
-    console.log("Videos found:", formattedVideos);
-    return NextResponse.json(formattedVideos);
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error fetching videos:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch videos", details: error },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch videos" }, { status: 500 });
   }
 }

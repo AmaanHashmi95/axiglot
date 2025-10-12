@@ -23,7 +23,7 @@ export interface Video {
   id: string;
   title: string;
   genre: string;
-  videoUrl: string;
+  streamSrc: string; 
   language?: string;
   imageUrl?: string;
   englishSentences: Sentence[];

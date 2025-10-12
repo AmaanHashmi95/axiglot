@@ -85,7 +85,7 @@ export default function Page() {
             style={{ height: "calc(100vh - 120px)" }}
           >
             <VideoScreen
-              videoUrl={selectedVideo.videoUrl}
+              videoUrl={selectedVideo.streamSrc}
               showSubtitles={showSubtitles}
               videoRef={videoRef}
             />

@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import SubtitleBookmarkButton from "./SubtitleBookmarkButton";
+import type { Video } from "@/lib/video";
 
 interface Word {
   word: { id: string; text: string; color?: string; transliteration?: string; audioUrl?: string };
@@ -20,13 +21,7 @@ interface Sentence {
 }
 
 interface SubtitlesProps {
-  video: {
-    id: string;
-    englishSentences: Sentence[];
-    targetSentences: Sentence[];
-    transliterationSentences: Sentence[];
-    videoUrl: string;
-  };
+  video: Video;                 // ✅ use shared Video (has streamSrc)
   currentTime: number;
 }
 
@@ -143,7 +138,7 @@ export default function Subtitles({ video, currentTime }: SubtitlesProps) {
             sentenceIds={sentenceIds}
             words={words}
             translations={translations}
-            audioUrl={video.videoUrl}
+            audioUrl={video.streamSrc}
           />
         </div>
       )}

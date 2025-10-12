@@ -8,13 +8,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/app/(main)/components/ui/dropdown-menu";
+import type { Video } from "@/lib/video";
 
-interface Video {
-  id: string; // ✅ Add this field
-  title: string;
-  genre: string;
-  videoUrl: string;
-}
 
 export default function VideoPlayer({
   video,
@@ -47,7 +42,7 @@ export default function VideoPlayer({
       videoRef.current.playbackRate = 1;
       setPlaybackRate(1);
     }
-  }, [video.videoUrl]);
+  }, [video.streamSrc]);
 
   const togglePlay = () => {
     if (videoRef.current) {
