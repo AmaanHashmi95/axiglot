@@ -1,20 +1,11 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AudioLessonChooser from "@/app/(main)/audio-lessons/AudioLessonChooser";
 import AudioLessonPlayer from "@/app/(main)/audio-lessons/AudioLessonPlayer";
 import { Loader2 } from "lucide-react";
 import BrowserWarning from "@/app/(main)/components/BrowserWarning";
-
-interface AudioLesson {
-  id: string;
-  title: string;
-  speaker: string;
-  audioUrl: string;
-  language?: string;
-  imageUrl?: string;
-}
+import type { AudioLesson } from "@/lib/audio";  // ← NEW
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -27,13 +18,12 @@ export default function Page() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchLessons() {
+    (async () => {
       try {
-        const res = await fetch("/api/audio-lessons"); // ← relative path
+        const res = await fetch("/api/audio-lessons");
         if (!res.ok) throw new Error("Failed to fetch audio lessons.");
         const data: AudioLesson[] = await res.json();
         setLessons(data);
-
         if (lessonId) {
           const found = data.find((l) => l.id === lessonId);
           if (found) setSelectedLesson(found);
@@ -43,8 +33,7 @@ export default function Page() {
       } finally {
         setLoading(false);
       }
-    }
-    fetchLessons();
+    })();
   }, [lessonId]);
 
   if (loading) return <Loader2 className="mx-auto my-3 animate-spin" />;
@@ -56,7 +45,7 @@ export default function Page() {
       <AudioLessonChooser
         lessons={lessons}
         selectedLesson={selectedLesson}
-        onSelectLesson={setSelectedLesson}
+        onSelectLesson={(l) => setSelectedLesson(l)}  // ← wrapper fixes 2322
       />
       <div className="pb-24"></div>
       {selectedLesson && (

@@ -8,13 +8,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/app/(main)/components/ui/dropdown-menu";
+import type { AudioLesson } from "@/lib/audio"; 
 
-interface AudioLesson {
-  id: string;
-  title: string;
-  speaker: string;
-  audioUrl: string;
-}
 
 export default function AudioLessonPlayer({
   lesson,
@@ -56,7 +51,7 @@ export default function AudioLessonPlayer({
     setCurrentTime(0);
     el.playbackRate = 1;
     setPlaybackRate(1);
-  }, [lesson.audioUrl]);
+  }, [lesson.streamSrc]);
 
   // Keep player above any bottom menu
   useEffect(() => {
@@ -170,23 +165,14 @@ export default function AudioLessonPlayer({
       style={{ bottom: `${bottomPadding}px` }}
     >
       <audio
-        ref={audioRef}
-        src={lesson.audioUrl}
-        // Hide native UI; use your custom controls
-        controls={false}
-        // Chromium supports this on <audio>; Safari ignores (harmless)
-        controlsList="nodownload noplaybackrate noremoteplayback"
-        // Draw metadata quickly (for duration)
-        preload="auto"
-        // Deter casual saving
-        draggable={false}
-        onContextMenu={(e) => e.preventDefault()}
-        onLoadedMetadata={() => {
-          const el = audioRef.current;
-          if (el) setDuration(Number.isFinite(el.duration) ? el.duration : 0);
-        }}
-        onEnded={() => setIsPlaying(false)}
-      />
+  ref={audioRef}
+  src={lesson.streamSrc}  // ← use gated route
+  controls={false}
+  controlsList="nodownload noplaybackrate noremoteplayback"
+  preload="auto"
+  draggable={false}
+  onContextMenu={(e) => e.preventDefault()}
+/>
 
       {/* Controls */}
       <div className="flex w-[400px] max-w-2xl items-center justify-center gap-4">

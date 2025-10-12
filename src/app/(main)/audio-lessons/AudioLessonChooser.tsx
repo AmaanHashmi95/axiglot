@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import type { AudioLesson } from "@/lib/audio"; 
 
-interface AudioLesson {
-  id: string;
-  title: string;
-  speaker: string;
-  audioUrl: string;
-  language?: string;
-  imageUrl?: string;
-}
 
 const languageFlags: Record<string, string> = {
   Punjabi: "/flags/india-flag.png",
@@ -176,12 +169,18 @@ function AudioLessonCarousel({
         {lessons.map((lesson) => (
           <div
             key={lesson.id}
-            className={`flex cursor-pointer flex-col items-center rounded-lg p-3 text-white ${
+            role="button"
+            tabIndex={0}
+            // make the CARD positioned so any absolute children are scoped to it
+            className={`relative flex cursor-pointer flex-col items-center rounded-lg p-3 text-white ${
               selectedLesson?.id === lesson.id
                 ? "border-4 border-[#00E2FF]"
                 : "border border-transparent"
             }`}
             onClick={() => onSelectLesson(lesson)}
+            onKeyDown={(e) =>
+              (e.key === "Enter" || e.key === " ") && onSelectLesson(lesson)
+            }
             style={{
               background: getBackgroundStyle(lesson.language),
               minWidth: "150px",
@@ -198,13 +197,8 @@ function AudioLessonCarousel({
                 onContextMenu={(e) => e.preventDefault()}
               />
             </div>
-            {/* Transparent overlay to intercept long-press/right-click/drag */}
-            <div
-              aria-hidden
-              className="absolute inset-0 z-10"
-              onContextMenu={(e) => e.preventDefault()}
-              onDragStart={(e) => e.preventDefault()}
-            />
+            {/* If you insist on an overlay, make it NON-interactive */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 z-10" />
             <h3 className="text-md mt-2 text-center font-semibold">
               {lesson.title}
             </h3>
