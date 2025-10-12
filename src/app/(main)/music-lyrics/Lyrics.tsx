@@ -26,7 +26,7 @@ interface Sentence {
 interface LyricsProps {
   song: {
     id: string;
-    audioUrl: string;
+    streamSrc: string;
     englishSentences: Sentence[];
     targetSentences: Sentence[];
     transliterationSentences: Sentence[];
@@ -102,7 +102,7 @@ const fallbackTarget = currentSentences.target?.text ?? "";
             sentenceIds={sentenceIds}
             words={words}
             translations={translations}
-            audioUrl={song.audioUrl}
+            audioUrl={song.streamSrc}
             fallbackEnglish={fallbackEnglish}
             fallbackTransliteration={fallbackTransliteration}
             fallbackTarget={fallbackTarget}

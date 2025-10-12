@@ -4,58 +4,39 @@ import { validateRequest } from "@/auth";
 
 export async function GET() {
   const { user } = await validateRequest();
+  if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
-  if (!user) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
   try {
-    console.log("Fetching songs from the database...");
- 
     const songs = await prisma.song.findMany({
       include: {
         englishSentences: {
-          include: {
-            words: {
-              include: { word: true }, // ✅ Now this works for English
-              orderBy: { order: "asc" }
-            },
-          },
+          include: { words: { include: { word: true }, orderBy: { order: "asc" } } },
         },
         targetSentences: {
-          include: {
-            words: {
-              include: { word: true }, // ✅ Already working fine for Target
-              orderBy: { order: "asc" }
-            },
-          },
+          include: { words: { include: { word: true }, orderBy: { order: "asc" } } },
         },
         transliterationSentences: {
-          include: {
-            words: {
-              include: { word: true }, // ✅ Now this works for Transliteration
-              orderBy: { order: "asc" }
-            },
-          },
+          include: { words: { include: { word: true }, orderBy: { order: "asc" } } },
         },
       },
     });
-    
- 
-    const formattedSongs = songs.map((song) => ({
-      ...song,
-      audioUrl: song.audioUrl || "", // Ensure it's always a string
-      language: song.language || "Unknown",
-      imageUrl: song.imageUrl || "/icons/Music.png", // ✅ Set default image if missing
+
+    const formatted = songs.map((s) => ({
+      id: s.id,
+      title: s.title,
+      artist: s.artist,
+      // do NOT send s.audioUrl to the client:
+      streamSrc: `/api/music/${s.id}/stream`,  // ← gated route
+      language: s.language || "Unknown",
+      imageUrl: s.imageUrl || "/icons/Music.png",
+      englishSentences: s.englishSentences,
+      targetSentences: s.targetSentences,
+      transliterationSentences: s.transliterationSentences,
     }));
- 
-    console.log("Songs found:", formattedSongs);
-    return NextResponse.json(formattedSongs);
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error fetching music:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch songs", details: error },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch songs" }, { status: 500 });
   }
- }
- 
+}

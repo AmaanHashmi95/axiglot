@@ -71,8 +71,10 @@ function SongCarousel({
   const [canScrollRight, setCanScrollRight] = useState(songs.length > 3);
 
   const isDragging = useRef(false);
+  const moved = useRef(false);
   const startX = useRef(0);
   const dragStartScrollLeft = useRef(0);
+  const DRAG_THRESHOLD = 8; // px – if user moves more than this, it's a drag, not a click
 
   const scrollLeftBy = () => {
     scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" });
@@ -87,6 +89,7 @@ function SongCarousel({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     isDragging.current = true;
+    moved.current = false;
     startX.current = e.pageX - scrollRef.current.offsetLeft;
     dragStartScrollLeft.current = scrollRef.current.scrollLeft;
   };
@@ -97,6 +100,7 @@ function SongCarousel({
 
   const handleMouseUp = () => {
     isDragging.current = false;
+    // don't reset moved here; card onClick checks it
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -104,7 +108,29 @@ function SongCarousel({
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = x - startX.current;
+    if (Math.abs(walk) > DRAG_THRESHOLD) moved.current = true;
     scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
+  };
+
+  // Touch support (iOS)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    moved.current = false;
+    startX.current = e.touches[0].clientX - scrollRef.current.offsetLeft;
+    dragStartScrollLeft.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    const clientX = e.touches[0].clientX;
+    const walk = clientX - startX.current;
+    if (Math.abs(walk) > DRAG_THRESHOLD) moved.current = true;
+    scrollRef.current.scrollLeft = dragStartScrollLeft.current - walk;
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
   };
 
   const updateScrollButtons = () => {
@@ -112,14 +138,15 @@ function SongCarousel({
     setCanScrollLeft(scrollRef.current.scrollLeft > 0);
     setCanScrollRight(
       scrollRef.current.scrollLeft <
-        scrollRef.current.scrollWidth - scrollRef.current.clientWidth
+        scrollRef.current.scrollWidth - scrollRef.current.clientWidth,
     );
   };
 
   useEffect(() => {
     updateScrollButtons();
-    window.addEventListener("resize", updateScrollButtons);
-    return () => window.removeEventListener("resize", updateScrollButtons);
+    const onResize = () => updateScrollButtons();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [songs.length]);
 
   const getBackgroundStyle = (language: string | undefined) => {
@@ -138,7 +165,7 @@ function SongCarousel({
       {canScrollLeft && (
         <button
           onClick={scrollLeftBy}
-          className="z-51 absolute left-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="absolute left-[-40px] top-1/2 z-10 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ◀
         </button>
@@ -151,45 +178,59 @@ function SongCarousel({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
-        className="no-scrollbar flex w-full cursor-grab gap-4 overflow-x-auto p-2 active:cursor-grabbing"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="no-scrollbar flex w-full gap-4 overflow-x-auto p-2"
         style={{
           overflowX: "auto",
           whiteSpace: "nowrap",
           WebkitOverflowScrolling: "touch",
+          touchAction: "pan-x", // ← iOS can pan horizontally with touch
+          cursor: "grab",       // open hand between cards
         }}
       >
         {songs.map((song) => (
           <div
             key={song.id}
-            className={`flex aspect-[4/5] min-w-[150px] cursor-pointer flex-col items-center rounded-lg border p-3 text-white transition ${
+            role="button"
+            tabIndex={0}
+            className={`relative flex cursor-pointer flex-col items-center rounded-lg p-3 text-white ${
               selectedSong?.id === song.id
                 ? "border-4 border-[#00E2FF]"
-                : "border-transparent"
+                : "border border-transparent"
             }`}
-            onClick={() => onSelectSong(song)}
-            style={{ background: getBackgroundStyle(song.language) }}
+            onClick={() => {
+              // If the user dragged, suppress the click
+              if (moved.current) return;
+              onSelectSong(song);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                onSelectSong(song);
+              }
+            }}
+            style={{
+              background: getBackgroundStyle(song.language),
+              minWidth: "150px",
+            }}
           >
-            <div className="flex h-32 w-full items-center justify-center">
+            <div className="relative h-32 w-32 select-none">
               <Image
                 src={song.imageUrl || "/icons/Music.png"}
                 alt={song.title}
                 width={120}
                 height={120}
-                className="select-none[user-select:none] h-full w-full rounded-lg object-cover [-webkit-touch-callout:none] [-webkit-user-select:none]"
+                className="pointer-events-none h-full w-full rounded-lg object-cover select-none [-webkit-touch-callout:none] [-webkit-user-select:none]"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
               />
             </div>
-            {/* Transparent overlay to catch long-press/right-click/drag */}
-            <div
-              aria-hidden
-              className="absolute inset-0 z-10"
-              onContextMenu={(e) => e.preventDefault()}
-              onDragStart={(e) => e.preventDefault()}
-            />
-            <h3 className="text-md mt-2 text-center font-semibold">
-              {song.title}
-            </h3>
+
+            {/* Make the overlay NON-interactive so it doesn't steal touches/clicks */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 z-10" />
+
+            <h3 className="text-md mt-2 text-center font-semibold">{song.title}</h3>
             <p className="text-center text-sm text-gray-200">{song.artist}</p>
           </div>
         ))}
@@ -198,7 +239,7 @@ function SongCarousel({
       {canScrollRight && (
         <button
           onClick={scrollRightBy}
-          className="z-49 absolute right-[-40px] top-1/2 -translate-y-1/2 transform rounded-full p-3 shadow-md"
+          className="absolute right-[-40px] top-1/2 z-10 -translate-y-1/2 transform rounded-full p-3 shadow-md"
         >
           ▶
         </button>

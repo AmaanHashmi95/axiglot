@@ -16,7 +16,7 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
-  audioUrl: string; // ✅ Use direct audio URL from Vercel Storage
+  streamSrc: string; // ✅ Use direct audio URL from Vercel Storage
   language?: string; // ✅ Add language field
   imageUrl?: string; // ✅ New field to store the image URL
   englishSentences: Sentence[];

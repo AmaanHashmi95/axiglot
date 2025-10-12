@@ -8,13 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/app/(main)/components/ui/dropdown-menu";
-
-interface Song {
-  id: string; // ✅ Add this field
-  title: string;
-  artist: string;
-  audioUrl: string;
-}
+import type { Song } from "@/lib/song";   // ← use shared type
 
 export default function MusicPlayer({
   song,
@@ -46,7 +40,7 @@ export default function MusicPlayer({
       audioRef.current.playbackRate = 1;
       setPlaybackRate(1);
     }
-  }, [song.audioUrl]); // ✅ Trigger this when a new song is loaded
+  }, [song.streamSrc]); // ✅ Trigger this when a new song is loaded
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -184,7 +178,7 @@ export default function MusicPlayer({
     >
       <audio
         ref={audioRef}
-        src={song.audioUrl}
+        src={song.streamSrc}
         controls={false} // keep native UI hidden
         controlsList="nodownload noplaybackrate noremoteplayback"
         preload="auto"
