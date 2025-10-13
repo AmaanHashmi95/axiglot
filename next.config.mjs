@@ -24,6 +24,18 @@ const nextConfig = {
       },
     ],
   },
+
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "axiglot.vercel.app" }],
+        destination: "https://app.axiglot.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
+
   rewrites: () => {
     return [
       {
