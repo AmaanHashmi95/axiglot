@@ -10,6 +10,7 @@ import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isDisposable } from "@/lib/disposable";
 
 export async function signUp(
   credentials: SignUpValues,
@@ -34,6 +35,10 @@ export async function signUp(
         },
       },
     });
+
+    if (isDisposable(email)) {
+  return { error: "Please use a real (non-disposable) email address." };
+}
 
     if (existingUserByEmail) {
       if (existingUserByEmail.hasSubscription) {
