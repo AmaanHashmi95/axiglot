@@ -3,20 +3,20 @@ import prisma from "@/lib/prisma";
 import { CommentsPage, getCommentDataInclude } from "@/lib/types";
 import { NextRequest } from "next/server";
 
+type RouteParams = { postId: string };
+
 export async function GET(
   req: NextRequest,
-  { params: { postId } }: { params: { postId: string } },
+  { params }: { params: Promise<RouteParams> }
 ) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-
     const pageSize = 5;
 
     const { user } = await validateRequest();
+    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { postId } = await params;
 
     const comments = await prisma.comment.findMany({
       where: { postId },

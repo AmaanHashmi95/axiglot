@@ -1,3 +1,4 @@
+// src/app/(main)/users/[username]/page.tsx
 import { validateRequest } from "@/auth";
 import FollowButton from "../FollowButton";
 import FollowerCount from "../FollowerCount";
@@ -16,9 +17,7 @@ import UserFollowing from "./UserFollowing";
 import Link from "next/link";
 import { Button } from "@/app/(main)/components/ui/button";
 
-interface PageProps {
-  params: { username: string };
-}
+type UserParams = { username: string };
 
 const getUser = cache(async (username: string, loggedInUserId: string) => {
   const user = await prisma.user.findFirst({
@@ -32,17 +31,16 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   });
 
   if (!user) notFound();
-
   return user;
 });
 
-export async function generateMetadata({
-  params: { username },
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: Promise<UserParams> }
+): Promise<Metadata> {
   const { user: loggedInUser } = await validateRequest();
-
   if (!loggedInUser) return {};
 
+  const { username } = await params;
   const user = await getUser(username, loggedInUser.id);
 
   return {
@@ -50,7 +48,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params: { username } }: PageProps) {
+export default async function Page(
+  { params }: { params: Promise<UserParams> }
+) {
   const { user: loggedInUser } = await validateRequest();
 
   if (!loggedInUser) {
@@ -61,19 +61,15 @@ export default async function Page({ params: { username } }: PageProps) {
     );
   }
 
+  const { username } = await params;
   const user = await getUser(username, loggedInUser.id);
-
   const isOwnProfile = user.id === loggedInUser.id;
 
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-        {isOwnProfile ? (
-          <UserFollowing userId={user.id} />
-        ) : (
-          <UserPosts userId={user.id} />
-        )}
+        {isOwnProfile ? <UserFollowing userId={user.id} /> : <UserPosts userId={user.id} />}
       </div>
     </main>
   );
@@ -107,12 +103,12 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-  <Link href="/settings?tab=account">
-    <Button variant="outline">Account</Button>
-  </Link>
-) : (
-  <FollowButton userId={user.id} initialState={followerInfo} />
-)}
+          <Link href="/settings?tab=account">
+            <Button variant="outline">Account</Button>
+          </Link>
+        ) : (
+          <FollowButton userId={user.id} initialState={followerInfo} />
+        )}
       </div>
       {user.bio && (
         <>

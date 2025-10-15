@@ -12,38 +12,31 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 
-interface PageProps {
-  params: { postId: string };
-}
+type Params = { postId: string };
 
 const getPost = cache(async (postId: string, loggedInUserId: string) => {
   const post = await prisma.post.findUnique({
-    where: {
-      id: postId,
-    },
+    where: { id: postId },
     include: getPostDataInclude(loggedInUserId),
   });
-
   if (!post) notFound();
-
   return post;
 });
 
-export async function generateMetadata({
-  params: { postId },
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: Promise<Params> }
+): Promise<Metadata> {
+  const { postId } = await params; // ⬅️ await params
   const { user } = await validateRequest();
-
   if (!user) return {};
-
   const post = await getPost(postId, user.id);
-
-  return {
-    title: `${post.user.displayName}: ${post.content.slice(0, 50)}...`,
-  };
+  return { title: `${post.user.displayName}: ${post.content.slice(0, 50)}...` };
 }
 
-export default async function Page({ params: { postId } }: PageProps) {
+export default async function Page(
+  { params }: { params: Promise<Params> }
+) {
+  const { postId } = await params; // ⬅️ await params
   const { user } = await validateRequest();
 
   if (!user) {

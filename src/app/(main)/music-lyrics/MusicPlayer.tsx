@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react"; // ⬅️ add useCallback
 import { Button } from "@/app/(main)/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/app/(main)/components/ui/dropdown-menu";
-import type { Song } from "@/lib/song";   // ← use shared type
+import type { Song } from "@/lib/song";
 
 export default function MusicPlayer({
   song,
@@ -26,7 +26,7 @@ export default function MusicPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1); // ✅ Speed defaults to 1x
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [bottomPadding, setBottomPadding] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -35,83 +35,66 @@ export default function MusicPlayer({
       audioRef.current.load();
       setIsPlaying(false);
       setCurrentTime(0);
-
-      // ✅ Reset speed to 1x when changing the song
       audioRef.current.playbackRate = 1;
       setPlaybackRate(1);
     }
-  }, [song.streamSrc]); // ✅ Trigger this when a new song is loaded
+  }, [song.streamSrc]);
 
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(console.error);
-      }
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
     }
   };
 
   const seek = (seconds: number) => {
-    if (audioRef.current) {
-      const newTime = Math.max(
-        0,
-        Math.min(audioRef.current.currentTime + seconds, duration),
-      );
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    if (!audioRef.current) return;
+    const newTime = Math.max(0, Math.min(audioRef.current.currentTime + seconds, duration));
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   const changeSpeed = (rate: number) => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = rate;
-      setPlaybackRate(rate);
-    }
+    if (!audioRef.current) return;
+    audioRef.current.playbackRate = rate;
+    setPlaybackRate(rate);
   };
 
-  const adjustBottomPadding = () => {
+  const adjustBottomPadding = useCallback(() => {
     if (typeof window === "undefined") return;
-
-    const isMobile = window.innerWidth < 640;
+    const mobile = window.innerWidth < 640;
+    setIsMobile(mobile);
     const menuBar = document.getElementById("mobile-bottom-menu");
-
-    setBottomPadding(
-      isMobile && menuBar ? menuBar.getBoundingClientRect().height : 0,
-    );
-  };
+    setBottomPadding(mobile && menuBar ? menuBar.getBoundingClientRect().height : 0);
+  }, []); // ⬅️ stable reference
 
   useEffect(() => {
     adjustBottomPadding();
     window.addEventListener("resize", adjustBottomPadding);
     return () => window.removeEventListener("resize", adjustBottomPadding);
-  }, []);
+  }, [adjustBottomPadding]);
 
   useEffect(() => {
+    const el = audioRef.current; // ⬅️ snapshot ref
+    if (!el) return;
+
     const updateTime = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-        setDuration(audioRef.current.duration || 0);
-        onTimeUpdate(audioRef.current.currentTime);
-      }
+      setCurrentTime(el.currentTime);
+      setDuration(el.duration || 0);
+      onTimeUpdate(el.currentTime);
     };
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener("timeupdate", updateTime);
-      audioRef.current.addEventListener("loadedmetadata", updateTime);
-    }
+    el.addEventListener("timeupdate", updateTime);
+    el.addEventListener("loadedmetadata", updateTime);
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("timeupdate", updateTime);
-        audioRef.current.removeEventListener("loadedmetadata", updateTime);
-      }
+      el.removeEventListener("timeupdate", updateTime);
+      el.removeEventListener("loadedmetadata", updateTime);
     };
-  }, [onTimeUpdate]);
+  }, [onTimeUpdate]); // ⬅️ only the stable callback as dep
 
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
     if (!progressBarRef.current || !audioRef.current) return;

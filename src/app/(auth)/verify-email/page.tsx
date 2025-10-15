@@ -26,7 +26,7 @@ export default function VerifyEmailPage() {
         }
       })
       .catch(() => setMessage('error'));
-  }, [token]);
+  }, [token, router]);
 
   return (
     <main className="flex h-screen items-center justify-center">

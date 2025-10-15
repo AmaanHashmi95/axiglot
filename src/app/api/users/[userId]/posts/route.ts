@@ -3,20 +3,20 @@ import prisma from "@/lib/prisma";
 import { getPostDataInclude, PostsPage } from "@/lib/types";
 import { NextRequest } from "next/server";
 
+type RouteParams = { userId: string };
+
 export async function GET(
   req: NextRequest,
-  { params: { userId } }: { params: { userId: string } },
+  { params }: { params: Promise<RouteParams> }
 ) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-
     const pageSize = 10;
 
     const { user } = await validateRequest();
+    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { userId } = await params;
 
     const posts = await prisma.post.findMany({
       where: { userId },

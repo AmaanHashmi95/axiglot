@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react"; // ⬅️ useCallback
 import { Button } from "@/app/(main)/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
 } from "@/app/(main)/components/ui/dropdown-menu";
 import type { Video } from "@/lib/video";
-
 
 export default function VideoPlayer({
   video,
@@ -42,70 +41,64 @@ export default function VideoPlayer({
       videoRef.current.playbackRate = 1;
       setPlaybackRate(1);
     }
-  }, [video.streamSrc]);
+  }, [video.streamSrc, videoRef]); // ⬅️ include videoRef
 
   const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current.play().catch(console.error);
-        setIsPlaying(true);
-      }
+    const el = videoRef.current;
+    if (!el) return;
+    if (isPlaying) {
+      el.pause();
+      setIsPlaying(false);
+    } else {
+      el.play().catch(console.error);
+      setIsPlaying(true);
     }
   };
 
   const seek = (seconds: number) => {
-    if (videoRef.current) {
-      const newTime = Math.max(
-        0,
-        Math.min(videoRef.current.currentTime + seconds, duration),
-      );
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    const newTime = Math.max(0, Math.min(el.currentTime + seconds, duration));
+    el.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   const changeSpeed = (rate: number) => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-      setPlaybackRate(rate);
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.playbackRate = rate;
+    setPlaybackRate(rate);
   };
 
-  useEffect(() => {
-    const adjustBottomPadding = () => {
-      const menuBar = document.getElementById("mobile-bottom-menu");
-      setBottomPadding(menuBar ? menuBar.offsetHeight : 0);
-    };
-
-    adjustBottomPadding();
-    window.addEventListener("resize", adjustBottomPadding);
-    return () => window.removeEventListener("resize", adjustBottomPadding);
+  const adjustBottomPadding = useCallback(() => {
+    const menuBar = document.getElementById("mobile-bottom-menu");
+    setBottomPadding(menuBar ? menuBar.offsetHeight : 0);
   }, []);
 
   useEffect(() => {
+    adjustBottomPadding();
+    window.addEventListener("resize", adjustBottomPadding);
+    return () => window.removeEventListener("resize", adjustBottomPadding);
+  }, [adjustBottomPadding]);
+
+  useEffect(() => {
+    const el = videoRef.current; // ⬅️ snapshot
+    if (!el) return;
+
     const updateTime = () => {
-      if (videoRef.current) {
-        setCurrentTime(videoRef.current.currentTime);
-        setDuration(videoRef.current.duration || 0);
-        onTimeUpdate(videoRef.current.currentTime);
-      }
+      setCurrentTime(el.currentTime);
+      setDuration(el.duration || 0);
+      onTimeUpdate(el.currentTime);
     };
 
-    if (videoRef.current) {
-      videoRef.current.addEventListener("timeupdate", updateTime);
-      videoRef.current.addEventListener("loadedmetadata", updateTime);
-    }
+    el.addEventListener("timeupdate", updateTime);
+    el.addEventListener("loadedmetadata", updateTime);
 
     return () => {
-      if (videoRef.current) {
-        videoRef.current.removeEventListener("timeupdate", updateTime);
-        videoRef.current.removeEventListener("loadedmetadata", updateTime);
-      }
+      el.removeEventListener("timeupdate", updateTime);
+      el.removeEventListener("loadedmetadata", updateTime);
     };
-  }, [onTimeUpdate]);
+  }, [onTimeUpdate, videoRef]);
 
   const handleSeek = (event: React.MouseEvent | React.TouchEvent) => {
     if (!progressBarRef.current || !videoRef.current) return;

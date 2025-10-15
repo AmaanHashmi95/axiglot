@@ -1,17 +1,22 @@
+// src/app/(main)/search/page.tsx
 import { Metadata } from "next";
 import SearchResults from "./SearchResults";
 
-interface PageProps {
-  searchParams: { q: string };
-}
+type SearchParams = { q?: string };
 
-export function generateMetadata({ searchParams: { q } }: PageProps): Metadata {
+export async function generateMetadata(
+  { searchParams }: { searchParams: Promise<SearchParams> }
+): Promise<Metadata> {
+  const { q = "" } = await searchParams; // ← await
   return {
     title: `Search results for "${q}"`,
   };
 }
 
-export default function Page({ searchParams: { q } }: PageProps) {
+export default async function Page(
+  { searchParams }: { searchParams: Promise<SearchParams> }
+) {
+  const { q = "" } = await searchParams; // ← await
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">

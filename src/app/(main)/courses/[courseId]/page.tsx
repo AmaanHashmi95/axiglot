@@ -56,12 +56,13 @@ function getFlagForLanguage(language?: string | null) {
 export default async function CoursePage({
   params,
 }: {
-  params: { courseId: string };
+  params: Promise<{ courseId: string }>;
 }) {
+  const { courseId } = await params; // ⬅️ await params (Next 15.5)
   const { user } = await validateRequest();
   if (!user) return <div>You must be logged in to view this course.</div>;
 
-  const course = await getCourseWithLessons(params.courseId, user.id);
+  const course = await getCourseWithLessons(courseId, user.id);
   if (!course) return <div>Course not found</div>;
 
   const gradientClass = getGradientClass(course.language);

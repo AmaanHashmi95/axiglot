@@ -8,12 +8,14 @@ import BrowserWarning from "@/app/(main)/components/BrowserWarning";
 export default async function LessonPage({
   params,
 }: {
-  params: { courseId: string; lessonId: string };
+  params: Promise<{ courseId: string; lessonId: string }>;
 }) {
+  const { courseId, lessonId } = await params;   // ⬅️ await the params
+
   const { user } = await validateRequest();
   if (!user) return notFound();
 
-  const lesson = await getLesson(params.lessonId);
+  const lesson = await getLesson(lessonId);
   if (!lesson || !lesson.questions) return notFound();
 
   const userId = user.id;
@@ -23,7 +25,7 @@ export default async function LessonPage({
       <BrowserWarning />
       <div className="mb-6 flex items-center space-x-4">
         <Link
-          href={`/courses/${lesson.course?.id}`}
+          href={`/courses/${lesson.course?.id ?? courseId}`}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#ff8a00] to-[#ef2626] text-white hover:opacity-90"
           aria-label="Back"
         >
