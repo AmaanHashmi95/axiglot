@@ -5,7 +5,7 @@ const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     shield({ mode: "LIVE" }),                 // bot detection
-    slidingWindow({ interval: "1m", max: 20 }) // 20 req/min per IP
+    slidingWindow({ interval: "1m", max: 1000 }) // 20 req/min per IP
   ],
 });
 
