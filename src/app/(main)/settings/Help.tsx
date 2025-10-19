@@ -9,11 +9,11 @@ export default function Help() {
       .
       </div>
       <div>
-      If you wish to delete your account, please email{" "}
+      If you need any assistance, please email{" "}
       <a href="mailto:info@axiglot.com" className="underline text-primary">
         info@axiglot.com
       </a>{" "}
-      requesting deletion.
+      and we will get back to you as soon as possible.
       </div>
     </div>
   );
