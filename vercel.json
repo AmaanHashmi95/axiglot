@@ -1,8 +1,13 @@
 {
-    "crons": [
-      {
-        "path": "/api/clear-uploads",
-        "schedule": "0 2 * * *"
-      }
-    ]
-  }
+  "crons": [
+    { "path": "/api/clear-uploads", "schedule": "0 2 * * *" }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://app.axiglot.com/$1",
+      "permanent": true,
+      "has": [{ "type": "host", "value": "axiglot.vercel.app" }]
+    }
+  ]
+}
