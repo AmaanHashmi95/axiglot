@@ -76,7 +76,7 @@ export default function Page() {
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
-    <div className="relative flex h-screen w-full flex-col gap-4 overflow-hidden p-4">
+    <div className="relative flex w-full flex-col gap-4 overflow-hidden p-4">
       <BrowserWarning />
       {selectedVideo ? (
         <>
