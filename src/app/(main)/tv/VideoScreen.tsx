@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 interface VideoScreenProps {
   videoUrl: string;
   showSubtitles: boolean;
@@ -9,11 +7,6 @@ interface VideoScreenProps {
 }
 
 export default function VideoScreen({ videoUrl, showSubtitles, videoRef }: VideoScreenProps) {
-  useEffect(() => {
-    const el = videoRef.current; // ⬅️ snapshot
-    if (el) el.load();
-  }, [videoUrl, videoRef]); // ⬅️ include videoRef
-
   if (!showSubtitles) return null;
 
   return (
@@ -22,11 +15,12 @@ export default function VideoScreen({ videoUrl, showSubtitles, videoRef }: Video
         ref={videoRef}
         src={videoUrl}
         className="w-full max-w-3xl max-h-[45vh] sm:max-h-[60vh] rounded-lg shadow-lg object-contain
-                  select-none [-webkit-user-select:none] [-webkit-touch-callout:none]"
+                 select-none [-webkit-user-select:none] [-webkit-touch-callout:none]"
         playsInline
         webkit-playsinline="true"
         controls={false}
-        preload="metadata"
+        // ✅ helps initial buffering & scrubbing (UI unchanged)
+        preload="auto"
         disablePictureInPicture
         controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
         onContextMenu={(e) => e.preventDefault()}

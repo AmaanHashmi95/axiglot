@@ -1,6 +1,6 @@
 export interface Word {
   word: {
-    id: string; // ✅ Required by SubtitleBookmarkButton.tsx and Subtitles.tsx
+    id: string;
     text: string;
     color?: string;
     transliteration?: string;
@@ -19,14 +19,23 @@ export interface Sentence {
   words: Word[];
 }
 
-export interface Video {
+export interface VideoListItem {
   id: string;
   title: string;
   genre: string;
-  streamSrc: string; 
+  streamSrc: string;
   language?: string;
   imageUrl?: string;
+}
+
+export interface Video extends VideoListItem {
   englishSentences: Sentence[];
   targetSentences: Sentence[];
   transliterationSentences: Sentence[];
 }
+
+export type VideoSubtitles = Pick<
+  Video,
+  "englishSentences" | "targetSentences" | "transliterationSentences"
+>;
+

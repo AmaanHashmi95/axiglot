@@ -10,6 +10,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<RouteParams> }
 ) {
+  // NOTE: This route is now “better” even if unused.
+  // If you later decide to keep streamSrc as /api/video/:id/stream, this will avoid proxying bytes.
+
   const { user } = await validateRequest();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
@@ -19,18 +22,17 @@ export async function GET(
     where: { id },
     select: { videoUrl: true },
   });
+
   const blobUrl = video?.videoUrl;
   if (!blobUrl) return new Response("Not found", { status: 404 });
 
-  const range = req.headers.get("Range") ?? undefined;
-  const upstream = await fetch(blobUrl, { headers: range ? { Range: range } : undefined });
+  // ✅ Redirect instead of proxy-streaming the bytes
+  // (keeps your app as the auth gate, but removes the byte-proxy bottleneck)
+  const headers = new Headers();
+  headers.set("Location", blobUrl);
+  // small private cache helps repeated navigation
+  headers.set("Cache-Control", "private, max-age=300");
 
-  const headers = new Headers(upstream.headers);
-  headers.set("Cache-Control", "private, max-age=0, must-revalidate");
-  headers.set("Referrer-Policy", "no-referrer");
-  headers.set("Cross-Origin-Resource-Policy", "same-site");
-  headers.delete("server");
-  headers.delete("x-vercel-cache");
-
-  return new Response(upstream.body, { status: upstream.status, headers });
+  // 307 preserves method + headers safely
+  return new Response(null, { status: 307, headers });
 }

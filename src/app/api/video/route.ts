@@ -7,11 +7,15 @@ export async function GET(_req: NextRequest) {
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
   try {
+    // ✅ LIGHTWEIGHT: do NOT send all subtitles for all videos
     const videos = await prisma.video.findMany({
-      include: {
-        englishSentences: { include: { words: { include: { word: true }, orderBy: { order: "asc" } } } },
-        targetSentences: { include: { words: { include: { word: true }, orderBy: { order: "asc" } } } },
-        transliterationSentences: { include: { words: { include: { word: true }, orderBy: { order: "asc" } } } },
+      select: {
+        id: true,
+        title: true,
+        genre: true,
+        language: true,
+        imageUrl: true,
+        videoUrl: true, // blob url
       },
     });
 
@@ -19,12 +23,10 @@ export async function GET(_req: NextRequest) {
       id: v.id,
       title: v.title,
       genre: v.genre,
-      streamSrc: `/api/video/${v.id}/stream`,
+      // ✅ BEST PERFORMANCE: browser streams directly from Blob CDN
+      streamSrc: v.videoUrl,
       language: v.language || "Unknown",
       imageUrl: v.imageUrl || "/icons/Video.png",
-      englishSentences: v.englishSentences,
-      targetSentences: v.targetSentences,
-      transliterationSentences: v.transliterationSentences,
     }));
 
     return NextResponse.json(formatted);
