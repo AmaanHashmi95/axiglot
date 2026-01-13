@@ -10,18 +10,21 @@ export async function POST(req: NextRequest) {
   const customerId = await getOrCreateStripeCustomer(userId, email);
 
   const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [
-      {
-        price: process.env.STRIPE_PRICE_ID!,
-        quantity: 1,
-      },
-    ],
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/signup/complete?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/signup/cancel`,
-    metadata: { userId },
-  });
+  mode: "subscription",
+  customer: customerId,
+  payment_method_collection: "always", // ensures card is collected during trial
+  line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+  subscription_data: {
+    trial_period_days: 7,
+    trial_settings: {
+      end_behavior: { missing_payment_method: "cancel" },
+    },
+  },
+  success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/signup/complete?session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/signup/cancel`,
+  metadata: { userId },
+});
+
 
   await prisma.user.update({
     where: { id: userId },
