@@ -94,8 +94,6 @@ export default function SubtitleBookmarks({ selectedLanguage }: Props) {
                 </p>
               )}
 
-              <AudioRecorder audioUrl={first.audioUrl} />
-
               <button onClick={() => mutate({ id: b.id })}>
                 <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
               </button>

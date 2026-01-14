@@ -89,11 +89,6 @@ export default function LyricBookmarks({ selectedLanguage }: Props) {
                   {first.bookmarkedTransliteration}
                 </p>
               )}
-              <button
-                className="btn btn-outline btn-xs flex items-center gap-2"
-                onClick={() => playAudio(first.audioUrl)}
-              ></button>
-              <AudioRecorder audioUrl={first.audioUrl} />
               <button onClick={() => mutate({ id: b.id })}>
                 <Bookmark className="mt-4 fill-[#00E2FF] text-[#00E2FF]" />
               </button>
