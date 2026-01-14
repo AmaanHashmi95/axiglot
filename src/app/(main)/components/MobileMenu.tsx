@@ -57,8 +57,8 @@ export default function MobileMenu() {
             </Link>
 
             <Link href="/tv" className="flex flex-col items-center justify-center gap-1">
-              <Image src={tv} alt="TV" width={40} height={40} />
-              <span className="text-sm">TV</span>
+              <Image src={tv} alt="Video" width={40} height={40} />
+              <span className="text-sm">Video</span>
             </Link>
 
             <Link href="/music-lyrics" className="flex flex-col items-center justify-center gap-1">

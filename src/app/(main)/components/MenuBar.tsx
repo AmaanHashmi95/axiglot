@@ -95,11 +95,11 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
         <Link href="/tv">
           <Image
             src={tv} // Add your image in the public/icons directory
-            alt="TV"
+            alt="Video"
             width={32}
             height={32}
           />
-          <span className="hidden lg:inline">TV</span>
+          <span className="hidden lg:inline">Video</span>
         </Link>
       </Button>
       <Button
