@@ -139,23 +139,6 @@ export default async function MenuBar({ className, id }: MenuBarProps) {
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
-        title="Translator"
-        asChild
-      >
-        <Link href="/translator">
-          <Image
-            src={translator} // Add your image in the public/icons directory
-            alt="Translator"
-            width={32}
-            height={32}
-          />
-          <span className="hidden lg:inline">Translator</span>
-        </Link>
-      </Button>
-
-      <Button
-        variant="ghost"
-        className="flex items-center justify-start gap-3"
         title="Bookmarks"
         asChild
       >

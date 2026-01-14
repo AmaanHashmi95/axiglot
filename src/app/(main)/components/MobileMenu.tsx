@@ -71,11 +71,6 @@ export default function MobileMenu() {
               <span className="text-sm">Reading</span>
             </Link>
 
-            <Link href="/translator" className="flex flex-col items-center justify-center gap-1">
-              <Image src={translator} alt="Translator" width={40} height={40} />
-              <span className="text-sm">Translator</span>
-            </Link>
-
             <Link href="/bookmarks" className="flex flex-col items-center justify-center gap-1">
               <Image src={library} alt="Bookmarks" width={40} height={40} />
               <span className="text-sm">Bookmarks</span>
