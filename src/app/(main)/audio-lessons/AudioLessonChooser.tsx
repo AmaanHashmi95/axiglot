@@ -136,6 +136,14 @@ function AudioLessonCarousel({
         return "linear-gradient(135deg, #00bf63, #ff8a00)";
       case "Urdu":
         return "linear-gradient(135deg, #00650b, #adadad)";
+      case "Swahili":
+        return "linear-gradient(135deg, black, red)";
+      case "Farsi":
+        return "linear-gradient(135deg, #00bf63, #ef2626)";
+      case "Portuguese":
+        return "linear-gradient(135deg, #009440, #ffcb00)";
+      case "Russian":
+        return "linear-gradient(135deg, #ef2626, #4a86e8)";
       default:
         return "linear-gradient(135deg, #cccccc, #999999)";
     }
