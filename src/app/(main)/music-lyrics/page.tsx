@@ -68,7 +68,6 @@ export default function Page() {
           onSelectSong={setSelectedSong}
         />
       )}
-      <>Please be patient as we upload more music, lyrics and highlighted words over the coming days - watch this space!</>
       <div className="pb-24"></div>
 
       {selectedSong && (

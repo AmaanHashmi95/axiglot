@@ -135,7 +135,6 @@ export default function Page() {
       ) : (
         <VideoChooser videos={videos as any} selectedVideo={null} onSelectVideo={handleSelectVideo as any} />
       )}
-      <>Please be patient as we upload more videos, subtitles and highlighted words over the coming days - watch this space!</>
     </div>
   );
 }
