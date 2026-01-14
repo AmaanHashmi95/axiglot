@@ -124,10 +124,6 @@ function VideoCarousel({
 
   const getBackgroundStyle = (language: string | undefined) => {
     switch (language) {
-      case "Punjabi":
-        return "linear-gradient(135deg, #00bf63, #ff8a00)";
-      case "Urdu":
-        return "linear-gradient(135deg, #00650b, #adadad)";
       default:
         return "linear-gradient(135deg, #cccccc, #999999)";
     }
