@@ -29,7 +29,26 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Farsi</h1>
               </div>
             </Link>
-            {/* Add more Farsi levels here */}
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
+              </div>
+            </Link>
           </div>
         </LanguageAccordion>
 
@@ -40,7 +59,26 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Portuguese</h1>
               </div>
             </Link>
-            {/* Add more Portuguese levels here */}
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
+              </div>
+            </Link>
           </div>
         </LanguageAccordion>
 
@@ -52,8 +90,23 @@ export default function Page() {
               </div>
             </Link>
             <Link href="">
-              <div className="rounded-2xl bg-gradient-to-r from-[#59b88a] to-[#cbab86] p-5 shadow-sm w-full">
-                <h1 className="text-left text-xl font-bold">A2 - Coming Soon</h1>
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
               </div>
             </Link>
           </div>
@@ -66,7 +119,26 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Russian</h1>
               </div>
             </Link>
-            {/* Add more Russian levels here */}
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
+              </div>
+            </Link>
           </div>
         </LanguageAccordion>
 
@@ -77,7 +149,26 @@ export default function Page() {
                 <h1 className="text-left text-xl font-bold">A1 Swahili</h1>
               </div>
             </Link>
-            {/* Add more Swahili levels here */}
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
+              </div>
+            </Link>
           </div>
         </LanguageAccordion>
 
@@ -86,6 +177,26 @@ export default function Page() {
             <Link href="/courses/a1urdu">
               <div className="rounded-2xl bg-gradient-to-r from-[#00605b] to-[#cfcfcf] p-5 shadow-sm w-full">
                 <h1 className="text-left text-xl font-bold">A1 Urdu</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">A2 - Feb 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B1 - March 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">B2 - April 2026</h1>
+              </div>
+            </Link>
+            <Link href="">
+              <div className="rounded-2xl bg-gradient-to-r from-[#cccccc] to-[#999999] p-5 shadow-sm w-full">
+                <h1 className="text-left text-xl font-bold">C1 - May 2026</h1>
               </div>
             </Link>
           </div>
